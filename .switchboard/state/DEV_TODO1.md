@@ -2,8 +2,9 @@
 
 > Sprint: 3
 > Focus Area: Core Data Models (Filter/Sort)
-> Last Updated: 2026-02-28T19:35:00Z
-> Total Points: 3
+> Last Updated: 2026-02-28T20:10:00Z
+> ⚠️ Rebalanced by Sprint Planner on 2026-02-28
+> Total Points: 6 (3 original + 3 rebalanced)
 
 ## Rework Queue
 
@@ -31,6 +32,14 @@ Before starting any stories, read these files:
   - ✅ Post-check: Build + tests pass, acceptance criteria met
   - 🔒 Risk: Low
   - 📝 Commit: `feat(dev1): [02.3] define filter and sort structures`
+
+- [ ] **03.1**: Database Repository Setup (3 pts) — ⚠️ REBALANCED from Dev-2
+  - 📄 Story: `.switchboard/state/stories/story-03-1-database-repository.md`
+  - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
+  - ⚡ Pre-check: Build + tests pass (`cargo build && cargo test`)
+  - ✅ Post-check: Build + tests pass, acceptance criteria met
+  - 🔒 Risk: Medium
+  - 📝 Commit: `feat(dev1): [03.1] database repository setup`
 
 - [ ] AGENT QA: Run full build and test suite. If green, create
   `.switchboard/state/.dev_done_1` with date. If ALL `.dev_done_*`

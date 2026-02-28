@@ -83,9 +83,9 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["02.1"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-1"
+        sprint: 3
       - id: "02.4"
         title: "Implement Configuration Management"
         points: 2
@@ -108,9 +108,11 @@ epics:
         type: "infrastructure"
         risk: "medium"
         depends_on: ["02.1"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-1"
+        sprint: 3
+        rebalanced_from: "dev-2"
+        rebalanced_date: "2026-02-28"
       - id: "03.2"
         title: "Create Task Command"
         points: 3
