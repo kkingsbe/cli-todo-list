@@ -128,6 +128,7 @@ fn main() -> Result<()> {
             sort_by,
             order,
             limit,
+            ..
         } => {
             // Parse sort field
             let sort_field = match sort_by.as_str() {

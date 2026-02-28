@@ -1,9 +1,9 @@
 # DEV_TODO1 — Development Agent 1
 
-> Sprint: 4
-> Focus Area: Task CRUD Operations - Create & List
-> Last Updated: 2026-02-28T21:05:00Z
-> Total Points: 6
+> Sprint: 5
+> Focus Area: Filtering & Tags
+> Last Updated: 2026-02-28T22:40:00Z
+> Total Points: 3
 
 ## Orientation
 
@@ -16,29 +16,20 @@ Before starting any stories, read these files:
 
 ## Stories
 
-- [x] **{story-03.2}**: Create Task Command (3 pts) ✅ queued for review
-  - 📄 Story: `.switchboard/state/stories/story-03-2-create-task-command.md`
+- [ ] **{story-05.2}**: Filter by Priority and Tags (3 pts)
+  - 📄 Story: `.switchboard/state/stories/story-05-2-filter-by-tags.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
   - ⚡ Pre-check: Build + tests pass (`cargo build --release && cargo test`)
   - ✅ Post-check: Build + tests pass, acceptance criteria met
   - 🔒 Risk: Low
-  - 📝 Commit: `feat(dev1): [03.2] implement create task command`
-  - **Pre-requisite:** 03.1 Database Repository Setup (complete)
-
-- [x] **{story-03.3}**: List Tasks Command (3 pts) ✅ queued for review
-  - 📄 Story: `.switchboard/state/stories/story-03-3-list-tasks-command.md`
-  - 📚 Skills: `./skills/rust-best-practices/SKILL.md`
-  - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Build + tests pass, acceptance criteria met
-  - 🔒 Risk: Low
-  - 📝 Commit: `feat(dev1): [03.3] implement list tasks command`
-  - **Dependency:** 03.2 must be complete first (dependency chain)
+  - 📝 Commit: `feat(dev1): [05.2] implement filter by priority and tags`
+  - **Dependency:** 05.1 Filter by Status (complete)
 
 - [ ] **AGENT QA:** Run full build and test suite. If green, create `.switchboard/state/.dev_done_1` with date. If ALL `.dev_done_*` files exist for all agents with work, also create `.switchboard/state/.sprint_complete`.
 
 ## Implementation Notes
 
-- Story 03.3 depends on 03.2 (the list command needs tasks to list)
-- Complete 03.2 first, then 03.3
-- Both stories touch `main.rs`, `commands.rs`, and `repository.rs`
+- This story adds `--tag` filter to the list command
+- Multiple tags should use AND logic
+- Repository already has filtering infrastructure - extend it for tags
 - Run `cargo clippy -- -D warnings` before marking complete

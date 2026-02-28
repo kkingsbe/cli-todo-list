@@ -4,6 +4,15 @@
 
 use clap::{Parser, Subcommand};
 
+/// Output format for list command.
+#[derive(Clone, Debug, Default, clap::ValueEnum)]
+pub enum OutputFormat {
+    #[default]
+    Table,
+    Plain,
+    Json,
+}
+
 /// Command-line interface for TaskForge.
 #[derive(Debug, Parser)]
 #[command(name = "taskforge")]
@@ -61,6 +70,10 @@ pub enum Commands {
         /// Maximum number of tasks to return.
         #[arg(short, long, default_value = "50")]
         limit: u32,
+
+        /// Output format (table, plain, json)
+        #[arg(long, default_value = "table")]
+        format: OutputFormat,
     },
 
     /// Show a task.
