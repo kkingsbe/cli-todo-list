@@ -289,8 +289,8 @@ impl Repository for SqliteRepository {
             Ok(Tag {
                 id: row.get(0)?,
                 name: row.get(1)?,
-                color: row.get(2)?,
-                created_at: string_to_datetime(&row.get::<_, String>(3)?)
+                color: None,
+                created_at: string_to_datetime(&row.get::<_, String>(2)?)
                     .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
             })
         }).map_err(|e| match e {
@@ -309,8 +309,8 @@ impl Repository for SqliteRepository {
             Ok(Tag {
                 id: row.get(0)?,
                 name: row.get(1)?,
-                color: row.get(2)?,
-                created_at: string_to_datetime(&row.get::<_, String>(3)?)
+                color: None,
+                created_at: string_to_datetime(&row.get::<_, String>(2)?)
                     .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
             })
         }).map_err(|e| match e {
@@ -337,8 +337,8 @@ impl Repository for SqliteRepository {
             Ok(Tag {
                 id: row.get(0)?,
                 name: row.get(1)?,
-                color: row.get(2)?,
-                created_at: string_to_datetime(&row.get::<_, String>(3)?)
+                color: None,
+                created_at: string_to_datetime(&row.get::<_, String>(2)?)
                     .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
             })
         }).map_err(|e| RepositoryError::Database(e.to_string()))?
@@ -382,8 +382,8 @@ impl Repository for SqliteRepository {
             Ok(Tag {
                 id: row.get(0)?,
                 name: row.get(1)?,
-                color: row.get(2)?,
-                created_at: string_to_datetime(&row.get::<_, String>(3)?)
+                color: None,
+                created_at: string_to_datetime(&row.get::<_, String>(2)?)
                     .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
             })
         }).map_err(|e| RepositoryError::Database(e.to_string()))?
