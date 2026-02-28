@@ -21,6 +21,14 @@ timezone = "system"
 #   - Staggered dev agent starts prevent git conflicts
 
 [[agent]]
+name = "cli-solution-architect"
+schedule = ""
+readonly = false
+timeout = "25m"
+prompt_file = ".switchboard/workflows/bmad/prompts/SOLUTION_ARCHITECT.md"
+env = { AGENT_COUNT = "2" }
+
+[[agent]]
 name = "cli-sprint-planner"
 schedule = "5,35 * * * *"                 # Every 30 min at :05 and :35
 readonly = false
