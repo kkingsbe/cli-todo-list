@@ -230,14 +230,64 @@
 
 ### story-03.2: Create Task Command
 
+- **Status:** ✅ APPROVED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-02-28T22:23:00Z
+- **Acceptance Criteria:**
+  - [x] `task add "Buy groceries"` creates a task with the given title — **MET**: Verified with `cargo run -- add "Test Task"` creates task
+  - [x] Task has auto-generated UUID and timestamps — **MET**: UUID format verified (8-4-4-4-12 hex), created_at/updated_at populated
+  - [x] Default status is "incomplete", default priority is from config (or 3) — **MET**: Status shows "Incomplete", priority shows "P3"
+  - [x] Output shows task ID after creation — **MET**: Output shows "Created task: {uuid}"
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (113 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+- **Diff Analysis:**
+  - Commit: b4e7b1d - Story 03.2: Implement Create Task Command
+  - Files changed: 7 files (main.rs, commands.rs, repository.rs, task.rs in scope; config.rs, tag.rs formatting only)
+- **Findings:**
+  - SHOULD FIX: Minor formatting changes to src/config.rs and src/tag.rs (whitespace only) - not functional but outside story scope
+  - NICE TO HAVE: Consider adding integration test for end-to-end task creation
+- **Summary:** All acceptance criteria met. Create task command works correctly with UUID generation, default values, and task ID output. Build and all tests pass. Minor formatting-only changes outside scope.
+
+---
+
+### story-03.3: List Tasks Command
+
+- **Status:** ✅ APPROVED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-02-28T22:23:00Z
+- **Acceptance Criteria:**
+  - [x] `task list` shows all tasks in table format — **MET**: Verified with `cargo run -- list` shows table with ID, TITLE, PRIORITY, STATUS columns
+  - [x] Tasks sorted by created_at descending by default — **MET**: Verified - newest task appears first
+  - [x] Pagination with --limit flag (default 50) — **MET**: `--limit 1` shows only 1 task, "Total: 1 task(s)"
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (113 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+- **Diff Analysis:**
+  - Commit: 7ba06da - feat(dev1): [03.3] implement list tasks command with filtering, sorting, and pagination
+  - Files changed: 3 files (main.rs, commands.rs, repository.rs - all in scope)
+- **Findings:**
+  - NICE TO HAVE: Consider adding more edge case tests for filter combinations
+- **Summary:** All acceptance criteria met. List command displays tasks in table format, sorted by created_at descending. Pagination works with --limit flag. All tests pass. Clean implementation within scope.
+
+---
+
+## Sprint 4
+
+---
+
+### story-03.2: Create Task Command
+
 - **Implemented by:** dev-1
 - **Sprint:** 4
 - **Commits:** b4e7b1d
 - **Story file:** `.switchboard/state/stories/story-03-2-create-task-command.md`
 - **Files changed:** src/commands.rs, src/config.rs, src/main.rs, src/repository.rs, src/tag.rs, src/task.rs
-- **Status:** PENDING_REVIEW
+- **Status:** ✅ APPROVED
 - **Acceptance Criteria:**
-  - [x] `task add "Buy groceries"` creates a task with the given title — verified by: cargo run -- add "Buy groceries"
+  - [x] `task add "Buy groceries"` creates a task with the given title — verified by: cargo run -- add "Test Task"
   - [x] Task has auto-generated UUID and timestamps — verified by: verify UUID format (8-4-4-4-12 hex) and timestamps
   - [x] Default status is "incomplete", default priority is from config (or 3) — verified by: cargo test
   - [x] Output shows task ID after creation — verified by: command output includes "Created task: {id}"
@@ -252,7 +302,7 @@
 - **Commits:** 7ba06da
 - **Story file:** `.switchboard/state/stories/story-03-3-list-tasks-command.md`
 - **Files changed:** src/commands.rs, src/main.rs, src/repository.rs
-- **Status:** PENDING_REVIEW
+- **Status:** ✅ APPROVED
 - **Acceptance Criteria:**
   - [x] `task list` shows all tasks in table format — verified by: cargo run -- list
   - [x] Tasks sorted by created_at descending by default — verified by: cargo test
