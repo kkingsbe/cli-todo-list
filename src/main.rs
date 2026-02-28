@@ -20,9 +20,10 @@ mod repository;
 mod tag;
 mod task;
 
-use crate::cli::{Cli, Commands, OutputFormat};
+use crate::cli::{Cli, Commands};
 use crate::commands::{
-    add_tag_to_task_with_dyn, create_task_with_dyn, get_or_create_tag_with_dyn,
+    add_tag_to_task_with_dyn, create_task_with_dyn, format_task_detail, format_task_list,
+    get_or_create_tag_with_dyn,
 };
 use crate::config::load_config;
 use crate::error::AppError;
@@ -198,54 +199,8 @@ fn main() -> Result<()> {
                     if tasks.is_empty() {
                         println!("No tasks found.");
                     } else {
-                        // Match on output format
-                        match format {
-                            OutputFormat::Table => {
-                                // Print table header
-                                println!(
-                                    "{:<38} | {:<30} | {:^8} | {:^12}",
-                                    "ID", "TITLE", "PRIORITY", "STATUS"
-                                );
-                                println!("{:-<38}-+-{:-<30 }-+-{:-<8 }-+-{:-<12}", "", "", "", "");
-
-                                // Print each task
-                                for task in &tasks {
-                                    let title = if task.title.len() > 30 {
-                                        format!("{}...", &task.title[..27])
-                                    } else {
-                                        task.title.clone()
-                                    };
-                                    println!(
-                                        "{:<38} | {:<30} | {:^8} | {:^12}",
-                                        &task.id[..8],
-                                        title,
-                                        format!("{:?}", task.priority),
-                                        format!("{:?}", task.status)
-                                    );
-                                }
-
-                                println!("\nTotal: {} task(s)", limit);
-                            }
-                            OutputFormat::Plain => {
-                                // Print plain text output
-                                for task in &tasks {
-                                    println!(
-                                        "[#{}] {} - Status: {:?}, Priority: {:?}",
-                                        &task.id[..8],
-                                        task.title,
-                                        task.status,
-                                        task.priority
-                                    );
-                                }
-                                println!("\nTotal: {} task(s)", limit);
-                            }
-                            OutputFormat::Json => {
-                                // Output as JSON array
-                                let json = serde_json::to_string_pretty(&tasks)
-                                    .expect("Failed to serialize tasks");
-                                println!("{}", json);
-                            }
-                        }
+                        // Use the format function from commands.rs
+                        format_task_list(&tasks, format, limit);
                     }
                 }
                 Err(e) => {
@@ -257,23 +212,8 @@ fn main() -> Result<()> {
         Commands::Show { id } => {
             match commands::get_task_with_dyn(repository.as_ref(), id.clone()) {
                 Ok(task) => {
-                    println!("Task Details:");
-                    println!("  ID:          {}", task.id);
-                    println!("  Title:       {}", task.title);
-                    println!(
-                        "  Description: {}",
-                        task.description.as_deref().unwrap_or("N/A")
-                    );
-                    println!("  Priority:    {:?}", task.priority);
-                    println!("  Status:      {:?}", task.status);
-                    println!("  Created:     {}", task.created_at);
-                    println!("  Updated:     {}", task.updated_at);
-                    println!(
-                        "  Due Date:    {}",
-                        task.due_date
-                            .map(|d| d.to_string())
-                            .unwrap_or_else(|| "N/A".to_string())
-                    );
+                    // Use the format function from commands.rs
+                    format_task_detail(&task);
                 }
                 Err(e) => match e {
                     AppError::NotFound(_) => {

@@ -411,14 +411,20 @@
 
 ### story-05.2: Filter by Priority and Tags
 
-- **Implemented by:** dev-1
-- **Sprint:** 5
-- **Commits:** a5df295..ef422f8
-- **Story file:** `.switchboard/state/stories/story-05-2-filter-by-tags.md`
-- **Files changed:** src/cli.rs, src/filter.rs, src/repository.rs, src/main.rs
-- **Status:** PENDING_REVIEW
+- **Status:** ✅ APPROVED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-02-28T23:53:00Z
 - **Acceptance Criteria:**
-  - [x] Criterion 1 — verified by: `cargo test` passes (121 tests)
-  - [x] Criterion 2 — verified by: build passes, CLI shows --tag option
-  - [x] Criterion 3 — verified by: repository implements AND logic via HAVING COUNT
-- **Notes:** Implemented tag filtering using subquery with GROUP BY and HAVING to enforce AND logic for multiple tags. TaskFilter already had `tags` field, added `with_tags` builder method.
+  - [x] Criterion 1 — cargo test passes (121 tests) — **MET**
+  - [x] Criterion 2 — CLI shows --tag option — **MET**: `cargo run -- list --help` shows `--tag` flag
+  - [x] Criterion 3 — Repository implements AND logic via HAVING COUNT — **MET**: src/repository.rs uses GROUP BY with HAVING COUNT
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (121 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+- **Diff Analysis:**
+  - Commit: ef422f8 - feat(dev1): [05.2] implement filter by priority and tags
+  - Files changed: src/cli.rs, src/filter.rs, src/main.rs, src/repository.rs (all in scope)
+- **Findings:**
+  - NICE TO HAVE: Consider adding integration test for end-to-end tag filtering
+- **Summary:** All acceptance criteria met. Implemented tag filtering with AND logic using subquery with GROUP BY and HAVING COUNT. CLI properly exposes --tag option. All build gates pass. Clean implementation within scope.

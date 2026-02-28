@@ -2,11 +2,86 @@
 //!
 //! This module defines command handlers for CLI operations.
 
+use crate::cli::OutputFormat;
 use crate::error::AppError;
 use crate::filter::{TagFilter, TaskFilter, TaskSort};
 use crate::models::{Priority, Tag, Task};
 use crate::repository::{Repository, RepositoryError};
 use std::sync::Arc;
+
+/// Format and print a list of tasks in the specified output format.
+pub fn format_task_list(tasks: &[Task], format: OutputFormat, limit: u32) {
+    match format {
+        OutputFormat::Table => {
+            // Print table header
+            println!(
+                "{:<38} | {:<30} | {:^8} | {:^12}",
+                "ID", "TITLE", "PRIORITY", "STATUS"
+            );
+            println!(
+                "{:-<38}-+-{:-<30 }-+-{:-<8 }-+-{:-<12}",
+                "", "", "", ""
+            );
+
+            // Print each task
+            for task in tasks {
+                let title = if task.title.len() > 30 {
+                    format!("{}...", &task.title[..27])
+                } else {
+                    task.title.clone()
+                };
+                println!(
+                    "{:<38} | {:<30} | {:^8} | {:^12}",
+                    &task.id[..8],
+                    title,
+                    format!("{:?}", task.priority),
+                    format!("{:?}", task.status)
+                );
+            }
+
+            println!("\nTotal: {} task(s)", limit);
+        }
+        OutputFormat::Plain => {
+            // Print plain text output
+            for task in tasks {
+                println!(
+                    "[#{}] {} - Status: {:?}, Priority: {:?}",
+                    &task.id[..8],
+                    task.title,
+                    task.status,
+                    task.priority
+                );
+            }
+            println!("\nTotal: {} task(s)", limit);
+        }
+        OutputFormat::Json => {
+            // Output as JSON array
+            let json = serde_json::to_string_pretty(&tasks).expect("Failed to serialize tasks");
+            println!("{}", json);
+        }
+    }
+}
+
+/// Format and print a single task's details.
+pub fn format_task_detail(task: &Task) {
+    println!("Task Details:");
+    println!("  ID:          {}", task.id);
+    println!("  Title:       {}", task.title);
+    println!(
+        "  Description: {}",
+        task.description.as_deref().unwrap_or("N/A")
+    );
+    println!("  Priority:    {:?}", task.priority);
+    println!("  Status:      {:?}", task.status);
+    println!("  Created:     {}", task.created_at);
+    println!("  Updated:     {}", task.updated_at);
+    println!(
+        "  Due Date:    {}",
+        task.due_date
+            .map(|d| d.to_string())
+            .unwrap_or_else(|| "N/A".to_string())
+    );
+}
 
 /// Command handler for creating a new task.
 /// This version accepts a concrete repository type.

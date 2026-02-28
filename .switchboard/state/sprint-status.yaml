@@ -2,7 +2,7 @@
 # Source: .switchboard/input/PRD.md → .switchboard/planning/epics/
 
 project: "TaskForge - Rust CLI Task Manager"
-current_sprint: 5
+current_sprint: 6
 created: "2026-02-28T16:15:00Z"
 last_updated: "2026-02-28T21:05:00Z"
 solutioning_complete: true
@@ -215,7 +215,7 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["05.1"]
-        status: "in-progress"
+        status: "complete"
         assigned_to: "dev-1"
         sprint: 5
       - id: "05.3"
