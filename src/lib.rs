@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! TaskForge - CLI task management application
 //!
 //! This library provides the core functionality for the TaskForge CLI tool.

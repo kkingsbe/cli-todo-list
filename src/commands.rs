@@ -57,20 +57,14 @@ pub fn update_task<R: Repository>(
 }
 
 /// Command handler for deleting a task.
-pub fn delete_task<R: Repository>(
-    _repository: Arc<R>,
-    id: String,
-) -> Result<(), AppError> {
+pub fn delete_task<R: Repository>(_repository: Arc<R>, id: String) -> Result<(), AppError> {
     let _ = id;
     // Repository operations will be implemented in later stories
     Ok(())
 }
 
 /// Command handler for completing a task.
-pub fn complete_task<R: Repository>(
-    _repository: Arc<R>,
-    id: String,
-) -> Result<Task, AppError> {
+pub fn complete_task<R: Repository>(_repository: Arc<R>, id: String) -> Result<Task, AppError> {
     let _ = id;
     // Repository operations will be implemented in later stories
     Err(AppError::NotFound("Task not found".to_string()))

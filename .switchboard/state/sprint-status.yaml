@@ -20,7 +20,7 @@ epics:
         type: "infrastructure"
         risk: "low"
         depends_on: []
-        status: "in-progress"
+        status: "needs-rework"
         assigned_to: "dev-1"
         sprint: 1
       - id: "01.2"
@@ -29,7 +29,7 @@ epics:
         type: "infrastructure"
         risk: "low"
         depends_on: ["01.1"]
-        status: "in-progress"
+        status: "needs-rework"
         assigned_to: "dev-1"
         sprint: 1
       - id: "01.3"

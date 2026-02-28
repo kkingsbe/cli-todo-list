@@ -67,7 +67,10 @@ mod tests {
     #[test]
     fn app_error_validation_displays_message() {
         let err = AppError::Validation(ValidationError::InvalidTitle);
-        assert_eq!(err.to_string(), "Validation error: Title cannot be empty or exceed 500 characters");
+        assert_eq!(
+            err.to_string(),
+            "Validation error: Title cannot be empty or exceed 500 characters"
+        );
     }
 
     #[test]
@@ -79,7 +82,10 @@ mod tests {
     #[test]
     fn validation_error_invalid_title_message() {
         let err = ValidationError::InvalidTitle;
-        assert_eq!(err.to_string(), "Title cannot be empty or exceed 500 characters");
+        assert_eq!(
+            err.to_string(),
+            "Title cannot be empty or exceed 500 characters"
+        );
     }
 
     #[test]

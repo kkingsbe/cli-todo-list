@@ -153,7 +153,9 @@ mod tests {
     fn cli_parse_add_command() {
         let cli = Cli::parse_from(&["taskforge", "add", "My task", "--priority", "1"]);
         match cli.command {
-            Commands::Add { title, priority, .. } => {
+            Commands::Add {
+                title, priority, ..
+            } => {
                 assert_eq!(title, "My task");
                 assert_eq!(priority, 1);
             }
