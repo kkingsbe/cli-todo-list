@@ -41,7 +41,7 @@ Before starting any stories, read these files:
   - 🔒 Risk: Medium
   - 📝 Commit: `feat(dev1): [03.1] database repository setup`
 
-- [ ] AGENT QA: Run full build and test suite. If green, create
+- [x] AGENT QA: Run full build and test suite. If green, create
   `.switchboard/state/.dev_done_1` with date. If ALL `.dev_done_*`
   files exist for all agents with work, also create
   `.switchboard/state/.sprint_complete`.
