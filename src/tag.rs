@@ -23,7 +23,7 @@ impl Tag {
     pub fn new(name: String) -> Self {
         Self {
             id: uuid::Uuid::new_v4().to_string(),
-            name,
+            name: name.to_lowercase(),
             color: None,
             created_at: Utc::now(),
         }
@@ -33,7 +33,7 @@ impl Tag {
     pub fn with_color(name: String, color: String) -> Self {
         Self {
             id: uuid::Uuid::new_v4().to_string(),
-            name,
+            name: name.to_lowercase(),
             color: Some(color),
             created_at: Utc::now(),
         }
@@ -41,7 +41,7 @@ impl Tag {
 
     /// Updates the tag name.
     pub fn rename(&mut self, name: String) {
-        self.name = name;
+        self.name = name.to_lowercase();
     }
 
     /// Updates the tag color.
@@ -89,5 +89,26 @@ mod tests {
         let mut tag = Tag::with_color("test".to_string(), "#FF0000".to_string());
         tag.set_color(None);
         assert!(tag.color.is_none());
+    }
+
+    #[test]
+    fn tag_name_is_normalized_to_lowercase() {
+        // Verify that tag names are normalized to lowercase
+        let tag_work = Tag::new("Work".to_string());
+        let tag_work_upper = Tag::new("WORK".to_string());
+        let tag_work_mixed = Tag::new("WoRk".to_string());
+        
+        assert_eq!(tag_work.name, "work");
+        assert_eq!(tag_work_upper.name, "work");
+        assert_eq!(tag_work_mixed.name, "work");
+        
+        // Also test with_color method
+        let tag_color = Tag::with_color("Important".to_string(), "#FF0000".to_string());
+        assert_eq!(tag_color.name, "important");
+        
+        // Test rename also normalizes
+        let mut tag = Tag::new("test".to_string());
+        tag.rename("NEW_NAME".to_string());
+        assert_eq!(tag.name, "new_name");
     }
 }
