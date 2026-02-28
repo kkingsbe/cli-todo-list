@@ -186,15 +186,38 @@
 
 ### story-03-1: Database Repository Setup
 
-- **Implemented by:** dev-1
+- **Implemented by:** dev-1 (rebalanced from dev-2)
 - **Sprint:** 3
 - **Commits:** 3d31356
 - **Story file:** `.switchboard/state/stories/story-03-1-database-repository.md`
-- **Files changed:** src/repository.rs, src/config.rs
-- **Status:** PENDING_REVIEW
+- **Files changed:** src/repository.rs, Cargo.toml
+- **Status:** ❌ CHANGES_REQUESTED
+- **Review date:** 2026-02-28T20:54:00Z
 - **Acceptance Criteria:**
-  - [x] SqliteRepository implements Repository trait — verified by: cargo test repository (9 tests pass)
-  - [x] Database schema matches architecture.md (tasks, tags, task_tags tables) — verified by: schema initialization code review
-  - [x] Database stored at ~/.taskforge/tasks.db — verified by: default_database_path() function uses home_dir
-- **Notes:** Implementation includes SqliteRepository with full CRUD for tasks and tags, uses integer timestamps for dates (vs ISO 8601 in architecture - practical decision), includes tag color field (extra), missing indexes defined in architecture (performance consideration). Tests pass (109 total).
+  - [x] SqliteRepository implements Repository trait — **MET**: Repository trait defined (src/repository.rs:402), cargo test passes (109 tests)
+  - [ ] Database schema matches architecture.md (tasks, tags, task_tags tables) — **NOT MET**: Schema uses INTEGER for priority and timestamps vs TEXT specified in architecture
+  - [x] Database stored at ~/.taskforge/tasks.db — **MET**: src/config.rs:44-50 uses home_dir().join(".taskforge")
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (109 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+- **Diff Analysis:**
+  - Commit: 3d31356 - feat(dev2): [03.1] database repository setup
+  - Files changed: src/repository.rs (+477 lines), Cargo.toml (+3 lines)
+- **Must Fix:**
+  1. Schema deviation from architecture.md in src/repository.rs (lines 99-127)
+     - Current: Uses `priority TEXT`, `created_at INTEGER`, `updated_at INTEGER`, `due_date INTEGER`
+     - Expected: Should use `priority INTEGER`, `created_at TEXT`, `updated_at TEXT`, `due_date TEXT` per architecture.md
+     - Why: Acceptance criterion explicitly requires "matches architecture.md"
+  2. Missing indexes from architecture.md in src/repository.rs (lines 96-127)
+     - Current: No indexes defined in schema
+     - Expected: Should add indexes per architecture.md: idx_tasks_status, idx_tasks_priority, idx_tasks_due_date, idx_tasks_created_at, idx_tags_name
+     - Why: Acceptance criterion says "Tables created on first run with correct indexes"
+  3. unwrap() in production code at src/repository.rs:42
+     - Current: `Utc.timestamp_opt(ts, 0).unwrap()`
+     - Expected: Should return Result properly, e.g., `Utc.timestamp_opt(ts, 0).single()` with proper error handling
+     - Why: Project convention forbids unwrap() outside tests (project-context.md line 28)
+- **Should Fix:**
+  1. Extra field in tags table: `color TEXT` added (src/repository.rs:114) - note this as scope expansion
+- **Requeue Instructions:** Fix all MUST FIX items, ensure build/test/clippy pass, then requeue to dev-2
 

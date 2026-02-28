@@ -15,6 +15,12 @@
   - ⚡ Pre-check: Build + tests pass
   - ✅ Post-check: Fix SortOrder default to Descending, update test, ensure build/test/clippy pass
   - 📝 Commit: `fix(dev1): [02.3] address review feedback - sort default`
+- **03.1 (REWORK)**: Database Repository Setup
+  - 📄 Story: `.switchboard/state/stories/story-03-1-database-repository.md`
+  - 🔍 Review: See REVIEW_QUEUE.md — CHANGES_REQUESTED
+  - ⚡ Pre-check: Build + tests pass
+  - ✅ Post-check: Fix schema to match architecture (INTEGER→TEXT for priority, timestamps), add indexes per architecture, fix unwrap() usage, ensure build/test/clippy pass
+  - 📝 Commit: `fix(dev1): [03.1] address review feedback - schema and indexes`
 
 ## Orientation
 
