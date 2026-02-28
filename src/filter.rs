@@ -7,8 +7,8 @@ use crate::models::{Priority, Status};
 /// Sort order for queries.
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub enum SortOrder {
-    #[default]
     Ascending,
+    #[default]
     Descending,
 }
 
@@ -148,7 +148,7 @@ mod tests {
     fn task_sort_default() {
         let sort = TaskSort::default_sort();
         assert_eq!(sort.field, TaskSortField::CreatedAt);
-        assert_eq!(sort.order, SortOrder::Ascending);
+        assert_eq!(sort.order, SortOrder::Descending);
     }
 
     #[test]
