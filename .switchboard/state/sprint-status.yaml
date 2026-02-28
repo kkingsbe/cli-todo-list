@@ -2,7 +2,7 @@
 # Source: .switchboard/input/PRD.md → .switchboard/planning/epics/
 
 project: "TaskForge - Rust CLI Task Manager"
-current_sprint: 0
+current_sprint: 1
 created: "2026-02-28T16:15:00Z"
 last_updated: "2026-02-28T16:19:00Z"
 solutioning_complete: true
@@ -20,36 +20,36 @@ epics:
         type: "infrastructure"
         risk: "low"
         depends_on: []
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-1"
+        sprint: 1
       - id: "01.2"
         title: "Create Module Structure"
         points: 2
         type: "infrastructure"
         risk: "low"
         depends_on: ["01.1"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-1"
+        sprint: 1
       - id: "01.3"
         title: "Setup Logging and Error Handling"
         points: 2
         type: "infrastructure"
         risk: "low"
         depends_on: ["01.2"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-2"
+        sprint: 1
       - id: "01.4"
         title: "Basic CLI Entry Point"
         points: 2
         type: "infrastructure"
         risk: "low"
         depends_on: ["01.3"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-2"
+        sprint: 1
 
   - id: "epic-02"
     title: "Core Data Models"
