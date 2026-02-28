@@ -20,7 +20,7 @@ mod repository;
 mod tag;
 mod task;
 
-use crate::cli::{Cli, Commands};
+use crate::cli::{Cli, Commands, OutputFormat};
 use crate::commands::{
     add_tag_to_task_with_dyn, create_task_with_dyn, get_or_create_tag_with_dyn,
 };
@@ -128,7 +128,7 @@ fn main() -> Result<()> {
             sort_by,
             order,
             limit,
-            ..
+            format,
         } => {
             // Parse sort field
             let sort_field = match sort_by.as_str() {
@@ -192,30 +192,54 @@ fn main() -> Result<()> {
                     if tasks.is_empty() {
                         println!("No tasks found.");
                     } else {
-                        // Print table header
-                        println!(
-                            "{:<38} | {:<30} | {:^8} | {:^12}",
-                            "ID", "TITLE", "PRIORITY", "STATUS"
-                        );
-                        println!("{:-<38}-+-{:-<30 }-+-{:-<8 }-+-{:-<12}", "", "", "", "");
+                        // Match on output format
+                        match format {
+                            OutputFormat::Table => {
+                                // Print table header
+                                println!(
+                                    "{:<38} | {:<30} | {:^8} | {:^12}",
+                                    "ID", "TITLE", "PRIORITY", "STATUS"
+                                );
+                                println!("{:-<38}-+-{:-<30 }-+-{:-<8 }-+-{:-<12}", "", "", "", "");
 
-                        // Print each task
-                        for task in tasks {
-                            let title = if task.title.len() > 30 {
-                                format!("{}...", &task.title[..27])
-                            } else {
-                                task.title
-                            };
-                            println!(
-                                "{:<38} | {:<30} | {:^8} | {:^12}",
-                                &task.id[..8],
-                                title,
-                                format!("{:?}", task.priority),
-                                format!("{:?}", task.status)
-                            );
+                                // Print each task
+                                for task in &tasks {
+                                    let title = if task.title.len() > 30 {
+                                        format!("{}...", &task.title[..27])
+                                    } else {
+                                        task.title.clone()
+                                    };
+                                    println!(
+                                        "{:<38} | {:<30} | {:^8} | {:^12}",
+                                        &task.id[..8],
+                                        title,
+                                        format!("{:?}", task.priority),
+                                        format!("{:?}", task.status)
+                                    );
+                                }
+
+                                println!("\nTotal: {} task(s)", limit);
+                            }
+                            OutputFormat::Plain => {
+                                // Print plain text output
+                                for task in &tasks {
+                                    println!(
+                                        "[#{}] {} - Status: {:?}, Priority: {:?}",
+                                        &task.id[..8],
+                                        task.title,
+                                        task.status,
+                                        task.priority
+                                    );
+                                }
+                                println!("\nTotal: {} task(s)", limit);
+                            }
+                            OutputFormat::Json => {
+                                // Output as JSON array
+                                let json = serde_json::to_string_pretty(&tasks)
+                                    .expect("Failed to serialize tasks");
+                                println!("{}", json);
+                            }
                         }
-
-                        println!("\nTotal: {} task(s)", limit);
                     }
                 }
                 Err(e) => {
