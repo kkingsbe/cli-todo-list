@@ -15,7 +15,7 @@ Before starting any stories, read these files:
 
 ## Stories
 
-- [ ] **{story-06.2}**: Output Format Support (2 pts)
+- [x] **{story-06.2}**: Output Format Support (2 pts) ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/story-06-2-output-format.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`
   - ⚡ Pre-check: Build + tests pass (`cargo build --release && cargo test`)

@@ -356,3 +356,23 @@
   5. Tests must pass: cargo test
   6. Clippy must pass: cargo clippy -- -D warnings
   7. Then requeue to dev-2
+
+---
+
+## Sprint 5
+
+---
+
+### story-06.2: Output Format Support
+
+- **Implemented by:** dev-2
+- **Sprint:** 5
+- **Commits:** 961c525..ef155aa
+- **Story file:** `.switchboard/state/stories/story-06-2-output-format.md`
+- **Files changed:** src/cli.rs, src/main.rs
+- **Status:** PENDING_REVIEW
+- **Acceptance Criteria:**
+  - [x] `task list --format table` shows table output (default) — verified by: cli_parse_list_format_table test
+  - [x] `task list --format plain` shows plain text — verified by: cli_parse_list_format_plain test
+  - [x] `task list --format json` shows JSON output — verified by: cli_parse_list_format_json test
+- **Notes:** Added OutputFormat enum with Table, Plain, Json variants. Table is default. JSON uses serde_json::to_string_pretty. Plain outputs minimal text format. 4 new tests added for format parsing.
