@@ -81,6 +81,7 @@ fn main() -> Result<()> {
             title,
             description,
             priority,
+            ..
         } => {
             let priority = match priority {
                 1 => Priority::P1,

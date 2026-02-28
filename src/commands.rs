@@ -134,6 +134,36 @@ pub fn create_tag<R: Repository>(
     Ok(tag)
 }
 
+/// Command handler for getting or creating a tag by name.
+/// If the tag exists, returns the existing tag. If not, creates a new tag.
+pub fn get_or_create_tag<R: Repository>(
+    repository: Arc<R>,
+    name: String,
+) -> Result<Tag, AppError> {
+    // Try to get the tag by name first
+    match repository.get_tag_by_name(&name) {
+        Ok(tag) => Ok(tag),
+        Err(e) => match e {
+            RepositoryError::NotFound(_) => {
+                // Tag not found, create a new one
+                let tag = Tag::new(name);
+                repository.create_tag(&tag).map_err(|e| match e {
+                    RepositoryError::Database(msg) => {
+                        AppError::System(crate::error::SystemError::Database(msg))
+                    }
+                    RepositoryError::Constraint(msg) => AppError::UserError(msg),
+                    _ => AppError::UserError(e.to_string()),
+                })?;
+                Ok(tag)
+            }
+            RepositoryError::Database(msg) => {
+                AppError::System(crate::error::SystemError::Database(msg))
+            }
+            RepositoryError::Constraint(msg) => AppError::UserError(msg),
+        },
+    }
+}
+
 /// Command handler for listing tags.
 pub fn list_tags<R: Repository>(
     _repository: Arc<R>,

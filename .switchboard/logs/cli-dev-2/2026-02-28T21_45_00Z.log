@@ -1,0 +1,2 @@
+[cli-dev-2] Timeout expired after 30m for container 'b05df8039aac9f6a10285920e1df90e45792059939e7375089164ddee33017e4' - Sending SIGTERM for graceful shutdown
+[cli-dev-2] Timed out after 30m for container 'b05df8039aac9f6a10285920e1df90e45792059939e7375089164ddee33017e4' - Container terminated gracefully (SIGTERM)

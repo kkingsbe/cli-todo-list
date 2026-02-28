@@ -221,3 +221,55 @@
   1. Extra field in tags table: `color TEXT` added (src/repository.rs:114) - note this as scope expansion
 - **Requeue Instructions:** Fix all MUST FIX items, ensure build/test/clippy pass, then requeue to dev-2
 
+
+---
+
+## Sprint 4
+
+---
+
+### story-03.4: Get Task Details Command
+
+- **Implemented by:** dev-2
+- **Sprint:** 4
+- **Commits:** 0482f51..8979282
+- **Story file:** `.switchboard/state/stories/story-03-4-get-task-details-command.md`
+- **Files changed:** src/commands.rs, src/main.rs
+- **Status:** ❌ CHANGES_REQUESTED
+- **Review date:** 2026-02-28T21:52:00Z
+- **Acceptance Criteria:**
+  - [x] `task get <uuid>` shows full task details — **NOT VERIFIABLE**: Build fails
+  - [ ] Shows 404 error for unknown task ID — **NOT MET**: Build fails, cannot test
+- **Build & Test Gate:**
+  - cargo build --release: ❌ FAIL (exit code 101)
+  - cargo test: ❌ NOT RUN (build required first)
+  - cargo clippy: ❌ NOT RUN (build required first)
+- **Diff Analysis:**
+  - Commit: 8979282 - feat(dev2): [03.4] implement get task details command
+  - Files changed: 9 files changed, 465 insertions, 200 deletions
+- **Must Fix:**
+  1. **Compilation error in src/commands.rs:159-162**
+     - Current: `AppError::System(...)` returned directly
+     - Expected: Should be wrapped in `Err(...)` to match `Result<Tag, AppError>` return type
+     - Why: Build fails with `error[E0308]: mismatched types`
+  2. **Scope violations - REVERT these changes:**
+     - src/cli.rs: Added `limit` parameter to list command - NOT in story scope
+     - src/repository.rs: Major changes - NOT in scope (story says "repository.rs — get_task already implemented")
+     - src/config.rs: Changes - NOT in scope
+     - src/tag.rs: Formatting changes - NOT in scope
+     - src/task.rs: Formatting changes - NOT in scope
+     - .switchboard/heartbeat.json: System file - NOT in scope
+     - .switchboard/logs/cli-dev-1/2026-02-28T21_30_05Z.log: System file - NOT in scope
+  3. **Files in scope per story** (keep these only):
+     - src/main.rs: wire up show command
+     - src/commands.rs: modify get_task to use repository (fix the Err wrapper bug)
+- **Should Fix:**
+  1. Ensure the Show command properly calls the repository.get_task() method
+- **Requeue Instructions:** 
+  1. Fix the compilation error in src/commands.rs:159-162 - wrap return in Err()
+  2. Revert ALL changes outside story scope (cli.rs, repository.rs, config.rs, tag.rs, task.rs)
+  3. Ensure only changes to main.rs and commands.rs remain
+  4. Build must pass: cargo build --release
+  5. Tests must pass: cargo test
+  6. Clippy must pass: cargo clippy -- -D warnings
+  7. Then requeue to dev-2

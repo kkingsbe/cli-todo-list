@@ -30,6 +30,10 @@ pub enum Commands {
         /// Task priority (1-4, where 1 is highest).
         #[arg(short, long, default_value = "3")]
         priority: u8,
+
+        /// Task tags.
+        #[arg(long)]
+        tag: Vec<String>,
     },
 
     /// List tasks.

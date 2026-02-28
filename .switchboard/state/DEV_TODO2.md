@@ -15,14 +15,13 @@ Before starting any stories, read these files:
 
 ## Stories
 
-- [ ] **{story-03.4}**: Get Task Details Command (2 pts)
+- [ ] **{story-03.4}** (REWORK): Get Task Details Command (2 pts)
   - 📄 Story: `.switchboard/state/stories/story-03-4-get-task-details-command.md`
-  - 📚 Skills: `./skills/rust-best-practices/SKILL.md`
+  - 🔍 Review: See REVIEW_QUEUE.md — CHANGES_REQUESTED
   - ⚡ Pre-check: Build + tests pass (`cargo build --release && cargo test`)
-  - ✅ Post-check: Build + tests pass, acceptance criteria met
-  - 🔒 Risk: Low
-  - 📝 Commit: `feat(dev2): [03.4] implement get task details command`
-  - **Dependency:** 03.3 List Tasks Command (for testing, but can work in parallel)
+  - ✅ Post-check: Address ALL "Must Fix" items from review
+  - 📝 Commit: `fix(dev2): [03.4] address review feedback`
+  - **Issue:** Build fails with compilation error; scope violations - changed files outside story scope
 
 - [ ] **{story-04.1}**: Create Tag with Task (3 pts)
   - 📄 Story: `.switchboard/state/stories/story-04-1-create-tag-with-task.md`

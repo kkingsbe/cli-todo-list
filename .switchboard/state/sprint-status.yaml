@@ -140,6 +140,7 @@ epics:
         status: "in-progress"
         assigned_to: "dev-2"
         sprint: 4
+        blocker_reason: "Changes requested - compilation error and scope violations"
       - id: "03.5"
         title: "Update Task Command"
         points: 5
