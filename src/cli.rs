@@ -5,7 +5,7 @@
 use clap::{Parser, Subcommand};
 
 /// Output format for list command.
-#[derive(Clone, Debug, Default, clap::ValueEnum)]
+#[derive(Clone, Debug, Default, PartialEq, clap::ValueEnum)]
 pub enum OutputFormat {
     #[default]
     Table,
@@ -218,6 +218,50 @@ mod tests {
                 _ => panic!("Expected Tag Create command"),
             },
             _ => panic!("Expected Tag command"),
+        }
+    }
+
+    #[test]
+    fn cli_parse_list_format_default() {
+        let cli = Cli::parse_from(&["taskforge", "list"]);
+        match cli.command {
+            Commands::List { format, .. } => {
+                assert_eq!(format, OutputFormat::Table);
+            }
+            _ => panic!("Expected List command"),
+        }
+    }
+
+    #[test]
+    fn cli_parse_list_format_plain() {
+        let cli = Cli::parse_from(&["taskforge", "list", "--format", "plain"]);
+        match cli.command {
+            Commands::List { format, .. } => {
+                assert_eq!(format, OutputFormat::Plain);
+            }
+            _ => panic!("Expected List command"),
+        }
+    }
+
+    #[test]
+    fn cli_parse_list_format_json() {
+        let cli = Cli::parse_from(&["taskforge", "list", "--format", "json"]);
+        match cli.command {
+            Commands::List { format, .. } => {
+                assert_eq!(format, OutputFormat::Json);
+            }
+            _ => panic!("Expected List command"),
+        }
+    }
+
+    #[test]
+    fn cli_parse_list_format_table() {
+        let cli = Cli::parse_from(&["taskforge", "list", "--format", "table"]);
+        match cli.command {
+            Commands::List { format, .. } => {
+                assert_eq!(format, OutputFormat::Table);
+            }
+            _ => panic!("Expected List command"),
         }
     }
 }
