@@ -176,6 +176,36 @@ pub fn get_or_create_tag<R: Repository>(repository: Arc<R>, name: String) -> Res
     }
 }
 
+/// Command handler for getting or creating a tag by name with a trait object.
+/// If the tag exists, returns the existing tag. If not, creates a new tag.
+pub fn get_or_create_tag_with_dyn(
+    repository: &dyn Repository,
+    name: String,
+) -> Result<Tag, AppError> {
+    // Try to get the tag by name first
+    match repository.get_tag_by_name(&name) {
+        Ok(tag) => Ok(tag),
+        Err(e) => match e {
+            RepositoryError::NotFound(_) => {
+                // Tag not found, create a new one
+                let tag = Tag::new(name);
+                repository.create_tag(&tag).map_err(|e| match e {
+                    RepositoryError::Database(msg) => {
+                        AppError::System(crate::error::SystemError::Database(msg))
+                    }
+                    RepositoryError::Constraint(msg) => AppError::UserError(msg),
+                    _ => AppError::UserError(e.to_string()),
+                })?;
+                Ok(tag)
+            }
+            RepositoryError::Database(msg) => {
+                Err(AppError::System(crate::error::SystemError::Database(msg)))
+            }
+            RepositoryError::Constraint(msg) => Err(AppError::UserError(msg)),
+        },
+    }
+}
+
 /// Command handler for listing tags.
 pub fn list_tags<R: Repository>(
     _repository: Arc<R>,
@@ -195,13 +225,30 @@ pub fn delete_tag<R: Repository>(_repository: Arc<R>, id: String) -> Result<(), 
 
 /// Command handler for adding a tag to a task.
 pub fn add_tag_to_task<R: Repository>(
-    _repository: Arc<R>,
+    repository: Arc<R>,
     task_id: String,
     tag_id: String,
 ) -> Result<(), AppError> {
-    let _ = (task_id, tag_id);
-    // Repository operations will be implemented in later stories
-    Ok(())
+    repository.add_tag_to_task(&task_id, &tag_id).map_err(|e| match e {
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        _ => AppError::UserError(e.to_string()),
+    })
+}
+
+/// Command handler for adding a tag to a task with a trait object.
+pub fn add_tag_to_task_with_dyn(
+    repository: &dyn Repository,
+    task_id: String,
+    tag_id: String,
+) -> Result<(), AppError> {
+    repository.add_tag_to_task(&task_id, &tag_id).map_err(|e| match e {
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        _ => AppError::UserError(e.to_string()),
+    })
 }
 
 /// Command handler for removing a tag from a task.

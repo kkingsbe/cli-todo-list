@@ -21,7 +21,9 @@ mod tag;
 mod task;
 
 use crate::cli::{Cli, Commands};
-use crate::commands::create_task_with_dyn;
+use crate::commands::{
+    add_tag_to_task_with_dyn, create_task_with_dyn, get_or_create_tag_with_dyn,
+};
 use crate::config::load_config;
 use crate::error::AppError;
 use crate::filter::{SortOrder, TaskFilter, TaskSort, TaskSortField};
@@ -82,7 +84,7 @@ fn main() -> Result<()> {
             title,
             description,
             priority,
-            ..
+            tag,
         } => {
             let priority = match priority {
                 1 => Priority::P1,
@@ -94,6 +96,23 @@ fn main() -> Result<()> {
 
             match create_task_with_dyn(repository.as_ref(), title, description, priority) {
                 Ok(task) => {
+                    // Process tags if any were provided
+                    for tag_name in tag {
+                        match get_or_create_tag_with_dyn(repository.as_ref(), tag_name) {
+                            Ok(tag) => {
+                                if let Err(e) = add_tag_to_task_with_dyn(
+                                    repository.as_ref(),
+                                    task.id.clone(),
+                                    tag.id,
+                                ) {
+                                    eprintln!("Warning: Failed to add tag to task: {}", e);
+                                }
+                            }
+                            Err(e) => {
+                                eprintln!("Warning: Failed to create/get tag: {}", e);
+                            }
+                        }
+                    }
                     println!("Created task: {}", task.id);
                 }
                 Err(e) => {
