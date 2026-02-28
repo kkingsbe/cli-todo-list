@@ -178,3 +178,23 @@
   1. Consider adding more edge case tests for filter combinations
 - **Requeue Instructions:** Fix SortOrder default to Descending, update test, ensure build/test/clippy pass, then requeue to dev-1
 
+---
+
+## Sprint 3
+
+---
+
+### story-03-1: Database Repository Setup
+
+- **Implemented by:** dev-1
+- **Sprint:** 3
+- **Commits:** 3d31356
+- **Story file:** `.switchboard/state/stories/story-03-1-database-repository.md`
+- **Files changed:** src/repository.rs, src/config.rs
+- **Status:** PENDING_REVIEW
+- **Acceptance Criteria:**
+  - [x] SqliteRepository implements Repository trait — verified by: cargo test repository (9 tests pass)
+  - [x] Database schema matches architecture.md (tasks, tags, task_tags tables) — verified by: schema initialization code review
+  - [x] Database stored at ~/.taskforge/tasks.db — verified by: default_database_path() function uses home_dir
+- **Notes:** Implementation includes SqliteRepository with full CRUD for tasks and tags, uses integer timestamps for dates (vs ISO 8601 in architecture - practical decision), includes tag color field (extra), missing indexes defined in architecture (performance consideration). Tests pass (109 total).
+

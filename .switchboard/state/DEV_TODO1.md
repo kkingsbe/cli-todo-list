@@ -33,7 +33,7 @@ Before starting any stories, read these files:
   - 🔒 Risk: Low
   - 📝 Commit: `feat(dev1): [02.3] define filter and sort structures`
 
-- [ ] **03.1**: Database Repository Setup (3 pts) — ⚠️ REBALANCED from Dev-2
+- [x] **03.1**: Database Repository Setup (3 pts) — ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/story-03-1-database-repository.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
   - ⚡ Pre-check: Build + tests pass (`cargo build && cargo test`)
