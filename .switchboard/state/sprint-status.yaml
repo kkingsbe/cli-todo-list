@@ -4,7 +4,7 @@
 project: "TaskForge - Rust CLI Task Manager"
 current_sprint: 1
 created: "2026-02-28T16:15:00Z"
-last_updated: "2026-02-28T16:19:00Z"
+last_updated: "2026-02-28T17:00:04Z"
 solutioning_complete: true
 
 epics:
@@ -38,7 +38,7 @@ epics:
         type: "infrastructure"
         risk: "low"
         depends_on: ["01.2"]
-        status: "in-progress"
+        status: "blocked"
         assigned_to: "dev-2"
         sprint: 1
       - id: "01.4"
@@ -47,7 +47,7 @@ epics:
         type: "infrastructure"
         risk: "low"
         depends_on: ["01.3"]
-        status: "in-progress"
+        status: "blocked"
         assigned_to: "dev-2"
         sprint: 1
 

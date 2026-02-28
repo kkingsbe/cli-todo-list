@@ -119,3 +119,12 @@ Possible causes:
 - Invalid container name format
 - Volume mount path does not exist
 - Insufficient Docker resources
+[2m2026-02-28T17:05:00.324511Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Agent 'cli-sprint-planner' triggered by cron schedule
+[2m2026-02-28T17:05:00.324888Z[0m [33m WARN[0m [2mswitchboard::scheduler[0m[2m:[0m Metrics file not found (first run or missing file): Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-02-28T17:05:00.324897Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Starting agent: cli-sprint-planner
+[2m2026-02-28T17:07:03.235486Z[0m [31mERROR[0m [2mswitchboard::docker::run::run[0m[2m:[0m Failed to load metrics: FileNotFound(".switchboard/logs\\metrics.json")
+[2m2026-02-28T17:07:03.235509Z[0m [31mERROR[0m [2mswitchboard::scheduler[0m[2m:[0m Failed to run agent: Metrics storage error: Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-02-28T17:07:03.235525Z[0m [31mERROR[0m [2mswitchboard::scheduler[0m[2m:[0m Error executing agent 'cli-scrum-master': Container execution failed for agent cli-scrum-master: Metrics storage error: Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-02-28T17:09:27.867115Z[0m [31mERROR[0m [2mswitchboard::docker::run::run[0m[2m:[0m Failed to load metrics: FileNotFound(".switchboard/logs\\metrics.json")
+[2m2026-02-28T17:09:27.867806Z[0m [31mERROR[0m [2mswitchboard::scheduler[0m[2m:[0m Failed to run agent: Metrics storage error: Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-02-28T17:09:27.867869Z[0m [31mERROR[0m [2mswitchboard::scheduler[0m[2m:[0m Error executing agent 'cli-sprint-planner': Container execution failed for agent cli-sprint-planner: Metrics storage error: Metrics file not found: .switchboard/logs\metrics.json
