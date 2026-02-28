@@ -90,33 +90,51 @@
 
 ---
 
-### 01.3: Setup Logging and Error Handling
+### story-01-3: Setup Logging and Error Handling
 
-- **Implemented by:** dev-1
-- **Sprint:** 2
-- **Commits:** e124446..bd124c6
-- **Story file:** `.switchboard/state/stories/story-01-3-setup-logging-error-handling.md`
-- **Files changed:** src/main.rs
-- **Status:** PENDING_REVIEW
+- **Status:** ❌ CHANGES_REQUESTED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-02-28T19:24:00Z
 - **Acceptance Criteria:**
-  - [x] Criterion 1 — verified by: cargo check succeeds, error types are public
-  - [x] Criterion 2 — verified by: Application runs without panic on startup, shows logging output
-  - [x] Criterion 3 — verified by: Run with invalid args shows user-friendly error (clap provides this)
-- **Notes:** Infrastructure story. Added tracing initialization to main.rs. AppError types already existed in error.rs (with ValidationError instead of UserError - equivalent). Error handling infrastructure in place.
+  - [ ] Criterion 1: error.rs defines AppError using thiserror with UserError, ValidationError, SystemError variants — **NOT MET**: Missing UserError variant; has Validation, System, NotFound instead
+  - [x] Criterion 2: Logging initialized in main.rs using tracing — **MET**: tracing_subscriber initialized (src/main.rs lines 22-27)
+  - [x] Criterion 3: Error handling in main.rs propagates errors properly — **MET**: Uses anyhow::Result (allowed per project-context.md line 27)
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (93 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+- **Must Fix:**
+  1. **Missing UserError variant** - src/error.rs lines 9-21
+     - Current: AppError has Validation, System, NotFound variants
+     - Expected: Should have UserError, ValidationError, SystemError per acceptance criteria
+     - Why: Story acceptance criteria explicitly requires UserError; architecture.md section 7 specifies UserError
+  2. **println! statements violate convention** - src/main.rs lines 53, 57, 61, 65, 69, 73, 77, 81
+     - Current: Uses println!("...not yet implemented")
+     - Expected: Use tracing::info! or tracing::debug!
+     - Why: project-context.md line 60 forbids println!; use tracing instead
+- **Should Fix:**
+  1. Consider adding test for tracing initialization
+- **Requeue Instructions:** Address ALL Must Fix items, ensure build/test/clippy pass, then requeue to dev-1
 
 ---
 
-### 02.1: Define Task Entity
+### story-02-1: Define Task Entity
 
-- **Implemented by:** dev-1
-- **Sprint:** 2
-- **Commits:** 1f48f4f..099f9bb
-- **Story file:** `.switchboard/state/stories/story-02-1-define-task-entity.md`
-- **Files changed:** src/task.rs
-- **Status:** PENDING_REVIEW
+- **Status:** ✅ APPROVED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-02-28T19:26:00Z
 - **Acceptance Criteria:**
-  - [x] Criterion 1 — verified by: cargo check succeeds, Task struct has all fields
-  - [x] Criterion 2 — verified by: Priority::from_str("P1") returns Ok(Priority::P1)
-  - [x] Criterion 3 — verified by: Status serializes to "incomplete"/"completed"
-- **Notes:** Added FromStr implementation for Priority enum. All 93 tests pass.
+  - [x] Criterion 1: Task struct has all fields (id, title, description, priority, status, created_at, updated_at, due_date) — **MET**: src/task.rs lines 64-81
+  - [x] Criterion 2: Priority enum with FromStr — **MET**: FromStr implementation added, Priority::from_str("P1") returns Ok(Priority::P1)
+  - [x] Criterion 3: Status enum with Serialize/Deserialize — **MET**: Status serializes to "incomplete"/"completed"
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (93 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+- **Diff Analysis:**
+  - Commit: 099f9bb - feat(dev1): [02.1] add FromStr for Priority, verify Task struct
+  - Files changed: src/task.rs only (within scope)
+- **Findings:**
+  - NICE TO HAVE: Consider adding test for deserializing Status from JSON
+- **Summary:** Task entity properly defined with all required fields. Priority enum has FromStr implementation. Status enum serializes correctly. All tests pass. Clean implementation.
 

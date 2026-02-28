@@ -38,10 +38,10 @@ epics:
         type: "infrastructure"
         risk: "low"
         depends_on: ["01.2"]
-        status: "blocked"
+        status: "in-progress"
         assigned_to: "dev-1"
         sprint: 2
-        blocker_reason: "dependency-missing (waiting on dev-1 for story-01-2)"
+        blocker_reason: null
       - id: "01.4"
         title: "Basic CLI Entry Point"
         points: 2
@@ -65,7 +65,7 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["01.2"]
-        status: "in-progress"
+        status: "complete"
         assigned_to: "dev-1"
         sprint: 2
       - id: "02.2"
