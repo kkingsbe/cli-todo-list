@@ -138,3 +138,35 @@
   - NICE TO HAVE: Consider adding test for deserializing Status from JSON
 - **Summary:** Task entity properly defined with all required fields. Priority enum has FromStr implementation. Status enum serializes correctly. All tests pass. Clean implementation.
 
+---
+
+### story-02-2: Define Tag Entity
+
+- **Implemented by:** dev-2
+- **Sprint:** 2
+- **Commits:** 29837d6435c2661e29dfd248693f877e69ec31ff
+- **Story file:** `.switchboard/state/stories/archive/sprint-2/story-02-2-define-tag-entity.md`
+- **Files changed:** src/tag.rs
+- **Status:** PENDING_REVIEW
+- **Acceptance Criteria:**
+  - [x] Tag names normalized to lowercase — verified by: test `tag_name_is_normalized_to_lowercase`
+  - [x] Tag::new("Work").name == "work" — verified by: test
+  - [x] Tag::new("WORK").name == "work" — verified by: test
+- **Notes:** Implemented case-insensitive tag names by normalizing to lowercase in constructors. Updated Tag::new(), Tag::with_color(), and Tag::rename() methods.
+
+---
+
+### story-02-4: Implement Configuration Management
+
+- **Implemented by:** dev-2
+- **Sprint:** 2
+- **Commits:** 66f91cc18a5379b2fde34106e9508035254a7c33
+- **Story file:** `.switchboard/state/stories/archive/sprint-2/story-02-4-implement-configuration-management.md`
+- **Files changed:** src/config.rs, Cargo.toml (added toml dependency)
+- **Status:** PENDING_REVIEW
+- **Acceptance Criteria:**
+  - [x] Config struct has all required fields — verified by: code review
+  - [x] Config has default_priority, date_format, output_format, editor fields — verified by: test `config_default_has_default_values`
+  - [x] Config file at ~/.taskforge/config.toml auto-created with defaults — verified by: code review of load_config()
+- **Notes:** Extended Config struct with new fields. Added TOML serialization support. Implemented file-based config loading with auto-creation of default config file.
+

@@ -50,35 +50,35 @@ fn main() -> Result<()> {
     match cli.command {
         Commands::Add { .. } => {
             // TODO: Implement add command
-            println!("Add command not yet implemented");
+            tracing::info!("Add command not yet implemented");
         }
         Commands::List { .. } => {
             // TODO: Implement list command
-            println!("List command not yet implemented");
+            tracing::info!("List command not yet implemented");
         }
         Commands::Show { .. } => {
             // TODO: Implement show command
-            println!("Show command not yet implemented");
+            tracing::info!("Show command not yet implemented");
         }
         Commands::Edit { .. } => {
             // TODO: Implement edit command
-            println!("Edit command not yet implemented");
+            tracing::info!("Edit command not yet implemented");
         }
         Commands::Delete { .. } => {
             // TODO: Implement delete command
-            println!("Delete command not yet implemented");
+            tracing::info!("Delete command not yet implemented");
         }
         Commands::Complete { .. } => {
             // TODO: Implement complete command
-            println!("Complete command not yet implemented");
+            tracing::info!("Complete command not yet implemented");
         }
         Commands::Reopen { .. } => {
             // TODO: Implement reopen command
-            println!("Reopen command not yet implemented");
+            tracing::info!("Reopen command not yet implemented");
         }
         Commands::Tag { .. } => {
             // TODO: Implement tag command
-            println!("Tag command not yet implemented");
+            tracing::info!("Tag command not yet implemented");
         }
     }
 

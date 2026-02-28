@@ -18,6 +18,10 @@ pub enum AppError {
     /// Entity not found error.
     #[error("Entity not found: {0}")]
     NotFound(String),
+
+    /// User-facing error with a message.
+    #[error("User error: {0}")]
+    UserError(String),
 }
 
 /// Validation errors for user input.

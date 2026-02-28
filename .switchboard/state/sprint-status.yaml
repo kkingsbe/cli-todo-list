@@ -2,9 +2,9 @@
 # Source: .switchboard/input/PRD.md → .switchboard/planning/epics/
 
 project: "TaskForge - Rust CLI Task Manager"
-current_sprint: 2
+current_sprint: 3
 created: "2026-02-28T16:15:00Z"
-last_updated: "2026-02-28T19:06:00Z"
+last_updated: "2026-02-28T19:35:00Z"
 solutioning_complete: true
 
 epics:
@@ -38,7 +38,7 @@ epics:
         type: "infrastructure"
         risk: "low"
         depends_on: ["01.2"]
-        status: "in-progress"
+        status: "complete"
         assigned_to: "dev-1"
         sprint: 2
         blocker_reason: null
@@ -48,10 +48,10 @@ epics:
         type: "infrastructure"
         risk: "low"
         depends_on: ["01.3"]
-        status: "blocked"
+        status: "complete"
         assigned_to: "dev-2"
         sprint: 2
-        blocker_reason: "dependency-missing (waiting on story-01-3)"
+        blocker_reason: null
 
   - id: "epic-02"
     title: "Core Data Models"
@@ -74,7 +74,7 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["01.2"]
-        status: "in-progress"
+        status: "complete"
         assigned_to: "dev-2"
         sprint: 2
       - id: "02.3"
@@ -92,7 +92,7 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["01.3"]
-        status: "in-progress"
+        status: "complete"
         assigned_to: "dev-2"
         sprint: 2
 
