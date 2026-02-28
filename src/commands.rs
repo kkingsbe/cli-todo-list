@@ -74,6 +74,21 @@ pub fn get_task<R: Repository>(repository: Arc<R>, id: String) -> Result<Task, A
     })
 }
 
+/// Command handler for getting a task by ID with a trait object.
+/// This version accepts Arc<dyn Repository> for dynamic dispatch.
+pub fn get_task_with_dyn(
+    repository: &dyn Repository,
+    id: String,
+) -> Result<Task, AppError> {
+    repository.get_task(&id).map_err(|e| match e {
+        RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+    })
+}
+
 /// Command handler for updating a task.
 pub fn update_task<R: Repository>(
     _repository: Arc<R>,
@@ -161,6 +176,7 @@ pub fn remove_tag_from_task<R: Repository>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::repository::SqliteRepository;
 
     #[test]
     fn create_task_creates_task_with_given_details() {
@@ -199,5 +215,56 @@ mod tests {
         let mut task = Task::new("Test".to_string());
         task.priority = Priority::P1;
         assert_eq!(task.priority, Priority::P1);
+    }
+
+    use tempfile::TempDir;
+
+    #[test]
+    fn test_get_task_returns_task_when_exists() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = Arc::new(SqliteRepository::new(&db_path).unwrap());
+        repo.initialize().unwrap();
+
+        // Create a task first
+        let task = Task::with_details(
+            "Test task".to_string(),
+            Some("Test description".to_string()),
+            Priority::P1,
+        );
+        repo.create_task(&task).unwrap();
+
+        // Get the task using the command
+        let result = get_task(repo, task.id.clone());
+
+        assert!(result.is_ok());
+        let retrieved = result.unwrap();
+        assert_eq!(retrieved.id, task.id);
+        assert_eq!(retrieved.title, "Test task");
+        assert_eq!(retrieved.description, Some("Test description".to_string()));
+        assert_eq!(retrieved.priority, Priority::P1);
+    }
+
+    #[test]
+    fn test_get_task_returns_error_when_not_exists() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = Arc::new(SqliteRepository::new(&db_path).unwrap());
+        repo.initialize().unwrap();
+
+        // Try to get a task that doesn't exist
+        let non_existent_id = "non-existent-task-id".to_string();
+        let result = get_task(repo, non_existent_id.clone());
+
+        assert!(result.is_err());
+        let error = result.unwrap_err();
+        match error {
+            AppError::NotFound(msg) => {
+                assert!(msg.contains(&non_existent_id));
+            }
+            _ => panic!("Expected AppError::NotFound, got {:?}", error),
+        }
     }
 }

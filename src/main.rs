@@ -105,7 +105,7 @@ fn main() -> Result<()> {
             tracing::info!("List command not yet implemented");
         }
         Commands::Show { id } => {
-            match commands::get_task(Arc::clone(&repository), id.clone()) {
+            match commands::get_task_with_dyn(repository.as_ref(), id.clone()) {
                 Ok(task) => {
                     println!("Task Details:");
                     println!("  ID:          {}", task.id);

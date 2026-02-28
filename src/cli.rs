@@ -51,8 +51,12 @@ pub enum Commands {
         sort_by: String,
 
         /// Sort order (asc/desc).
-        #[arg(short, long, default_value = "asc")]
+        #[arg(short, long, default_value = "desc")]
         order: String,
+
+        /// Maximum number of tasks to return.
+        #[arg(short, long, default_value = "50")]
+        limit: u32,
     },
 
     /// Show a task.
