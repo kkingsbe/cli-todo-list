@@ -16,7 +16,7 @@ Before starting any stories, read these files:
 
 ## Stories
 
-- [ ] **{story-03.2}**: Create Task Command (3 pts)
+- [x] **{story-03.2}**: Create Task Command (3 pts) ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/story-03-2-create-task-command.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
   - ⚡ Pre-check: Build + tests pass (`cargo build --release && cargo test`)
@@ -25,7 +25,7 @@ Before starting any stories, read these files:
   - 📝 Commit: `feat(dev1): [03.2] implement create task command`
   - **Pre-requisite:** 03.1 Database Repository Setup (complete)
 
-- [ ] **{story-03.3}**: List Tasks Command (3 pts)
+- [x] **{story-03.3}**: List Tasks Command (3 pts) ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/story-03-3-list-tasks-command.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`
   - ⚡ Pre-check: Build + tests pass

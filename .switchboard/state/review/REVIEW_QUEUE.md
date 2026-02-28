@@ -228,6 +228,39 @@
 
 ---
 
+### story-03.2: Create Task Command
+
+- **Implemented by:** dev-1
+- **Sprint:** 4
+- **Commits:** b4e7b1d
+- **Story file:** `.switchboard/state/stories/story-03-2-create-task-command.md`
+- **Files changed:** src/commands.rs, src/config.rs, src/main.rs, src/repository.rs, src/tag.rs, src/task.rs
+- **Status:** PENDING_REVIEW
+- **Acceptance Criteria:**
+  - [x] `task add "Buy groceries"` creates a task with the given title — verified by: cargo run -- add "Buy groceries"
+  - [x] Task has auto-generated UUID and timestamps — verified by: verify UUID format (8-4-4-4-12 hex) and timestamps
+  - [x] Default status is "incomplete", default priority is from config (or 3) — verified by: cargo test
+  - [x] Output shows task ID after creation — verified by: command output includes "Created task: {id}"
+- **Notes:** Implemented create task command with repository persistence. Task ID shown in output after creation.
+
+---
+
+### story-03.3: List Tasks Command
+
+- **Implemented by:** dev-1
+- **Sprint:** 4
+- **Commits:** 7ba06da
+- **Story file:** `.switchboard/state/stories/story-03-3-list-tasks-command.md`
+- **Files changed:** src/commands.rs, src/main.rs, src/repository.rs
+- **Status:** PENDING_REVIEW
+- **Acceptance Criteria:**
+  - [x] `task list` shows all tasks in table format — verified by: cargo run -- list
+  - [x] Tasks sorted by created_at descending by default — verified by: cargo test
+  - [x] Pagination with --limit flag (default 50) — verified by: cargo run -- list --limit 10
+- **Notes:** Implemented list tasks command with filtering, sorting, and pagination support.
+
+---
+
 ### story-03.4: Get Task Details Command
 
 - **Implemented by:** dev-2
