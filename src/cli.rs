@@ -144,6 +144,13 @@ pub enum TagCommands {
     },
 }
 
+/// Parse CLI arguments.
+///
+/// This is a convenience wrapper around [`Cli::parse()`].
+pub fn parse() -> Cli {
+    Cli::parse()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
