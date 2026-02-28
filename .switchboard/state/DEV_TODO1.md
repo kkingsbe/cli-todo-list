@@ -8,6 +8,12 @@
 ## Rework Queue
 
 - **01.3 (REWORK)**: Setup Logging and Error Handling — ✅ queued for review
+- **02.3 (REWORK)**: Define Filter and Sort Structures
+  - 📄 Story: `.switchboard/state/stories/story-02-3-define-filter-sort.md`
+  - 🔍 Review: See REVIEW_QUEUE.md — CHANGES_REQUESTED
+  - ⚡ Pre-check: Build + tests pass
+  - ✅ Post-check: Fix SortOrder default to Descending, update test, ensure build/test/clippy pass
+  - 📝 Commit: `fix(dev1): [02.3] address review feedback - sort default`
 
 ## Orientation
 
