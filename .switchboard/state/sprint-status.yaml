@@ -2,9 +2,9 @@
 # Source: .switchboard/input/PRD.md → .switchboard/planning/epics/
 
 project: "TaskForge - Rust CLI Task Manager"
-current_sprint: 1
+current_sprint: 2
 created: "2026-02-28T16:15:00Z"
-last_updated: "2026-02-28T17:00:04Z"
+last_updated: "2026-02-28T19:06:00Z"
 solutioning_complete: true
 
 epics:
@@ -38,18 +38,20 @@ epics:
         type: "infrastructure"
         risk: "low"
         depends_on: ["01.2"]
-        status: "not-started"
-        assigned_to: "dev-2"
-        sprint: 1
+        status: "blocked"
+        assigned_to: "dev-1"
+        sprint: 2
+        blocker_reason: "dependency-missing (waiting on dev-1 for story-01-2)"
       - id: "01.4"
         title: "Basic CLI Entry Point"
         points: 2
         type: "infrastructure"
         risk: "low"
         depends_on: ["01.3"]
-        status: "not-started"
+        status: "blocked"
         assigned_to: "dev-2"
-        sprint: 1
+        sprint: 2
+        blocker_reason: "dependency-missing (waiting on story-01-3)"
 
   - id: "epic-02"
     title: "Core Data Models"
@@ -63,18 +65,18 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["01.2"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-1"
+        sprint: 2
       - id: "02.2"
         title: "Define Tag Entity"
         points: 2
         type: "feature"
         risk: "low"
         depends_on: ["01.2"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-2"
+        sprint: 2
       - id: "02.3"
         title: "Define Filter and Sort Structures"
         points: 3
@@ -90,9 +92,9 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["01.3"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-2"
+        sprint: 2
 
   - id: "epic-03"
     title: "Task CRUD Operations"

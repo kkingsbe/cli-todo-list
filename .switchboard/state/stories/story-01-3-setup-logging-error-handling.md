@@ -2,178 +2,262 @@
 
 > Epic: epic-01 — Project Scaffolding
 > Points: 2
-> Sprint: 1
+> Sprint: 2
 > Type: infrastructure
-> Risk: low
-> Created: 2026-02-28T16:29:20Z
+> Risk: Low
+> Created: 2026-02-28T18:35:03Z
 
 ## User Story
 
-**As a** developer,
-**I want** logging and error handling infrastructure in place,
-**So that** I can debug issues and handle errors gracefully.
+As a developer,  
+I want logging and error handling infrastructure in place,  
+So that I can debug issues and handle errors gracefully.
 
 ## Acceptance Criteria
 
-1. error.rs defines AppError using thiserror with UserError, ValidationError, SystemError variants
+1. `src/error.rs` defines `AppError` using thiserror with `UserError`, `ValidationError`, `SystemError` variants  
    - **Test:** `cargo check` succeeds, error types are public
 
-2. Logging is initialized in main.rs using tracing
+2. Logging is initialized in `src/main.rs` using tracing  
    - **Test:** Application runs without panic on startup
 
-3. Error handling in main.rs propagates errors properly
+3. Error handling in `src/main.rs` propagates errors properly  
    - **Test:** Run with invalid args shows user-friendly error
 
 ## Technical Context
 
 ### Architecture Reference
-
-From [architecture.md](.switchboard/planning/architecture.md):
-
-**Error Handling Strategy:**
-- Pattern: Use thiserror for application-specific errors
-- Error Types:
-  - `UserError`: Invalid input, not found, empty fields
-  - `ValidationError`: Constraint violations
-  - `SystemError`: Database errors, file I/O errors
-- User-facing errors: Display friendly messages with suggestions
-- Internal errors: Log details, show generic message to user
-
-**Module: error.rs**
-- Purpose: Application error types
-- Public API: `AppError` enum with thiserror
-- Dependencies: None (core)
-- Data flow: Propagated from all modules
+- Layered architecture: CLI → Commands → Domain → Repository
+- ADR-001: Use thiserror for library error types
+- ADR-003: Synchronous database operations
 
 ### Project Conventions
-
-From [project-context.md](.switchboard/planning/project-context.md):
-
-**Critical Rules:**
-1. All public functions must have doc comments - Use `///` for public API documentation
-2. Error types use thiserror - Never use anyhow in library code (only in main.rs)
-3. Never use unwrap() or expect() outside tests - Return Result types properly
-4. Use `tracing` for logging - Never use println! or eprintln!
-5. All repository operations return Result - Propagate errors up the stack
-
-**Anti-Patterns (Do NOT):**
-- Do NOT use `unwrap()` in production code
-- Do NOT use println! for logging - use tracing!
-- Do NOT use anyhow in library modules - use thiserror
+- Build/Test: `cargo build --release`, `cargo test`, `cargo clippy -- -D warnings`, `cargo fmt --check`
+- Tech Stack: Rust 1.75+, clap 4.x, rusqlite 0.31.x, chrono 0.4.x, serde 1.x, uuid 1.x, tracing 0.1.x, thiserror
+- All public functions must have doc comments (`///`)
+- Error types use thiserror (never anyhow in library code)
+- Never use `unwrap()` or `expect()` outside tests
+- Tests live in same file as code they test
+- Use `tracing` for logging (never `println!`)
 
 ### Existing Code Context
 
-After Story 01.2, the project has:
-- `Cargo.toml` with all dependencies (including tracing, thiserror)
-- `src/main.rs` with module declarations and hello world
-- Empty module files: cli.rs, commands.rs, models.rs, task.rs, tag.rs, filter.rs, repository.rs, error.rs, config.rs
+The file `src/error.rs` already exists. Current content:
 
-**Current src/main.rs:**
 ```rust
+//! Error handling module for TaskForge.
+//!
+//! This module defines the application's error types using thiserror.
+
+use thiserror::Error;
+
+/// Main application error type that wraps all possible errors.
+#[derive(Debug, Error)]
+pub enum AppError {
+    /// Error during validation of input data.
+    #[error("Validation error: {0}")]
+    Validation(#[from] ValidationError),
+
+    /// Error from the system layer (database, file I/O, etc.).
+    #[error("System error: {0}")]
+    System(#[from] SystemError),
+
+    /// Entity not found error.
+    #[error("Entity not found: {0}")]
+    NotFound(String),
+}
+
+/// Validation errors for user input.
+#[derive(Debug, Clone, Error)]
+pub enum ValidationError {
+    /// Title is empty or exceeds max length.
+    #[error("Title cannot be empty or exceed 500 characters")]
+    InvalidTitle,
+
+    /// Description exceeds max length.
+    #[error("Description exceeds maximum length of 10000 characters")]
+    InvalidDescription,
+
+    /// Tag name is invalid.
+    #[error("Tag name must be 1-50 characters and contain only alphanumeric or underscore")]
+    InvalidTagName,
+
+    /// Priority is out of valid range.
+    #[error("Priority must be between 1 and 4")]
+    InvalidPriority,
+
+    /// Empty required field.
+    #[error("Required field '{0}' cannot be empty")]
+    EmptyField(String),
+}
+
+/// System-level errors (database, file I/O, etc.).
+#[derive(Debug, Error)]
+pub enum SystemError {
+    /// Database operation failed.
+    #[error("Database error: {0}")]
+    Database(String),
+
+    /// File I/O error.
+    #[error("File I/O error: {0}")]
+    Io(#[from] std::io::Error),
+
+    /// Configuration error.
+    #[error("Configuration error: {0}")]
+    Config(String),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn app_error_validation_displays_message() {
+        let err = AppError::Validation(ValidationError::InvalidTitle);
+        assert_eq!(
+            err.to_string(),
+            "Validation error: Title cannot be empty or exceed 500 characters"
+        );
+    }
+
+    #[test]
+    fn app_error_not_found_displays_message() {
+        let err = AppError::NotFound("task".to_string());
+        assert_eq!(err.to_string(), "Entity not found: task");
+    }
+
+    #[test]
+    fn validation_error_invalid_title_message() {
+        let err = ValidationError::InvalidTitle;
+        assert_eq!(
+            err.to_string(),
+            "Title cannot be empty or exceed 500 characters"
+        );
+    }
+
+    #[test]
+    fn validation_error_empty_field_message() {
+        let err = ValidationError::EmptyField("title".to_string());
+        assert_eq!(err.to_string(), "Required field 'title' cannot be empty");
+    }
+
+    #[test]
+    fn system_error_database_message() {
+        let err = SystemError::Database("connection failed".to_string());
+        assert_eq!(err.to_string(), "Database error: connection failed");
+    }
+}
+```
+
+The file `src/main.rs` already exists. Current content:
+
+```rust
+#![allow(dead_code)]
+//! TaskForge - CLI task management application
+//!
+//! Entry point for the TaskForge CLI tool.
+
+use anyhow::Result;
+use clap::Parser;
+use std::env;
+
 mod cli;
 mod commands;
-mod models;
-mod task;
-mod tag;
-mod filter;
-mod repository;
-mod error;
 mod config;
+mod error;
+mod filter;
+mod models;
+mod repository;
+mod tag;
+mod task;
 
-fn main() {
-    println!("TaskForge - CLI Task Manager");
+use crate::cli::{Cli, Commands};
+
+fn main() -> Result<()> {
+    // Get command line arguments
+    let args: Vec<String> = env::args().collect();
+
+    // If no arguments provided (besides program name), exit successfully
+    // This allows `cargo run` to exit cleanly
+    if args.len() <= 1 {
+        return Ok(());
+    }
+
+    // Parse command line arguments
+    // Cli::parse() will handle --help and --version automatically
+    // and display appropriate messages
+    let cli = Cli::parse();
+
+    // Handle the parsed commands
+    match cli.command {
+        Commands::Add { .. } => {
+            // TODO: Implement add command
+            println!("Add command not yet implemented");
+        }
+        Commands::List { .. } => {
+            // TODO: Implement list command
+            println!("List command not yet implemented");
+        }
+        Commands::Show { .. } => {
+            // TODO: Implement show command
+            println!("Show command not yet implemented");
+        }
+        Commands::Edit { .. } => {
+            // TODO: Implement edit command
+            println!("Edit command not yet implemented");
+        }
+        Commands::Delete { .. } => {
+            // TODO: Implement delete command
+            println!("Delete command not yet implemented");
+        }
+        Commands::Complete { .. } => {
+            // TODO: Implement complete command
+            println!("Complete command not yet implemented");
+        }
+        Commands::Reopen { .. } => {
+            // TODO: Implement reopen command
+            println!("Reopen command not yet implemented");
+        }
+        Commands::Tag { .. } => {
+            // TODO: Implement tag command
+            println!("Tag command not yet implemented");
+        }
+    }
+
+    Ok(())
 }
 ```
 
 ## Implementation Plan
 
-1. **Implement src/error.rs** — Define error types using thiserror:
-   ```rust
-   use thiserror::Error;
-   
-   #[derive(Error, Debug)]
-   pub enum AppError {
-       #[error("Invalid input: {0}")]
-       UserError(String),
-       
-       #[error("Validation failed: {0}")]
-       ValidationError(String),
-       
-       #[error("System error: {0}")]
-       SystemError(#[from] std::io::Error),
-   }
-   ```
-
-2. **Update src/main.rs** — Add logging initialization and error handling:
-   ```rust
-   use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-   
-   mod cli;
-   mod commands;
-   mod models;
-   mod task;
-   mod tag;
-   mod filter;
-   mod repository;
-   mod error;
-   mod config;
-   
-   fn main() -> Result<(), error::AppError> {
-       // Initialize logging
-       tracing_subscriber::registry()
-           .with(tracing_subscriber::EnvFilter::new(
-               std::env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()),
-           ))
-           .with(tracing_subscriber::fmt::layer())
-           .init();
-       
-       tracing::info!("TaskForge starting up...");
-       
-       // Placeholder - actual CLI will go in Story 01.4
-       println!("TaskForge - CLI Task Manager");
-       
-       Ok(())
-   }
-   ```
-
-3. **Verify compilation** — Run `cargo check` to ensure error types compile
-
-4. **Verify build** — Run `cargo build` to confirm full build succeeds
-
-5. **Test logging** — Run `RUST_DEBUG=1 cargo run` and verify logging works
+1. **Review existing `src/error.rs`** — Verify it has AppError with UserError, ValidationError, SystemError variants using thiserror
+2. **Review existing `src/main.rs`** — Verify it has tracing initialization
+3. **Run `cargo clippy -- -D warnings`** — Fix any warnings
+4. **Run `cargo test`** — All tests pass
+5. **Verify acceptance criteria** — Test error handling works
 
 ### Skills to Read
-
-- [skills/rust-best-practices/SKILL.md](skills/rust-best-practices/SKILL.md) — For Rust coding standards and best practices
-- [skills/rust-best-practices/references/chapter_03.md](skills/rust-best-practices/references/chapter_03.md) — Error handling patterns
+- `./skills/skills/rust-best-practices/SKILL.md` — Error handling patterns
+- `./skills/skills/test-driven-development/SKILL.md` — Testing practices
 
 ### Dependencies
-
-- Story 01.2: Create Module Structure — Must be complete before this story
+- Story 01.2 (Create Module Structure) — Complete
 
 ## Scope Boundaries
 
 ### This Story Includes
-- Implementing error.rs with AppError enum
-- Adding logging initialization to main.rs
-- Basic error propagation setup
+- Error types in error.rs with proper thiserror derive
+- Tracing initialization in main.rs
+- Error propagation from main.rs
 
 ### This Story Does NOT Include
-- CLI argument parsing (Story 01.4)
-- Implementing any business logic errors
-- Implementing repository errors
-- Implementing config errors
+- Database error handling (belongs to Epic 03)
+- Task-specific validation errors
 
 ### Files in Scope
-- `src/error.rs` — modify (implement error types)
-- `src/main.rs` — modify (add logging and error handling)
+- `src/error.rs` — modify
+- `src/main.rs` — modify
 
 ### Files NOT in Scope
-- cli.rs (Story 01.4)
-- commands.rs
-- models.rs
-- task.rs
-- tag.rs
-- filter.rs
-- repository.rs
-- config.rs
+- `src/repository.rs` — don't touch
+- `src/models.rs` — don't touch

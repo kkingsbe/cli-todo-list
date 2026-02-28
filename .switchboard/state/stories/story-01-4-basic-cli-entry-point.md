@@ -2,229 +2,348 @@
 
 > Epic: epic-01 — Project Scaffolding
 > Points: 2
-> Sprint: 1
+> Sprint: 2
 > Type: infrastructure
-> Risk: low
-> Created: 2026-02-28T16:29:20Z
+> Risk: Low
+> Created: 2026-02-28T18:35:03Z
 
 ## User Story
 
-**As a** user,
-**I want** to see a help message when running `task --help`,
-**So that** I know how to use the CLI.
+As a user,  
+I want to see a help message when running `task --help`,  
+So that I know how to use the CLI.
 
 ## Acceptance Criteria
 
-1. CLI module defines --help and --version flags
-   - **Test:** `task --help` shows help text
+1. CLI module defines --help and --version flags  
+   - **Test:** `cargo run -- --help` shows help text
 
-2. Basic clap derive setup in cli.rs
+2. Basic clap derive setup in `src/cli.rs`  
    - **Test:** Binary runs and responds to --help
 
-3. Empty main command that returns success
+3. Empty main command that returns success  
    - **Test:** `cargo run` exits with code 0
 
 ## Technical Context
 
 ### Architecture Reference
-
-From [architecture.md](.switchboard/planning/architecture.md):
-
-**Technology Stack:**
-- CLI: clap 4.x (derive macros)
-
-**Module: cli.rs**
-- Purpose: Define CLI commands and arguments using clap
-- Public API: Functions to build CLI parser, get matches
-- Dependencies: clap, serde (for derive)
-- Data flow: User input → clap → parsed arguments → commands.rs
-
-**ADR-005:** Command Pattern for CLI Operations
-- Decision: Use clap's derive macros to define commands. Each command is a function in commands.rs.
+- Layered architecture: CLI → Commands → Domain → Repository
+- ADR-005: Command pattern for CLI operations
 
 ### Project Conventions
-
-From [project-context.md](.switchboard/planning/project-context.md):
-
-**Critical Rules:**
-1. All public functions must have doc comments - Use `///` for public API documentation
-
-**Naming Conventions:**
-- Types: PascalCase (e.g., `Task`, `TaskFilter`, `AppError`)
-- Files: snake_case (e.g., `task.rs`, `error.rs`)
+- Build/Test: `cargo build --release`, `cargo test`, `cargo clippy -- -D warnings`, `cargo fmt --check`
+- Tech Stack: Rust 1.75+, clap 4.x
+- All public functions must have doc comments (`///`)
 
 ### Existing Code Context
 
-After Story 01.3, the project has:
-- `Cargo.toml` with all dependencies (including clap)
-- `src/main.rs` with logging initialization and error handling
-- `src/error.rs` with AppError enum
-- Empty module files
+The file `src/cli.rs` already exists. Current content:
 
-**Current src/main.rs:**
 ```rust
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+//! CLI module for TaskForge.
+//!
+//! This module defines the CLI argument structure using clap.
 
-mod cli;
-mod commands;
-mod models;
-mod task;
-mod tag;
-mod filter;
-mod repository;
-mod error;
-mod config;
+use clap::{Parser, Subcommand};
 
-fn main() -> Result<(), error::AppError> {
-    // Initialize logging
-    tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()),
-        ))
-        .with(tracing_subscriber::fmt::layer())
-        .init();
-    
-    tracing::info!("TaskForge starting up...");
-    
-    // Placeholder - CLI parsing will be added here
-    println!("TaskForge - CLI Task Manager");
-    
-    Ok(())
+/// Command-line interface for TaskForge.
+#[derive(Debug, Parser)]
+#[command(name = "taskforge")]
+#[command(version = env!("CARGO_PKG_VERSION"))]
+#[command(about = "A CLI task management application", long_about = None)]
+pub struct Cli {
+    /// Subcommand to execute.
+    #[command(subcommand)]
+    pub command: Commands,
+}
+
+/// Available CLI subcommands.
+#[derive(Debug, Subcommand)]
+pub enum Commands {
+    /// Create a new task.
+    Add {
+        /// Task title.
+        title: String,
+
+        /// Task description.
+        #[arg(short, long)]
+        description: Option<String>,
+
+        /// Task priority (1-4, where 1 is highest).
+        #[arg(short, long, default_value = "3")]
+        priority: u8,
+    },
+
+    /// List tasks.
+    List {
+        /// Filter by status (complete/incomplete).
+        #[arg(long)]
+        status: Option<String>,
+
+        /// Filter by priority.
+        #[arg(short, long)]
+        priority: Option<u8>,
+
+        /// Search term.
+        #[arg(long)]
+        search: Option<String>,
+
+        /// Sort field (created, priority, due, title).
+        #[arg(short, long, default_value = "created")]
+        sort_by: String,
+
+        /// Sort order (asc/desc).
+        #[arg(short, long, default_value = "asc")]
+        order: String,
+    },
+
+    /// Show a task.
+    Show {
+        /// Task ID.
+        id: String,
+    },
+
+    /// Update a task.
+    Edit {
+        /// Task ID.
+        id: String,
+
+        /// New title.
+        #[arg(short, long)]
+        title: Option<String>,
+
+        /// New description.
+        #[arg(short, long)]
+        description: Option<String>,
+
+        /// New priority (1-4).
+        #[arg(short, long)]
+        priority: Option<u8>,
+    },
+
+    /// Delete a task.
+    Delete {
+        /// Task ID.
+        id: String,
+    },
+
+    /// Complete a task.
+    Complete {
+        /// Task ID.
+        id: String,
+    },
+
+    /// Reopen a completed task.
+    Reopen {
+        /// Task ID.
+        id: String,
+    },
+
+    /// Tag management.
+    Tag {
+        #[command(subcommand)]
+        command: TagCommands,
+    },
+}
+
+/// Tag-related subcommands.
+#[derive(Debug, Subcommand)]
+pub enum TagCommands {
+    /// Create a new tag.
+    Create {
+        /// Tag name.
+        name: String,
+
+        /// Tag color (hex code).
+        #[arg(short, long)]
+        color: Option<String>,
+    },
+
+    /// List all tags.
+    List,
+
+    /// Delete a tag.
+    Delete {
+        /// Tag ID or name.
+        identifier: String,
+    },
+
+    /// Add a tag to a task.
+    Add {
+        /// Task ID.
+        task_id: String,
+
+        /// Tag ID or name.
+        tag_identifier: String,
+    },
+
+    /// Remove a tag from a task.
+    Remove {
+        /// Task ID.
+        task_id: String,
+
+        /// Tag ID or name.
+        tag_identifier: String,
+    },
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cli_parse_add_command() {
+        let cli = Cli::parse_from(&["taskforge", "add", "My task", "--priority", "1"]);
+        match cli.command {
+            Commands::Add {
+                title, priority, ..
+            } => {
+                assert_eq!(title, "My task");
+                assert_eq!(priority, 1);
+            }
+            _ => panic!("Expected Add command"),
+        }
+    }
+
+    #[test]
+    fn cli_parse_list_command() {
+        let cli = Cli::parse_from(&["taskforge", "list", "--status", "incomplete"]);
+        match cli.command {
+            Commands::List { status, .. } => {
+                assert_eq!(status, Some("incomplete".to_string()));
+            }
+            _ => panic!("Expected List command"),
+        }
+    }
+
+    #[test]
+    fn cli_parse_delete_command() {
+        let cli = Cli::parse_from(&["taskforge", "delete", "task-123"]);
+        match cli.command {
+            Commands::Delete { id } => {
+                assert_eq!(id, "task-123");
+            }
+            _ => panic!("Expected Delete command"),
+        }
+    }
+
+    #[test]
+    fn cli_parse_tag_create() {
+        let cli = Cli::parse_from(&["taskforge", "tag", "create", "work", "--color", "#FF0000"]);
+        match cli.command {
+            Commands::Tag { command } => match command {
+                TagCommands::Create { name, color } => {
+                    assert_eq!(name, "work");
+                    assert_eq!(color, Some("#FF0000".to_string()));
+                }
+                _ => panic!("Expected Tag Create command"),
+            },
+            _ => panic!("Expected Tag command"),
+        }
+    }
 }
 ```
 
-**Current src/error.rs:**
-```rust
-use thiserror::Error;
+The file `src/main.rs` already exists. Current content:
 
-#[derive(Error, Debug)]
-pub enum AppError {
-    #[error("Invalid input: {0}")]
-    UserError(String),
-    
-    #[error("Validation failed: {0}")]
-    ValidationError(String),
-    
-    #[error("System error: {0}")]
-    SystemError(#[from] std::io::Error),
+```rust
+#![allow(dead_code)]
+//! TaskForge - CLI task management application
+//!
+//! Entry point for the TaskForge CLI tool.
+
+use anyhow::Result;
+use clap::Parser;
+use std::env;
+
+mod cli;
+mod commands;
+mod config;
+mod error;
+mod filter;
+mod models;
+mod repository;
+mod tag;
+mod task;
+
+use crate::cli::{Cli, Commands};
+
+fn main() -> Result<()> {
+    // Get command line arguments
+    let args: Vec<String> = env::args().collect();
+
+    // If no arguments provided (besides program name), exit successfully
+    // This allows `cargo run` to exit cleanly
+    if args.len() <= 1 {
+        return Ok(());
+    }
+
+    // Parse command line arguments
+    // Cli::parse() will handle --help and --version automatically
+    // and display appropriate messages
+    let cli = Cli::parse();
+
+    // Handle the parsed commands
+    match cli.command {
+        Commands::Add { .. } => {
+            // TODO: Implement add command
+            println!("Add command not yet implemented");
+        }
+        Commands::List { .. } => {
+            // TODO: Implement list command
+            println!("List command not yet implemented");
+        }
+        Commands::Show { .. } => {
+            // TODO: Implement show command
+            println!("Show command not yet implemented");
+        }
+        Commands::Edit { .. } => {
+            // TODO: Implement edit command
+            println!("Edit command not yet implemented");
+        }
+        Commands::Delete { .. } => {
+            // TODO: Implement delete command
+            println!("Delete command not yet implemented");
+        }
+        Commands::Complete { .. } => {
+            // TODO: Implement complete command
+            println!("Complete command not yet implemented");
+        }
+        Commands::Reopen { .. } => {
+            // TODO: Implement reopen command
+            println!("Reopen command not yet implemented");
+        }
+        Commands::Tag { .. } => {
+            // TODO: Implement tag command
+            println!("Tag command not yet implemented");
+        }
+    }
+
+    Ok(())
 }
 ```
 
 ## Implementation Plan
 
-1. **Implement src/cli.rs** — Define basic CLI with clap derive:
-   ```rust
-   use clap::{Parser, Subcommand};
-   
-   #[derive(Parser)]
-   #[command(name = "task")]
-   #[command(version = "0.1.0")]
-   #[command(about = "TaskForge - CLI Task Manager", long_about = None)]
-   pub struct Cli {
-       #[command(subcommand)]
-       pub command: Option<Commands>,
-   }
-   
-   #[derive(Subcommand, Debug)]
-   pub enum Commands {
-       /// List all tasks
-       List,
-       /// Add a new task
-       Add {
-           /// Task title
-           title: String,
-       },
-   }
-   
-   /// Parse CLI arguments
-   pub fn parse() -> Cli {
-       Cli::parse()
-   }
-   ```
-
-2. **Update src/main.rs** — Integrate CLI parsing:
-   ```rust
-   use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-   
-   mod cli;
-   mod commands;
-   mod models;
-   mod task;
-   mod tag;
-   mod filter;
-   mod repository;
-   mod error;
-   mod config;
-   
-   fn main() -> Result<(), error::AppError> {
-       // Initialize logging
-       tracing_subscriber::registry()
-           .with(tracing_subscriber::EnvFilter::new(
-               std::env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()),
-           ))
-           .with(tracing_subscriber::fmt::layer())
-           .init();
-       
-       tracing::info!("TaskForge starting up...");
-       
-       // Parse CLI arguments
-       let cli = cli::parse();
-       
-       // Handle commands (placeholder for now)
-       match cli.command {
-           Some(_) => {
-               // Commands will be implemented in later stories
-               tracing::info!("Command executed");
-           }
-           None => {
-               // No command given, show help
-               cli::Cli::command().print_help().ok();
-           }
-       }
-       
-       Ok(())
-   }
-   ```
-
-3. **Verify help works** — Run `cargo run -- --help` and confirm help text appears
-
-4. **Verify version works** — Run `cargo run -- --version` and confirm version appears
-
-5. **Verify build** — Run `cargo build` to confirm full build succeeds
-
-6. **Verify clean exit** — Run `cargo run` and confirm it exits with code 0
-
-### Skills to Read
-
-- [skills/rust-best-practices/SKILL.md](skills/rust-best-practices/SKILL.md) — For Rust coding standards and best practices
+1. **Review existing `src/cli.rs`** — Verify it has proper clap derive setup
+2. **Review existing `src/main.rs`** — Verify CLI integration
+3. **Run `cargo run -- --help`** — Verify help displays
+4. **Run `cargo run -- --version`** — Verify version displays
+5. **Run `cargo run`** — Verify exits with code 0
+6. **Run `cargo clippy -- -D warnings`** — Fix any warnings
 
 ### Dependencies
-
-- Story 01.3: Setup Logging and Error Handling — Must be complete before this story
+- Story 01.3 (Setup Logging and Error Handling)
 
 ## Scope Boundaries
 
 ### This Story Includes
-- Implementing cli.rs with basic clap derive setup
-- Updating main.rs to parse CLI arguments
-- Supporting --help and --version flags
-- Supporting empty command (shows help)
+- Basic CLI entry point with --help and --version
+- Clap derive setup
 
 ### This Story Does NOT Include
-- Implementing any actual commands (List, Add, etc.)
-- Implementing task CRUD operations
-- Implementing tag operations
-- Implementing filtering/sorting
+- Implementing actual commands (belongs to Epic 03)
 
 ### Files in Scope
-- `src/cli.rs` — modify (implement CLI parsing)
-- `src/main.rs` — modify (integrate CLI parsing)
-
-### Files NOT in Scope
-- commands.rs (will be implemented in later stories)
-- models.rs
-- task.rs
-- tag.rs
-- filter.rs
-- repository.rs
-- config.rs
+- `src/cli.rs` — modify
+- `src/main.rs` — modify

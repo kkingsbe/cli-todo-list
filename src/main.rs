@@ -6,6 +6,8 @@
 use anyhow::Result;
 use clap::Parser;
 use std::env;
+use tracing::info;
+use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 mod cli;
 mod commands;
@@ -20,6 +22,16 @@ mod task;
 use crate::cli::{Cli, Commands};
 
 fn main() -> Result<()> {
+    // Initialize tracing subscriber for logging
+    let filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new("info"));
+    tracing_subscriber::registry()
+        .with(fmt::layer())
+        .with(filter)
+        .init();
+
+    info!("TaskForge starting up");
+
     // Get command line arguments
     let args: Vec<String> = env::args().collect();
 

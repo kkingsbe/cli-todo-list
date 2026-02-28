@@ -1,9 +1,9 @@
 # DEV_TODO1 — Development Agent 1
 
-> Sprint: 1
-> Focus Area: Project Initialization and Module Structure
-> Last Updated: 2026-02-28T16:29:20Z
-> Total Points: 3
+> Sprint: 2
+> Focus Area: Error Handling, Logging, and Task Entity
+> Last Updated: 2026-02-28T18:50:00Z
+> Total Points: 5
 
 ## Orientation
 
@@ -14,39 +14,20 @@ Before starting any stories, read these files:
 
 ## Stories
 
-- [ ] **01.1**: Initialize Cargo Project (1 pt)
-  - 📄 Story: `.switchboard/state/stories/story-01-1-initialize-cargo.md`
-  - 📚 Skills: `skills/rust-best-practices/SKILL.md`, `skills/rust-best-practices/references/chapter_01.md`
+- [ ] **01.3**: Setup Logging and Error Handling (2 pts)
+  - 📄 Story: `.switchboard/state/stories/story-01-3-setup-logging-error-handling.md`
+  - 📚 Skills: `./skills/skills/rust-best-practices/SKILL.md`, `./skills/skills/test-driven-development/SKILL.md`
   - ⚡ Pre-check: Build + tests pass
   - ✅ Post-check: Build + tests pass, acceptance criteria met
   - 🔒 Risk: Low
-  - 📝 Commit: `feat(dev1): [01.1] Initialize Cargo Project`
+  - 📝 Commit: `feat(dev1): [01.3] setup logging and error handling`
 
-- [x] **01.1** (REWORK): Initialize Cargo Project ✅ queued for review
-  - 📄 Story: `.switchboard/state/stories/story-01-1-initialize-cargo.md`
-  - 🔍 Review: See REVIEW_QUEUE.md — CHANGES_REQUESTED
-  - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Fix clippy warnings - `cargo clippy -- -D warnings` must pass
-  - 📝 Commit: `fix(dev1): [01.1] address review feedback - fix clippy warnings`
-
-- [x] **01.2** (REWORK): Create Module Structure ✅ queued for review
-  - 📄 Story: `.switchboard/state/stories/story-01-2-create-module-structure.md`
-  - 🔍 Review: See REVIEW_QUEUE.md — CHANGES_REQUESTED
-  - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Reduce to minimal stubs, add #[allow(dead_code)], ensure clippy passes
-  - 📝 Commit: `fix(dev1): [01.2] address review feedback - minimal stubs with allow(dead_code)]`
-
-- [ ] **01.2**: Create Module Structure (2 pts)
-  - 📄 Story: `.switchboard/state/stories/story-01-2-create-module-structure.md`
-  - 📚 Skills: `skills/rust-best-practices/SKILL.md`, `skills/rust-best-practices/references/chapter_01.md`
+- [ ] **02.1**: Define Task Entity (3 pts)
+  - 📄 Story: `.switchboard/state/stories/story-02-1-define-task-entity.md`
+  - 📚 Skills: `./skills/skills/rust-best-practices/SKILL.md`
   - ⚡ Pre-check: Build + tests pass
   - ✅ Post-check: Build + tests pass, acceptance criteria met
   - 🔒 Risk: Low
-  - 📝 Commit: `feat(dev1): [01.2] Create Module Structure`
+  - 📝 Commit: `feat(dev1): [02.1] define task entity`
 
-> ⚠️ **Note:** Story 01.2 depends on 01.1. Complete 01.1 before starting 01.2.
-
-- [ ] AGENT QA: Run full build and test suite. If green, create
-  `.switchboard/state/.dev_done_1` with date. If ALL `.dev_done_*`
-  files exist for all agents with work, also create
-  `.switchboard/state/.sprint_complete`.
+- [ ] AGENT QA: Run full build and test suite (`cargo build --release && cargo test && cargo clippy -- -D warnings && cargo fmt --check`). If green, create `.switchboard/state/.dev_done_1` with date. If ALL `.dev_done_*` files exist for all agents with work, also create `.switchboard/state/.sprint_complete`.

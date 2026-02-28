@@ -41,3 +41,50 @@
 
 ### Previous Review Entries (Completed)
 
+
+---
+
+### story-01-3: Setup Logging and Error Handling
+
+- **Status:** ❌ CHANGES_REQUESTED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-02-28T18:50:03Z
+- **Acceptance Criteria:**
+  - [ ] error.rs defines AppError using thiserror with UserError, ValidationError, SystemError variants — NOT MET: Missing UserError variant; has Validation, System, NotFound instead
+  - [ ] Logging initialized in main.rs using tracing — NOT MET: No tracing import or initialization; uses anyhow::Result
+  - [ ] Error handling in main.rs propagates errors properly — PARTIAL: Uses anyhow::Result but doesn't use AppError for propagation
+- **Must Fix:**
+  1. Add UserError variant to AppError in src/error.rs (line 9-21)
+     - Current: Has Validation, System, NotFound variants
+     - Expected: Should have UserError variant per acceptance criteria
+     - Why: Story acceptance criteria explicitly requires UserError, ValidationError, SystemError
+  2. Initialize tracing in src/main.rs (line 22)
+     - Current: No tracing initialization
+     - Expected: tracing::subscriber::set_global_default with tracing-subscriber
+     - Why: Project convention mandates tracing for logging (project-context.md line 30)
+  3. Replace println! statements with tracing in src/main.rs (lines 41, 45, 49, 53, 57, 61, 65, 69)
+     - Current: Uses println!("...not yet implemented")
+     - Expected: Use tracing::info! or tracing::debug! macro
+     - Why: Project convention forbids println! (project-context.md line 60)
+  4. Revert changes to files outside scope: src/commands.rs, src/lib.rs, src/models.rs, src/task.rs
+     - Why: Story scope restricted to error.rs and main.rs only
+- **Should Fix:**
+  1. Consider adding tests for tracing initialization
+- **Requeue Instructions:** Address all MUST FIX items, ensure build/test/clippy pass, then requeue to dev-2
+
+---
+
+### story-01-4: Basic CLI Entry Point
+
+- **Status:** ❌ CHANGES_REQUESTED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-02-28T18:50:03Z
+- **Acceptance Criteria:**
+  - [x] CLI module defines --help and --version flags — MET: cargo run -- --help shows help, cargo run -- --version shows 0.1.0
+  - [x] Basic clap derive setup in cli.rs — MET: #[derive(Debug, Parser)] present with #[command(version=...)]
+  - [x] Empty main command that returns success — MET: cargo run exits with code 0
+- **Findings:**
+  - MUST FIX: Same scope violations from story-01-3 - revert changes to src/commands.rs, src/lib.rs, src/models.rs, src/task.rs
+  - MUST FIX: Replace println! with tracing (src/main.rs lines 41, 45, 49, 53, 57, 61, 65, 69)
+- **Summary:** All acceptance criteria met for CLI functionality, but shares same scope violations and println! usage issues from story-01-3. Must fix before approval.
+
