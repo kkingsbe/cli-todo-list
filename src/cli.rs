@@ -59,6 +59,10 @@ pub enum Commands {
         #[arg(long)]
         search: Option<String>,
 
+        /// Filter by tags (multiple tags use AND logic).
+        #[arg(long)]
+        tag: Option<Vec<String>>,
+
         /// Sort field (created, priority, due, title).
         #[arg(short, long, default_value = "created")]
         sort_by: String,

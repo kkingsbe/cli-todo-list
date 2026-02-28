@@ -125,6 +125,7 @@ fn main() -> Result<()> {
             status,
             priority,
             search,
+            tag,
             sort_by,
             order,
             limit,
@@ -178,6 +179,11 @@ fn main() -> Result<()> {
             // Add search filter
             if let Some(ref search_term) = search {
                 filter = filter.with_search(search_term.clone());
+            }
+
+            // Add tag filter
+            if let Some(ref tags) = tag {
+                filter = filter.with_tags(tags.clone());
             }
 
             // Build sort

@@ -369,10 +369,40 @@
 - **Sprint:** 5
 - **Commits:** 961c525..ef155aa
 - **Story file:** `.switchboard/state/stories/story-06-2-output-format.md`
-- **Files changed:** src/cli.rs, src/main.rs
-- **Status:** PENDING_REVIEW
+- **Status:** ❌ CHANGES_REQUESTED
+- **Review date:** 2026-02-28T23:23:00Z
 - **Acceptance Criteria:**
-  - [x] `task list --format table` shows table output (default) — verified by: cli_parse_list_format_table test
-  - [x] `task list --format plain` shows plain text — verified by: cli_parse_list_format_plain test
-  - [x] `task list --format json` shows JSON output — verified by: cli_parse_list_format_json test
-- **Notes:** Added OutputFormat enum with Table, Plain, Json variants. Table is default. JSON uses serde_json::to_string_pretty. Plain outputs minimal text format. 4 new tests added for format parsing.
+  - [x] `task list --format table` shows table output (default) — **MET**: Implementation in main.rs (tests pass)
+  - [x] `task list --format plain` shows plain text — **MET**: Implementation in main.rs (tests pass)
+  - [x] `task list --format json` shows JSON output — **MET**: Implementation in main.rs (tests pass)
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (121 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+- **Diff Analysis:**
+  - Commits: 961c525, ef155aa, 97cc94a
+  - Files changed: src/cli.rs (+57 lines), src/main.rs (+71 lines)
+- **Must Fix:**
+  1. **Scope Violation - Format logic in wrong file**
+     - Story scope: `src/cli.rs` (add --format arg), `src/commands.rs` (implement format selection in run_list)
+     - Story explicitly lists `src/main.rs` as "Files NOT in Scope"
+     - Current: All format handling in main.rs lines 192-245
+     - Expected: Format logic should be in commands.rs::run_list()
+     - Why: Architecture mandates CLI → Commands separation; story scope is binding
+  2. **Revert ALL changes to src/main.rs**
+     - Current: Modified main.rs with format handling
+     - Expected: main.rs should be unchanged per scope
+     - Why: Story explicitly excludes main.rs from scope
+  3. **Add format handling to src/commands.rs**
+     - Expected: Modify run_list function to accept OutputFormat and handle output
+     - Why: Story scope explicitly lists commands.rs as the file for format logic
+- **Should Fix:**
+  1. Consider using stdout.write_all() or similar for structured output instead of println!
+- **Requeue Instructions:** 
+  1. Move format handling logic from main.rs to commands.rs::run_list()
+  2. Revert all changes to main.rs (keep original table output logic)
+  3. Ensure only src/cli.rs and src/commands.rs are modified
+  4. Build must pass: cargo build --release
+  5. Tests must pass: cargo test
+  6. Clippy must pass: cargo clippy -- -D warnings
+  7. Then requeue to dev-2 for review

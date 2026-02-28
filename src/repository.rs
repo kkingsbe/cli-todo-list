@@ -217,27 +217,59 @@ impl Repository for SqliteRepository {
         let mut query = String::from(
             "SELECT id, title, description, priority, status, created_at, updated_at, due_date FROM tasks"
         );
-        let mut conditions = Vec::new();
+        let mut conditions: Vec<String> = Vec::new();
         let mut params: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
 
         // Add status filter
         if let Some(ref status) = filter.status {
-            conditions.push("status = ?");
+            conditions.push("status = ?".to_string());
             params.push(Box::new(status_to_string(status)));
         }
 
         // Add priority filter
         if let Some(ref priority) = filter.priority {
-            conditions.push("priority = ?");
+            conditions.push("priority = ?".to_string());
             params.push(Box::new(priority_to_i64(priority)));
         }
 
         // Add search filter (title or description)
         if let Some(ref search) = filter.search {
-            conditions.push("(title LIKE ? OR description LIKE ?)");
+            conditions.push("(title LIKE ? OR description LIKE ?)".to_string());
             let search_pattern = format!("%{}%", search);
             params.push(Box::new(search_pattern.clone()));
             params.push(Box::new(search_pattern));
+        }
+
+        // Add tag filter (AND logic - task must have ALL tags)
+        if let Some(ref tags) = filter.tags {
+            if !tags.is_empty() {
+                // Use subquery to find tasks that have ALL the specified tags
+                let tag_count = tags.len();
+
+                // Add parameters for each tag name (lowercase for case-insensitive comparison)
+                for tag in tags {
+                    params.push(Box::new(tag.to_lowercase()));
+                }
+                params.push(Box::new(tag_count));
+
+                // Build the subquery condition
+                let placeholders: Vec<String> = (1..=tags.len())
+                    .map(|i| format!("?{}", params.len() - tags.len() - 1 + i))
+                    .collect();
+                let in_clause = placeholders.join(", ");
+                let having_param = params.len();
+
+                let subquery = format!(
+                    "id IN (SELECT tt.task_id FROM task_tags tt \
+                     INNER JOIN tags tg ON tt.tag_id = tg.id \
+                     WHERE tg.name IN ({}) \
+                     GROUP BY tt.task_id \
+                     HAVING COUNT(DISTINCT tg.name) = ?{})",
+                    in_clause,
+                    having_param
+                );
+                conditions.push(subquery);
+            }
         }
 
         // Append WHERE clause if there are conditions

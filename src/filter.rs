@@ -63,6 +63,12 @@ impl TaskFilter {
         self.search = Some(search);
         self
     }
+
+    /// Sets the tags filter.
+    pub fn with_tags(mut self, tags: Vec<String>) -> Self {
+        self.tags = Some(tags);
+        self
+    }
 }
 
 /// Sort options for tasks.
