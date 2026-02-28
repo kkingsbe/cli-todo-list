@@ -6,7 +6,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 /// Priority levels for tasks.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Priority {
     /// Highest priority (P1)
@@ -14,15 +14,10 @@ pub enum Priority {
     /// High priority (P2)
     P2 = 2,
     /// Medium priority (P3)
+    #[default]
     P3 = 3,
     /// Low priority (P4)
     P4 = 4,
-}
-
-impl Default for Priority {
-    fn default() -> Self {
-        Priority::P3
-    }
 }
 
 impl Priority {
@@ -38,19 +33,14 @@ impl Priority {
 }
 
 /// Status of a task.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Status {
     /// Task is incomplete.
+    #[default]
     Incomplete,
     /// Task is completed.
     Completed,
-}
-
-impl Default for Status {
-    fn default() -> Self {
-        Status::Incomplete
-    }
 }
 
 /// A task entity with all its fields.
@@ -91,11 +81,7 @@ impl Task {
     }
 
     /// Creates a task with all fields specified.
-    pub fn with_details(
-        title: String,
-        description: Option<String>,
-        priority: Priority,
-    ) -> Self {
+    pub fn with_details(title: String, description: Option<String>, priority: Priority) -> Self {
         let now = Utc::now();
         Self {
             id: uuid::Uuid::new_v4().to_string(),
