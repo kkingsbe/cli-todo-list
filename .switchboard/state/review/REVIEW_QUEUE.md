@@ -136,32 +136,45 @@
 
 ### story-02-2: Define Tag Entity
 
-- **Implemented by:** dev-2
-- **Sprint:** 2
-- **Commits:** 29837d6435c2661e29dfd248693f877e69ec31ff
-- **Story file:** `.switchboard/state/stories/archive/sprint-2/story-02-2-define-tag-entity.md`
-- **Files changed:** src/tag.rs
-- **Status:** PENDING_REVIEW
+- **Status:** ✅ APPROVED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-02-28T19:55:00Z
 - **Acceptance Criteria:**
-  - [x] Tag names normalized to lowercase — verified by: test `tag_name_is_normalized_to_lowercase`
-  - [x] Tag::new("Work").name == "work" — verified by: test
-  - [x] Tag::new("WORK").name == "work" — verified by: test
-- **Notes:** Implemented case-insensitive tag names by normalizing to lowercase in constructors. Updated Tag::new(), Tag::with_color(), and Tag::rename() methods.
+  - [x] Tag struct has all fields (id, name, created_at) — **MET**: src/tag.rs lines 10-18
+  - [x] Tag name is case-insensitive (normalized to lowercase) — **MET**: name.to_lowercase() in Tag::new(), Tag::with_color(), Tag::rename() (lines 26, 36, 44)
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (97 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+- **Diff Analysis:**
+  - Commit: 29837d64 - feat(dev2): [02.2] add case-insensitive tag names
+  - Files changed: src/tag.rs only (within scope)
+- **Findings:**
+  - NICE TO HAVE: Consider testing database-level uniqueness constraint
+- **Summary:** Tag entity properly defined with UUID id, name, and created_at fields. Case-insensitive name normalization implemented via to_lowercase() in all constructors and rename().
 
 ---
 
 ### 02.3: Define Filter and Sort Structures
 
-- **Implemented by:** dev-1
-- **Sprint:** 3
-- **Commits:** (existing filter.rs implementation)
-- **Story file:** `.switchboard/state/stories/story-02-3-define-filter-sort.md`
-- **Files changed:** `src/filter.rs` (already existed with full implementation), `src/lib.rs` (exports)
-- **Status:** PENDING_REVIEW
+- **Status:** ❌ CHANGES_REQUESTED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-02-28T19:56:00Z
 - **Acceptance Criteria:**
-  - [x] TaskFilter struct with optional fields (status, priority, tags, due_before, due_after, search) — verified by: src/filter.rs implementation
-  - [x] TaskSort struct with field and direction — verified by: src/filter.rs implementation  
-  - [x] Builder pattern and Default implementations — verified by: filter and sort tests pass
-  - [x] Module exported in lib.rs — verified by: `pub use filter::{TagFilter, TaskFilter, TaskSort, TaskSortField}`
-- **Notes:** Filter module already existed with comprehensive implementation. All tests pass.
+  - [x] TaskFilter struct with optional fields (status, priority, tags, due_before, due_after, search) — **MET**: src/filter.rs lines 28-41
+  - [x] TaskSort struct with field and direction — **MET**: src/filter.rs lines 70-75
+  - [x] Filter and sort can be combined — **MET**: Builder pattern allows chaining
+  - [ ] Default values are sensible (status: all, sort: created_at desc) — **NOT MET**: Default is Ascending, not Descending
+- **Must Fix:**
+  1. Change default SortOrder from Ascending to Descending in src/filter.rs (line 10-11)
+     - Current: `#[default] Ascending`
+     - Expected: `#[default] Descending`
+     - Why: Story acceptance criteria explicitly requires "sort: created_at desc"
+  2. Update test in src/filter.rs line 150-151 to expect Descending
+     - Current: `assert_eq!(sort.order, SortOrder::Ascending);`
+     - Expected: `assert_eq!(sort.order, SortOrder::Descending);`
+     - Why: Test must match implementation
+- **Should Fix:**
+  1. Consider adding more edge case tests for filter combinations
+- **Requeue Instructions:** Fix SortOrder default to Descending, update test, ensure build/test/clippy pass, then requeue to dev-1
 
