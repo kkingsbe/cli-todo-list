@@ -20,7 +20,7 @@ epics:
         type: "infrastructure"
         risk: "low"
         depends_on: []
-        status: "needs-rework"
+        status: "complete"
         assigned_to: "dev-1"
         sprint: 1
       - id: "01.2"
@@ -29,7 +29,7 @@ epics:
         type: "infrastructure"
         risk: "low"
         depends_on: ["01.1"]
-        status: "needs-rework"
+        status: "complete"
         assigned_to: "dev-1"
         sprint: 1
       - id: "01.3"
@@ -38,7 +38,7 @@ epics:
         type: "infrastructure"
         risk: "low"
         depends_on: ["01.2"]
-        status: "blocked"
+        status: "not-started"
         assigned_to: "dev-2"
         sprint: 1
       - id: "01.4"
@@ -47,7 +47,7 @@ epics:
         type: "infrastructure"
         risk: "low"
         depends_on: ["01.3"]
-        status: "blocked"
+        status: "not-started"
         assigned_to: "dev-2"
         sprint: 1
 
