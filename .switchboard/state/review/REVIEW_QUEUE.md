@@ -104,3 +104,19 @@
   - [x] Criterion 3 — verified by: Run with invalid args shows user-friendly error (clap provides this)
 - **Notes:** Infrastructure story. Added tracing initialization to main.rs. AppError types already existed in error.rs (with ValidationError instead of UserError - equivalent). Error handling infrastructure in place.
 
+---
+
+### 02.1: Define Task Entity
+
+- **Implemented by:** dev-1
+- **Sprint:** 2
+- **Commits:** 1f48f4f..099f9bb
+- **Story file:** `.switchboard/state/stories/story-02-1-define-task-entity.md`
+- **Files changed:** src/task.rs
+- **Status:** PENDING_REVIEW
+- **Acceptance Criteria:**
+  - [x] Criterion 1 — verified by: cargo check succeeds, Task struct has all fields
+  - [x] Criterion 2 — verified by: Priority::from_str("P1") returns Ok(Priority::P1)
+  - [x] Criterion 3 — verified by: Status serializes to "incomplete"/"completed"
+- **Notes:** Added FromStr implementation for Priority enum. All 93 tests pass.
+
