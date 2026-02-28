@@ -21,40 +21,40 @@ timezone = "system"
 #   - Staggered dev agent starts prevent git conflicts
 
 [[agent]]
-name = "sb-scrum-master"
-schedule = "0 * * * *"                    # Every hour on the hour
+name = "cli-sprint-planner"
+schedule = "5,35 * * * *"                 # Every 30 min at :05 and :35
 readonly = false
-timeout = "15m"
-prompt_file = ".switchboard/workflows/bmad/prompts/SCRUM_MASTER.md"
+timeout = "25m"
+prompt_file = ".switchboard/workflows/bmad/prompts/SPRINT_PLANNER.md"
 env = { AGENT_COUNT = "2" }
 
 [[agent]]
-name = "sb-architect"
-schedule = "15 */2 * * *"                 # Every 2 hours at minute 15
-readonly = false
-timeout = "30m"
-prompt_file = ".switchboard/workflows/bmad/prompts/ARCHITECT.md"
-env = { AGENT_COUNT = "2" }
-
-[[agent]]
-name = "sb-dev-1"
-schedule = "*/30 * * * *"                 # Every 30 min (minute 0, 30)
+name = "cli-dev-1"
+schedule = "*/30 * * * *"                 # Every 30 min at :00 and :30
 readonly = false
 timeout = "30m"
 prompt_file = ".switchboard/workflows/bmad/prompts/DEV_PARALLEL.md"
 env = { AGENT_ID = "1" }
 
 [[agent]]
-name = "sb-dev-2"
-schedule = "10,40 * * * *"               # Every 30 min (minute 10, 40)
+name = "cli-dev-2"
+schedule = "15,45 * * * *"               # Every 30 min at :15 and :45
 readonly = false
 timeout = "30m"
 prompt_file = ".switchboard/workflows/bmad/prompts/DEV_PARALLEL.md"
 env = { AGENT_ID = "2" }
 
 [[agent]]
-name = "sb-code-reviewer"
-schedule = "20 */1 * * *"                 # Every hour at minute 20
+name = "cli-code-reviewer"
+schedule = "20,50 * * * *"               # Every 30 min at :20 and :50
 readonly = false
 timeout = "20m"
 prompt_file = ".switchboard/workflows/bmad/prompts/CODE_REVIEWER.md"
+
+[[agent]]
+name = "cli-scrum-master"
+schedule = "0 * * * *"                    # Every hour on the hour
+readonly = false
+timeout = "15m"
+prompt_file = ".switchboard/workflows/bmad/prompts/SCRUM_MASTER.md"
+env = { AGENT_COUNT = "2" }

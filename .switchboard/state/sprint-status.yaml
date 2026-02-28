@@ -1,0 +1,5 @@
+# Sprint Status Configuration
+# Default values - created during initialization
+
+current_sprint: 1
+epics: []

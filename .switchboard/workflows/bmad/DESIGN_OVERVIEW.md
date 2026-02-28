@@ -2,136 +2,149 @@
 
 ## What This Is
 
-An adaptation of the [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) (Breakthrough Method for Agile AI-Driven Development) for Switchboard's autonomous, cron-scheduled agent system.
+A fully autonomous implementation of [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) concepts for Switchboard's cron-scheduled agent system. Given a single `PRD.md` as input, the system produces architecture decisions, epic/story breakdowns, and working code — all without human intervention.
 
-BMAD was designed for **interactive** AI development — a human loads an agent in an IDE, runs a workflow, reviews output, and iterates. Switchboard agents run **autonomously** on cron schedules inside Docker containers with no human in the loop during execution. This adaptation bridges that gap.
+## The Only Human Input
 
-## Key Differences from Stock BMAD
+Drop a `PRD.md` into `.switchboard/input/PRD.md` and run `switchboard up`.
 
-| Aspect | Stock BMAD | Switchboard BMAD |
-|--------|-----------|-----------------|
-| **Execution** | Interactive IDE sessions | Autonomous cron + Docker |
-| **Human role** | In-the-loop every workflow | Sets up planning artifacts, reviews async |
-| **Agent communication** | Same chat context | File-based protocols (TODO lists, signals, state files) |
-| **Workflow invocation** | Slash commands | Cron schedules with phase detection |
-| **Context passing** | Conversation history | Planning artifacts on disk |
-| **Coordination** | Human orchestrates | Signal files + sprint gates |
+The PRD should contain: project name, problem statement, target users, functional requirements, non-functional requirements, and scope boundaries. The system handles everything from there.
 
-## Architecture
-
-### BMAD Phases → Switchboard Agents
-
-BMAD's 4 phases map to Switchboard agent roles:
+## Pipeline Overview
 
 ```
-Phase 1-3: PLANNING (Human-driven, done before `switchboard up`)
-  └── Human uses BMAD interactively in their IDE to produce:
-      - PRD.md, architecture.md, epics/, project-context.md
-
-Phase 4: IMPLEMENTATION (Autonomous, Switchboard-scheduled)
-  ├── sb-architect        — Sprint planning + story creation
-  ├── sb-dev-1..N         — Story implementation
-  ├── sb-code-reviewer    — Post-implementation quality gate
-  ├── sb-scrum-master     — Sprint coordination + retrospectives
-  └── sb-auditor          — Codebase health (existing, unchanged)
-      sb-planner          — Improvement planning (existing, unchanged)
-      sb-refactor-1..N    — Refactoring (existing, unchanged)
+Human drops PRD.md
+       │
+       ▼
+┌─────────────────────────────────┐
+│  PHASE 1: SOLUTIONING           │  (runs once)
+│                                  │
+│  sb-solution-architect           │
+│  └─ Reads PRD.md                │
+│  └─ Produces:                   │
+│     • architecture.md            │
+│     • project-context.md         │
+│     • epics/epic-*.md            │
+│     • sprint-status.yaml         │
+│  └─ Signals: .solutioning_done  │
+└──────────────┬──────────────────┘
+               │
+               ▼
+┌─────────────────────────────────┐
+│  PHASE 2: IMPLEMENTATION         │  (repeating sprint loop)
+│                                  │
+│  sb-sprint-planner               │
+│  └─ Selects stories for sprint  │
+│  └─ Creates story files          │
+│  └─ Distributes to DEV_TODOs    │
+│  └─ Signals: .stories_ready     │
+│                                  │
+│  sb-dev-1..N  (parallel)         │
+│  └─ Implements stories          │
+│  └─ Queues for review           │
+│  └─ Signals: .dev_done_{N}     │
+│                                  │
+│  sb-code-reviewer                │
+│  └─ Reviews implementations     │
+│  └─ Approves or rejects         │
+│                                  │
+│  sb-scrum-master                 │
+│  └─ Detects sprint completion   │
+│  └─ Writes metrics/reports      │
+│  └─ Cleans up for next sprint   │
+│  └─ Signals: .sprint_complete   │
+│                                  │
+│  [loop until all stories done]   │
+└─────────────────────────────────┘
 ```
 
-### Directory Layout
+## Agent Roster
+
+| Agent | Schedule | Role | Phase |
+|-------|----------|------|-------|
+| `sb-solution-architect` | `*/30 * * * *` | PRD → architecture + epics | Solutioning (once) |
+| `sb-sprint-planner` | `*/30 * * * *` | Epics → story files → DEV_TODOs | Implementation |
+| `sb-dev-1..N` | `*/30 * * * *` | Story → working code + tests | Implementation |
+| `sb-code-reviewer` | `*/45 * * * *` | Quality gate, approve/reject | Implementation |
+| `sb-scrum-master` | `0 * * * *` | Sprint lifecycle + metrics | Implementation |
+
+## Directory Layout
 
 ```
 .switchboard/
+├── input/                                 # HUMAN INPUT (the only thing you provide)
+│   └── PRD.md
+│
+├── planning/                              # AGENT-GENERATED planning artifacts
+│   ├── architecture.md                    # System design, ADRs, tech stack
+│   ├── project-context.md                 # Conventions, patterns, rules
+│   └── epics/                             # Epic files with story definitions
+│       ├── epic-01-{slug}.md
+│       ├── epic-02-{slug}.md
+│       └── ...
+│
+├── state/                                 # RUNTIME state (agent coordination)
+│   ├── sprint-status.yaml                 # Sprint tracking
+│   ├── stories/                           # Detailed story files for current sprint
+│   │   ├── story-1.1-{slug}.md
+│   │   └── ...
+│   ├── DEV_TODO1.md .. DEV_TODON.md       # Per-agent work queues
+│   ├── review/
+│   │   └── REVIEW_QUEUE.md
+│   ├── BLOCKERS.md
+│   ├── SPRINT_REPORT.md
+│   │
+│   │  # Signal files (coordination)
+│   ├── .solutioning_done                  # Phase 1 complete
+│   ├── .stories_ready                     # Sprint planned, devs can start
+│   ├── .dev_done_1 .. .dev_done_N         # Individual agent completion
+│   ├── .sprint_complete                   # All devs done
+│   └── .project_complete                  # All stories done
+│
 ├── prompts/
 │   └── workflows/
-│       ├── bmad/                          # BMAD implementation workflow
-│       │   ├── ARCHITECT.md               # Sprint planner + story creator
-│       │   ├── DEV_PARALLEL.md            # Story implementer
-│       │   ├── CODE_REVIEWER.md           # Quality gate
-│       │   └── SCRUM_MASTER.md            # Sprint coordinator
-│       ├── codebase-maintenance/          # Existing (renamed from maintinance)
-│       │   ├── AUDITOR.md
-│       │   ├── IMPROVEMENT_PLANNER.md
-│       │   └── REFACTOR_DEV.md
-│       └── documentation/
-│           └── SUMMARIZER.md
-├── state/                                 # Runtime state (gitignored except planning)
-│   ├── sprint-status.yaml                 # Current sprint state
-│   ├── DEV_TODO1.md .. DEV_TODON.md       # Per-agent work queues
-│   ├── .dev_done_1 .. .dev_done_N         # Agent completion signals
-│   ├── .sprint_complete                   # Sprint gate
-│   ├── .stories_ready                     # Architect → Dev handoff signal
-│   ├── BLOCKERS.md                        # Cross-agent blocker log
-│   └── review/                            # Code review state
-│       ├── REVIEW_QUEUE.md
-│       └── .review_done
-└── logs/
+│       └── bmad/
+│           ├── SOLUTION_ARCHITECT.md
+│           ├── SPRINT_PLANNER.md
+│           ├── DEV_PARALLEL.md
+│           ├── CODE_REVIEWER.md
+│           └── SCRUM_MASTER.md
+│
+├── logs/
+└── skills/
 
-_bmad-output/                              # BMAD planning artifacts (committed)
-├── planning-artifacts/
-│   ├── PRD.md
-│   ├── architecture.md
-│   ├── epics/
-│   │   ├── epic-1.md
-│   │   ├── epic-2.md
-│   │   └── ...
-│   └── project-context.md
-└── implementation-artifacts/
-    └── sprint-status.yaml                 # Canonical sprint status
+switchboard.toml
 ```
 
-### Workflow Lifecycle
+## Signal Protocol
+
+All coordination happens through signal files. No agent reads another agent's prompt
+or internal state. The protocol is:
 
 ```
-Human (one-time setup):
-  1. Install BMAD: npx bmad-method install
-  2. Run Phase 1-3 interactively in IDE
-  3. Copy planning artifacts to _bmad-output/
-  4. Configure switchboard.toml
-  5. switchboard up
-
-Switchboard (autonomous loop):
-  ┌─────────────────────────────────────────┐
-  │  sb-scrum-master (hourly)               │
-  │  └─ Checks sprint state                 │
-  │  └─ Creates sprint-status.yaml if none  │
-  │  └─ Detects sprint completion           │
-  │  └─ Advances to next sprint             │
-  ├─────────────────────────────────────────┤
-  │  sb-architect (every 2 hours)           │
-  │  └─ Reads sprint-status.yaml            │
-  │  └─ Creates story files from epics      │
-  │  └─ Distributes to DEV_TODO*.md         │
-  │  └─ Signals .stories_ready              │
-  ├─────────────────────────────────────────┤
-  │  sb-dev-1..N (every 30 min)             │
-  │  └─ Reads DEV_TODO{N}.md               │
-  │  └─ Implements next story               │
-  │  └─ Runs tests, commits                 │
-  │  └─ Queues for review                   │
-  │  └─ Signals .dev_done_{N} when empty    │
-  ├─────────────────────────────────────────┤
-  │  sb-code-reviewer (every 45 min)        │
-  │  └─ Reads REVIEW_QUEUE.md              │
-  │  └─ Reviews each implementation         │
-  │  └─ Approves or rejects with notes      │
-  │  └─ Rejected → back to DEV_TODO         │
-  └─────────────────────────────────────────┘
+.solutioning_done     ← Solution Architect creates when architecture + epics ready
+.stories_ready        ← Sprint Planner creates when DEV_TODOs are written
+.dev_done_{N}         ← Dev Agent N creates when all its stories are done
+.sprint_complete      ← Last dev agent creates when ALL .dev_done_* exist
+.project_complete     ← Scrum Master creates when all stories in all epics are done
 ```
 
-## The Prompt Files
-
-Each prompt file follows the proven patterns from your existing codebase-maintenance workflow:
-
-1. **Role declaration** — Who this agent is
-2. **Configuration** — File paths, env vars, state locations
-3. **Golden Rule** — The one thing this agent must never violate
-4. **Session Protocol** — Idempotency, resume from interruption
-5. **Phase Detection** — What to do based on current state
-6. **Phased Execution** — Step-by-step with time budgets
-7. **Signal Protocol** — How to communicate with other agents
-8. **Commit Convention** — Consistent git messages
+**Guard rails:**
+- Sprint Planner won't start until `.solutioning_done` exists
+- Dev agents won't start until `.stories_ready` exists
+- Code Reviewer only reviews when REVIEW_QUEUE has PENDING entries
+- Scrum Master cleans up `.sprint_complete` and `.stories_ready` between sprints
+- Solution Architect stops running once `.solutioning_done` exists
 
 ## Scaling
 
-The system scales by adjusting `AGENT_COUNT` and agent schedules in `switchboard.toml`. The file-based protocol means agents don't need to know about each other directly — they communicate through state files.
+Adjust `AGENT_COUNT` in switchboard.toml and add more `sb-dev-N` entries. The file-based
+protocol means agents coordinate through state files, not direct communication. Adding
+a dev agent is: add a `[[agent]]` block, bump `AGENT_COUNT`, done.
+
+## Running Both Workflows
+
+The BMAD implementation workflow and the existing codebase-maintenance workflow
+(Auditor → Planner → Refactor agents) can run simultaneously. They operate on
+different state files and don't conflict. The maintenance workflow improves code
+the BMAD workflow already shipped.
