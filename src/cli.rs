@@ -7,6 +7,7 @@ use clap::{Parser, Subcommand};
 /// Command-line interface for TaskForge.
 #[derive(Debug, Parser)]
 #[command(name = "taskforge")]
+#[command(version = env!("CARGO_PKG_VERSION"))]
 #[command(about = "A CLI task management application", long_about = None)]
 pub struct Cli {
     /// Subcommand to execute.
@@ -142,13 +143,6 @@ pub enum TagCommands {
         /// Tag ID or name.
         tag_identifier: String,
     },
-}
-
-/// Parse CLI arguments.
-///
-/// This is a convenience wrapper around [`Cli::parse()`].
-pub fn parse() -> Cli {
-    Cli::parse()
 }
 
 #[cfg(test)]

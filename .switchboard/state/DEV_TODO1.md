@@ -14,7 +14,7 @@ Before starting any stories, read these files:
 
 ## Stories
 
-- [x] **01.1**: Initialize Cargo Project (1 pt) ✅ — queued for review
+- [ ] **01.1**: Initialize Cargo Project (1 pt)
   - 📄 Story: `.switchboard/state/stories/story-01-1-initialize-cargo.md`
   - 📚 Skills: `skills/rust-best-practices/SKILL.md`, `skills/rust-best-practices/references/chapter_01.md`
   - ⚡ Pre-check: Build + tests pass
@@ -22,7 +22,7 @@ Before starting any stories, read these files:
   - 🔒 Risk: Low
   - 📝 Commit: `feat(dev1): [01.1] Initialize Cargo Project`
 
-- [x] **01.2**: Create Module Structure (2 pts) ✅ — queued for review
+- [ ] **01.2**: Create Module Structure (2 pts)
   - 📄 Story: `.switchboard/state/stories/story-01-2-create-module-structure.md`
   - 📚 Skills: `skills/rust-best-practices/SKILL.md`, `skills/rust-best-practices/references/chapter_01.md`
   - ⚡ Pre-check: Build + tests pass
