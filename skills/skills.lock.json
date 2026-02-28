@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "test-driven-development": {
+      "source": "obra/superpowers@test-driven-development",
+      "skill_name": "test-driven-development",
+      "installed_at": "2026-02-28T15:38:38.629228900+00:00",
+      "version": null
+    },
+    "rust-async-patterns": {
+      "source": "wshobson/agents@rust-async-patterns",
+      "skill_name": "rust-async-patterns",
+      "installed_at": "2026-02-28T15:38:03.234609+00:00",
+      "version": null
+    },
+    "rust-best-practices": {
+      "source": "apollographql/skills@rust-best-practices",
+      "skill_name": "rust-best-practices",
+      "installed_at": "2026-02-28T15:38:18.732749900+00:00",
+      "version": null
+    }
+  }
+}
