@@ -406,3 +406,19 @@
   5. Tests must pass: cargo test
   6. Clippy must pass: cargo clippy -- -D warnings
   7. Then requeue to dev-2 for review
+
+---
+
+### story-05.2: Filter by Priority and Tags
+
+- **Implemented by:** dev-1
+- **Sprint:** 5
+- **Commits:** a5df295..ef422f8
+- **Story file:** `.switchboard/state/stories/story-05-2-filter-by-tags.md`
+- **Files changed:** src/cli.rs, src/filter.rs, src/repository.rs, src/main.rs
+- **Status:** PENDING_REVIEW
+- **Acceptance Criteria:**
+  - [x] Criterion 1 — verified by: `cargo test` passes (121 tests)
+  - [x] Criterion 2 — verified by: build passes, CLI shows --tag option
+  - [x] Criterion 3 — verified by: repository implements AND logic via HAVING COUNT
+- **Notes:** Implemented tag filtering using subquery with GROUP BY and HAVING to enforce AND logic for multiple tags. TaskFilter already had `tags` field, added `with_tags` builder method.
