@@ -258,9 +258,10 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["05.1"]
-        status: "in-review"
+        status: "in-progress"
         assigned_to: "dev-2"
         sprint: 5
+        blocker_reason: "Changes requested - scope violations, format logic in wrong file"
       - id: "06.3"
         title: "Complete and Toggle Status"
         points: 2

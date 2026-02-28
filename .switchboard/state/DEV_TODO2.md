@@ -24,6 +24,17 @@ Before starting any stories, read these files:
   - 📝 Commit: `feat(dev2): [06.2] implement output format support`
   - **Dependency:** 05.1 Filter by Status (complete)
 
+- [ ] **{story-06.2}** (REWORK): Output Format Support
+  - 📄 Story: `.switchboard/state/stories/story-06-2-output-format.md`
+  - 🔍 Review: See REVIEW_QUEUE.md — CHANGES_REQUESTED
+  - ⚡ Pre-check: Build + tests pass
+  - ✅ Post-check: Address ALL "Must Fix" items
+  - 📝 Commit: `fix(dev2): [06.2] address review feedback`
+  - **Must Fix:**
+    1. Move format logic from main.rs to commands.rs::run_list()
+    2. Revert ALL changes to main.rs (story scope excludes main.rs)
+    3. Add format handling to commands.rs (as story requires)
+
 - [ ] **AGENT QA:** Run full build and test suite. If green, create `.switchboard/state/.dev_done_2` with date. If ALL `.dev_done_*` files exist for all agents with work, also create `.switchboard/state/.sprint_complete`.
 
 ## Implementation Notes
