@@ -69,28 +69,35 @@ pub fn load_config() -> Config {
         if config_path.exists() {
             // Try to load the config file
             match fs::read_to_string(&config_path) {
-                Ok(contents) => {
-                    match toml::from_str(&contents) {
-                        Ok(config) => return config,
-                        Err(e) => {
-                            eprintln!("Warning: Failed to parse config file: {}. Using defaults.", e);
-                        }
+                Ok(contents) => match toml::from_str(&contents) {
+                    Ok(config) => return config,
+                    Err(e) => {
+                        eprintln!(
+                            "Warning: Failed to parse config file: {}. Using defaults.",
+                            e
+                        );
                     }
-                }
+                },
                 Err(e) => {
-                    eprintln!("Warning: Failed to read config file: {}. Using defaults.", e);
+                    eprintln!(
+                        "Warning: Failed to read config file: {}. Using defaults.",
+                        e
+                    );
                 }
             }
         }
-    
+
         // Config file doesn't exist or failed to load - create it with defaults
         let config = Config::default();
         if let Err(e) = save_config(&config) {
-            eprintln!("Warning: Failed to create config file: {}. Using defaults.", e);
+            eprintln!(
+                "Warning: Failed to create config file: {}. Using defaults.",
+                e
+            );
         }
         return config;
     }
-    
+
     // No home directory - return defaults
     Config::default()
 }
@@ -100,13 +107,13 @@ fn save_config(config: &Config) -> io::Result<()> {
     if let Some(config_dir) = config_dir() {
         fs::create_dir_all(&config_dir)?;
     }
-    
+
     if let Some(config_path) = config_file_path() {
         let toml_string = toml::to_string_pretty(config)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
         fs::write(&config_path, toml_string)?;
     }
-    
+
     Ok(())
 }
 
@@ -151,8 +158,9 @@ mod tests {
     fn config_serialization_deserialization() {
         let config = Config::default();
         let serialized = toml::to_string_pretty(&config).expect("Failed to serialize config");
-        let deserialized: Config = toml::from_str(&serialized).expect("Failed to deserialize config");
-        
+        let deserialized: Config =
+            toml::from_str(&serialized).expect("Failed to deserialize config");
+
         assert_eq!(config.app_name, deserialized.app_name);
         assert_eq!(config.database_path, deserialized.database_path);
         assert_eq!(config.default_priority, deserialized.default_priority);

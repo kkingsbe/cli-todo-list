@@ -5,18 +5,50 @@
 use crate::error::AppError;
 use crate::filter::{TagFilter, TaskFilter, TaskSort};
 use crate::models::{Priority, Tag, Task};
-use crate::repository::Repository;
+use crate::repository::{Repository, RepositoryError};
 use std::sync::Arc;
 
 /// Command handler for creating a new task.
+/// This version accepts a concrete repository type.
 pub fn create_task<R: Repository>(
-    _repository: Arc<R>,
+    repository: Arc<R>,
     title: String,
     description: Option<String>,
     priority: Priority,
 ) -> Result<Task, AppError> {
+    // Create the task with the given details
     let task = Task::with_details(title, description, priority);
-    // Repository operations will be implemented in later stories
+
+    // Persist the task to the repository
+    repository.create_task(&task).map_err(|e| match e {
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        _ => AppError::UserError(e.to_string()),
+    })?;
+
+    Ok(task)
+}
+
+/// Command handler for creating a new task with a trait object.
+/// This version accepts Arc<dyn Repository> for dynamic dispatch.
+pub fn create_task_with_dyn(
+    repository: &dyn Repository,
+    title: String,
+    description: Option<String>,
+    priority: Priority,
+) -> Result<Task, AppError> {
+    // Create the task with the given details
+    let task = Task::with_details(title, description, priority);
+
+    // Persist the task to the repository
+    repository.create_task(&task).map_err(|e| match e {
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        _ => AppError::UserError(e.to_string()),
+    })?;
+
     Ok(task)
 }
 
@@ -32,10 +64,14 @@ pub fn list_tasks<R: Repository>(
 }
 
 /// Command handler for getting a task by ID.
-pub fn get_task<R: Repository>(_repository: Arc<R>, id: String) -> Result<Task, AppError> {
-    let _ = id;
-    // Repository operations will be implemented in later stories
-    Err(AppError::NotFound("Task not implemented yet".to_string()))
+pub fn get_task<R: Repository>(repository: Arc<R>, id: String) -> Result<Task, AppError> {
+    repository.get_task(&id).map_err(|e| match e {
+        RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+    })
 }
 
 /// Command handler for updating a task.

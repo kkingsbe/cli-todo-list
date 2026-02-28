@@ -43,7 +43,10 @@ impl FromStr for Priority {
             "P2" => Ok(Priority::P2),
             "P3" => Ok(Priority::P3),
             "P4" => Ok(Priority::P4),
-            _ => Err(format!("Invalid priority: {}. Expected P1, P2, P3, or P4.", s)),
+            _ => Err(format!(
+                "Invalid priority: {}. Expected P1, P2, P3, or P4.",
+                s
+            )),
         }
     }
 }
@@ -235,10 +238,10 @@ mod tests {
         use serde_json;
         let incomplete = Status::Incomplete;
         let completed = Status::Completed;
-        
+
         let incomplete_json = serde_json::to_string(&incomplete).unwrap();
         let completed_json = serde_json::to_string(&completed).unwrap();
-        
+
         assert_eq!(incomplete_json, "\"incomplete\"");
         assert_eq!(completed_json, "\"completed\"");
     }

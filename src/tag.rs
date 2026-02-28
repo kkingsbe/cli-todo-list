@@ -97,15 +97,15 @@ mod tests {
         let tag_work = Tag::new("Work".to_string());
         let tag_work_upper = Tag::new("WORK".to_string());
         let tag_work_mixed = Tag::new("WoRk".to_string());
-        
+
         assert_eq!(tag_work.name, "work");
         assert_eq!(tag_work_upper.name, "work");
         assert_eq!(tag_work_mixed.name, "work");
-        
+
         // Also test with_color method
         let tag_color = Tag::with_color("Important".to_string(), "#FF0000".to_string());
         assert_eq!(tag_color.name, "important");
-        
+
         // Test rename also normalizes
         let mut tag = Tag::new("test".to_string());
         tag.rename("NEW_NAME".to_string());

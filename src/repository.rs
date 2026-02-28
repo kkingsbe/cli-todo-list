@@ -89,14 +89,18 @@ pub struct SqliteRepository {
 impl SqliteRepository {
     /// Creates a new SqliteRepository, creating the database file if it doesn't exist.
     pub fn new(path: &Path) -> Result<Self, RepositoryError> {
-        let conn = Connection::open(path)
-            .map_err(|e| RepositoryError::Database(e.to_string()))?;
-        Ok(Self { conn: Mutex::new(conn) })
+        let conn = Connection::open(path).map_err(|e| RepositoryError::Database(e.to_string()))?;
+        Ok(Self {
+            conn: Mutex::new(conn),
+        })
     }
 
     /// Initializes the database schema, creating tables if they don't exist.
     pub fn initialize(&self) -> Result<(), RepositoryError> {
-        let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
         conn.execute_batch(
             r#"
             CREATE TABLE IF NOT EXISTS tasks (
@@ -129,14 +133,18 @@ impl SqliteRepository {
             CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date);
             CREATE INDEX IF NOT EXISTS idx_tasks_created_at ON tasks(created_at);
             CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name COLLATE NOCASE);
-            "#
-        ).map_err(|e| RepositoryError::Database(e.to_string()))
+            "#,
+        )
+        .map_err(|e| RepositoryError::Database(e.to_string()))
     }
 }
 
 impl Repository for SqliteRepository {
     fn create_task(&self, task: &Task) -> Result<(), RepositoryError> {
-        let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
         conn.execute(
             "INSERT INTO tasks (id, title, description, priority, status, created_at, updated_at, due_date) 
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
@@ -155,31 +163,42 @@ impl Repository for SqliteRepository {
     }
 
     fn get_task(&self, id: &str) -> Result<Task, RepositoryError> {
-        let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
-        let mut stmt = conn.prepare(
-            "SELECT id, title, description, priority, status, created_at, updated_at, due_date 
-             FROM tasks WHERE id = ?1"
-        ).map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT id, title, description, priority, status, created_at, updated_at, due_date 
+             FROM tasks WHERE id = ?1",
+            )
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
 
-        let task = stmt.query_row([id], |row| {
-            Ok(Task {
-                id: row.get(0)?,
-                title: row.get(1)?,
-                description: row.get(2)?,
-                priority: i64_to_priority(row.get(3)?),
-                status: string_to_status(&row.get::<_, String>(4)?),
-                created_at: string_to_datetime(&row.get::<_, String>(5)?)
-                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
-                updated_at: string_to_datetime(&row.get::<_, String>(6)?)
-                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
-                due_date: row.get::<_, Option<String>>(7)?
-                    .map(|s| string_to_datetime(&s).map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string())))
-                    .transpose()?,
+        let task = stmt
+            .query_row([id], |row| {
+                Ok(Task {
+                    id: row.get(0)?,
+                    title: row.get(1)?,
+                    description: row.get(2)?,
+                    priority: i64_to_priority(row.get(3)?),
+                    status: string_to_status(&row.get::<_, String>(4)?),
+                    created_at: string_to_datetime(&row.get::<_, String>(5)?)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    updated_at: string_to_datetime(&row.get::<_, String>(6)?)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    due_date: row
+                        .get::<_, Option<String>>(7)?
+                        .map(|s| {
+                            string_to_datetime(&s)
+                                .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))
+                        })
+                        .transpose()?,
+                })
             })
-        }).map_err(|e| match e {
-            rusqlite::Error::QueryReturnedNoRows => RepositoryError::NotFound(id.to_string()),
-            _ => RepositoryError::Database(e.to_string()),
-        })?;
+            .map_err(|e| match e {
+                rusqlite::Error::QueryReturnedNoRows => RepositoryError::NotFound(id.to_string()),
+                _ => RepositoryError::Database(e.to_string()),
+            })?;
 
         Ok(task)
     }
@@ -194,29 +213,38 @@ impl Repository for SqliteRepository {
     }
 
     fn list_tasks_all(&self) -> Result<Vec<Task>, RepositoryError> {
-        let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
         let mut stmt = conn.prepare(
             "SELECT id, title, description, priority, status, created_at, updated_at, due_date FROM tasks"
         ).map_err(|e| RepositoryError::Database(e.to_string()))?;
 
-        let tasks = stmt.query_map([], |row| {
-            Ok(Task {
-                id: row.get(0)?,
-                title: row.get(1)?,
-                description: row.get(2)?,
-                priority: i64_to_priority(row.get(3)?),
-                status: string_to_status(&row.get::<_, String>(4)?),
-                created_at: string_to_datetime(&row.get::<_, String>(5)?)
-                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
-                updated_at: string_to_datetime(&row.get::<_, String>(6)?)
-                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
-                due_date: row.get::<_, Option<String>>(7)?
-                    .map(|s| string_to_datetime(&s).map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string())))
-                    .transpose()?,
+        let tasks = stmt
+            .query_map([], |row| {
+                Ok(Task {
+                    id: row.get(0)?,
+                    title: row.get(1)?,
+                    description: row.get(2)?,
+                    priority: i64_to_priority(row.get(3)?),
+                    status: string_to_status(&row.get::<_, String>(4)?),
+                    created_at: string_to_datetime(&row.get::<_, String>(5)?)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    updated_at: string_to_datetime(&row.get::<_, String>(6)?)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    due_date: row
+                        .get::<_, Option<String>>(7)?
+                        .map(|s| {
+                            string_to_datetime(&s)
+                                .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))
+                        })
+                        .transpose()?,
+                })
             })
-        }).map_err(|e| RepositoryError::Database(e.to_string()))?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|e| RepositoryError::Database(e.to_string()))?;
+            .map_err(|e| RepositoryError::Database(e.to_string()))?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
 
         Ok(tasks)
     }
@@ -226,50 +254,62 @@ impl Repository for SqliteRepository {
     }
 
     fn delete_task(&self, id: &str) -> Result<(), RepositoryError> {
-        let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
         conn.execute("DELETE FROM tasks WHERE id = ?1", [id])
             .map_err(|e| RepositoryError::Database(e.to_string()))?;
         Ok(())
     }
 
     fn get_tasks_by_status(&self, status: Status) -> Result<Vec<Task>, RepositoryError> {
-        let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
         let mut stmt = conn.prepare(
             "SELECT id, title, description, priority, status, created_at, updated_at, due_date FROM tasks WHERE status = ?1"
         ).map_err(|e| RepositoryError::Database(e.to_string()))?;
 
-        let tasks = stmt.query_map([status_to_string(&status)], |row| {
-            Ok(Task {
-                id: row.get(0)?,
-                title: row.get(1)?,
-                description: row.get(2)?,
-                priority: i64_to_priority(row.get(3)?),
-                status: string_to_status(&row.get::<_, String>(4)?),
-                created_at: string_to_datetime(&row.get::<_, String>(5)?)
-                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
-                updated_at: string_to_datetime(&row.get::<_, String>(6)?)
-                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
-                due_date: row.get::<_, Option<String>>(7)?
-                    .map(|s| string_to_datetime(&s).map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string())))
-                    .transpose()?,
+        let tasks = stmt
+            .query_map([status_to_string(&status)], |row| {
+                Ok(Task {
+                    id: row.get(0)?,
+                    title: row.get(1)?,
+                    description: row.get(2)?,
+                    priority: i64_to_priority(row.get(3)?),
+                    status: string_to_status(&row.get::<_, String>(4)?),
+                    created_at: string_to_datetime(&row.get::<_, String>(5)?)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    updated_at: string_to_datetime(&row.get::<_, String>(6)?)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    due_date: row
+                        .get::<_, Option<String>>(7)?
+                        .map(|s| {
+                            string_to_datetime(&s)
+                                .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))
+                        })
+                        .transpose()?,
+                })
             })
-        }).map_err(|e| RepositoryError::Database(e.to_string()))?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|e| RepositoryError::Database(e.to_string()))?;
+            .map_err(|e| RepositoryError::Database(e.to_string()))?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
 
         Ok(tasks)
     }
 
     fn create_tag(&self, tag: &Tag) -> Result<(), RepositoryError> {
-        let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
         conn.execute(
             "INSERT INTO tags (id, name, created_at) VALUES (?1, ?2, ?3)",
-            (
-                &tag.id,
-                &tag.name,
-                datetime_to_string(&tag.created_at),
-            ),
-        ).map_err(|e| {
+            (&tag.id, &tag.name, datetime_to_string(&tag.created_at)),
+        )
+        .map_err(|e| {
             if e.to_string().contains("UNIQUE constraint") {
                 RepositoryError::Constraint(format!("Tag '{}' already exists", tag.name))
             } else {
@@ -280,10 +320,13 @@ impl Repository for SqliteRepository {
     }
 
     fn get_tag(&self, id: &str) -> Result<Tag, RepositoryError> {
-        let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
-        let mut stmt = conn.prepare(
-            "SELECT id, name, created_at FROM tags WHERE id = ?1"
-        ).map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let mut stmt = conn
+            .prepare("SELECT id, name, created_at FROM tags WHERE id = ?1")
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
 
         stmt.query_row([id], |row| {
             Ok(Tag {
@@ -293,17 +336,21 @@ impl Repository for SqliteRepository {
                 created_at: string_to_datetime(&row.get::<_, String>(2)?)
                     .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
             })
-        }).map_err(|e| match e {
+        })
+        .map_err(|e| match e {
             rusqlite::Error::QueryReturnedNoRows => RepositoryError::NotFound(id.to_string()),
             _ => RepositoryError::Database(e.to_string()),
         })
     }
 
     fn get_tag_by_name(&self, name: &str) -> Result<Tag, RepositoryError> {
-        let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
-        let mut stmt = conn.prepare(
-            "SELECT id, name, created_at FROM tags WHERE name = ?1"
-        ).map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let mut stmt = conn
+            .prepare("SELECT id, name, created_at FROM tags WHERE name = ?1")
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
 
         stmt.query_row([name.to_lowercase()], |row| {
             Ok(Tag {
@@ -313,7 +360,8 @@ impl Repository for SqliteRepository {
                 created_at: string_to_datetime(&row.get::<_, String>(2)?)
                     .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
             })
-        }).map_err(|e| match e {
+        })
+        .map_err(|e| match e {
             rusqlite::Error::QueryReturnedNoRows => RepositoryError::NotFound(name.to_string()),
             _ => RepositoryError::Database(e.to_string()),
         })
@@ -328,95 +376,124 @@ impl Repository for SqliteRepository {
     }
 
     fn list_tags(&self, _filter: &TagFilter) -> Result<Vec<Tag>, RepositoryError> {
-        let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
-        let mut stmt = conn.prepare(
-            "SELECT id, name, created_at FROM tags"
-        ).map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let mut stmt = conn
+            .prepare("SELECT id, name, created_at FROM tags")
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
 
-        let tags = stmt.query_map([], |row| {
-            Ok(Tag {
-                id: row.get(0)?,
-                name: row.get(1)?,
-                color: None,
-                created_at: string_to_datetime(&row.get::<_, String>(2)?)
-                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+        let tags = stmt
+            .query_map([], |row| {
+                Ok(Tag {
+                    id: row.get(0)?,
+                    name: row.get(1)?,
+                    color: None,
+                    created_at: string_to_datetime(&row.get::<_, String>(2)?)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                })
             })
-        }).map_err(|e| RepositoryError::Database(e.to_string()))?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|e| RepositoryError::Database(e.to_string()))?;
+            .map_err(|e| RepositoryError::Database(e.to_string()))?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
 
         Ok(tags)
     }
 
     fn add_tag_to_task(&self, task_id: &str, tag_id: &str) -> Result<(), RepositoryError> {
-        let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
         conn.execute(
             "INSERT OR IGNORE INTO task_tags (task_id, tag_id) VALUES (?1, ?2)",
             [task_id, tag_id],
-        ).map_err(|e| RepositoryError::Database(e.to_string()))?;
+        )
+        .map_err(|e| RepositoryError::Database(e.to_string()))?;
         Ok(())
     }
 
     fn remove_tag_from_task(&self, task_id: &str, tag_id: &str) -> Result<(), RepositoryError> {
-        let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
-        let rows = conn.execute(
-            "DELETE FROM task_tags WHERE task_id = ?1 AND tag_id = ?2",
-            [task_id, tag_id],
-        ).map_err(|e| RepositoryError::Database(e.to_string()))?;
-        
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let rows = conn
+            .execute(
+                "DELETE FROM task_tags WHERE task_id = ?1 AND tag_id = ?2",
+                [task_id, tag_id],
+            )
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+
         if rows == 0 {
-            return Err(RepositoryError::NotFound(
-                format!("Tag {} not found on task {}", tag_id, task_id)
-            ));
+            return Err(RepositoryError::NotFound(format!(
+                "Tag {} not found on task {}",
+                tag_id, task_id
+            )));
         }
         Ok(())
     }
 
     fn get_task_tags(&self, task_id: &str) -> Result<Vec<Tag>, RepositoryError> {
-        let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
         let mut stmt = conn.prepare(
             "SELECT t.id, t.name, t.created_at \n            FROM tags t \n            INNER JOIN task_tags tt ON t.id = tt.tag_id \n            WHERE tt.task_id = ?1"
         ).map_err(|e| RepositoryError::Database(e.to_string()))?;
 
-        let tags = stmt.query_map([task_id], |row| {
-            Ok(Tag {
-                id: row.get(0)?,
-                name: row.get(1)?,
-                color: None,
-                created_at: string_to_datetime(&row.get::<_, String>(2)?)
-                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+        let tags = stmt
+            .query_map([task_id], |row| {
+                Ok(Tag {
+                    id: row.get(0)?,
+                    name: row.get(1)?,
+                    color: None,
+                    created_at: string_to_datetime(&row.get::<_, String>(2)?)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                })
             })
-        }).map_err(|e| RepositoryError::Database(e.to_string()))?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|e| RepositoryError::Database(e.to_string()))?;
+            .map_err(|e| RepositoryError::Database(e.to_string()))?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
 
         Ok(tags)
     }
 
     fn get_tasks_by_tag(&self, tag_id: &str) -> Result<Vec<Task>, RepositoryError> {
-        let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
         let mut stmt = conn.prepare(
             "SELECT t.id, t.title, t.description, t.priority, t.status, t.created_at, t.updated_at, t.due_date \n            FROM tasks t \n            INNER JOIN task_tags tt ON t.id = tt.task_id \n            WHERE tt.tag_id = ?1"
         ).map_err(|e| RepositoryError::Database(e.to_string()))?;
 
-        let tasks = stmt.query_map([tag_id], |row| {
-            Ok(Task {
-                id: row.get(0)?,
-                title: row.get(1)?,
-                description: row.get(2)?,
-                priority: i64_to_priority(row.get(3)?),
-                status: string_to_status(&row.get::<_, String>(4)?),
-                created_at: string_to_datetime(&row.get::<_, String>(5)?)
-                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
-                updated_at: string_to_datetime(&row.get::<_, String>(6)?)
-                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
-                due_date: row.get::<_, Option<String>>(7)?
-                    .map(|s| string_to_datetime(&s).map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string())))
-                    .transpose()?,
+        let tasks = stmt
+            .query_map([tag_id], |row| {
+                Ok(Task {
+                    id: row.get(0)?,
+                    title: row.get(1)?,
+                    description: row.get(2)?,
+                    priority: i64_to_priority(row.get(3)?),
+                    status: string_to_status(&row.get::<_, String>(4)?),
+                    created_at: string_to_datetime(&row.get::<_, String>(5)?)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    updated_at: string_to_datetime(&row.get::<_, String>(6)?)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    due_date: row
+                        .get::<_, Option<String>>(7)?
+                        .map(|s| {
+                            string_to_datetime(&s)
+                                .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))
+                        })
+                        .transpose()?,
+                })
             })
-        }).map_err(|e| RepositoryError::Database(e.to_string()))?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|e| RepositoryError::Database(e.to_string()))?;
+            .map_err(|e| RepositoryError::Database(e.to_string()))?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
 
         Ok(tasks)
     }
@@ -516,9 +593,9 @@ mod tests {
     fn test_sqlite_repository_new_creates_database_file() {
         let temp_dir = TempDir::new().unwrap();
         let db_path = temp_dir.path().join("test.db");
-        
+
         let repo = SqliteRepository::new(&db_path).unwrap();
-        
+
         assert!(db_path.exists(), "Database file should be created");
     }
 
@@ -526,12 +603,12 @@ mod tests {
     fn test_sqlite_repository_initializes_schema() {
         let temp_dir = TempDir::new().unwrap();
         let db_path = temp_dir.path().join("test.db");
-        
+
         let repo = SqliteRepository::new(&db_path).unwrap();
         repo.initialize().unwrap();
-        
+
         let conn = rusqlite::Connection::open(&db_path).unwrap();
-        
+
         // Verify tables exist
         conn.execute("SELECT * FROM tasks", []).unwrap();
         conn.execute("SELECT * FROM tags", []).unwrap();
@@ -542,15 +619,15 @@ mod tests {
     fn test_create_and_retrieve_task() {
         let temp_dir = TempDir::new().unwrap();
         let db_path = temp_dir.path().join("test.db");
-        
+
         let repo = SqliteRepository::new(&db_path).unwrap();
         repo.initialize().unwrap();
-        
+
         let task = Task::new("Test Task".to_string());
         repo.create_task(&task).unwrap();
-        
+
         let retrieved = repo.get_task(&task.id).unwrap();
-        
+
         assert_eq!(retrieved.id, task.id);
         assert_eq!(retrieved.title, task.title);
     }
@@ -559,15 +636,15 @@ mod tests {
     fn test_create_and_retrieve_tag() {
         let temp_dir = TempDir::new().unwrap();
         let db_path = temp_dir.path().join("test.db");
-        
+
         let repo = SqliteRepository::new(&db_path).unwrap();
         repo.initialize().unwrap();
-        
+
         let tag = Tag::new("test-tag".to_string());
         repo.create_tag(&tag).unwrap();
-        
+
         let retrieved = repo.get_tag(&tag.id).unwrap();
-        
+
         assert_eq!(retrieved.id, tag.id);
         assert_eq!(retrieved.name, tag.name);
     }
@@ -576,17 +653,17 @@ mod tests {
     fn test_list_tasks_returns_all() {
         let temp_dir = TempDir::new().unwrap();
         let db_path = temp_dir.path().join("test.db");
-        
+
         let repo = SqliteRepository::new(&db_path).unwrap();
         repo.initialize().unwrap();
-        
+
         let task1 = Task::new("Task 1".to_string());
         let task2 = Task::new("Task 2".to_string());
         repo.create_task(&task1).unwrap();
         repo.create_task(&task2).unwrap();
-        
+
         let tasks = repo.list_tasks_all().unwrap();
-        
+
         assert_eq!(tasks.len(), 2);
     }
 
@@ -594,21 +671,21 @@ mod tests {
     fn test_tag_task_relationship() {
         let temp_dir = TempDir::new().unwrap();
         let db_path = temp_dir.path().join("test.db");
-        
+
         let repo = SqliteRepository::new(&db_path).unwrap();
         repo.initialize().unwrap();
-        
+
         let task = Task::new("Test Task".to_string());
         let tag = Tag::new("test-tag".to_string());
         repo.create_task(&task).unwrap();
         repo.create_tag(&tag).unwrap();
-        
+
         repo.add_tag_to_task(&task.id, &tag.id).unwrap();
-        
+
         let tags = repo.get_task_tags(&task.id).unwrap();
         assert_eq!(tags.len(), 1);
         assert_eq!(tags[0].name, "test-tag");
-        
+
         let tasks = repo.get_tasks_by_tag(&tag.id).unwrap();
         assert_eq!(tasks.len(), 1);
         assert_eq!(tasks[0].title, "Test Task");
