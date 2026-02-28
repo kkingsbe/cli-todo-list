@@ -54,13 +54,31 @@ pub fn create_task_with_dyn(
 
 /// Command handler for listing tasks.
 pub fn list_tasks<R: Repository>(
-    _repository: Arc<R>,
+    repository: Arc<R>,
     filter: TaskFilter,
     sort: TaskSort,
 ) -> Result<Vec<Task>, AppError> {
-    // Repository operations will be implemented in later stories
-    let _ = (filter, sort);
-    Ok(Vec::new())
+    repository.list_tasks(&filter, &sort).map_err(|e| match e {
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        _ => AppError::UserError(e.to_string()),
+    })
+}
+
+/// Command handler for listing tasks with a trait object.
+/// This version accepts Arc<dyn Repository> for dynamic dispatch.
+pub fn list_tasks_with_dyn(
+    repository: &dyn Repository,
+    filter: TaskFilter,
+    sort: TaskSort,
+) -> Result<Vec<Task>, AppError> {
+    repository.list_tasks(&filter, &sort).map_err(|e| match e {
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        _ => AppError::UserError(e.to_string()),
+    })
 }
 
 /// Command handler for getting a task by ID.
@@ -76,10 +94,7 @@ pub fn get_task<R: Repository>(repository: Arc<R>, id: String) -> Result<Task, A
 
 /// Command handler for getting a task by ID with a trait object.
 /// This version accepts Arc<dyn Repository> for dynamic dispatch.
-pub fn get_task_with_dyn(
-    repository: &dyn Repository,
-    id: String,
-) -> Result<Task, AppError> {
+pub fn get_task_with_dyn(repository: &dyn Repository, id: String) -> Result<Task, AppError> {
     repository.get_task(&id).map_err(|e| match e {
         RepositoryError::NotFound(msg) => AppError::NotFound(msg),
         RepositoryError::Database(msg) => {
@@ -136,10 +151,7 @@ pub fn create_tag<R: Repository>(
 
 /// Command handler for getting or creating a tag by name.
 /// If the tag exists, returns the existing tag. If not, creates a new tag.
-pub fn get_or_create_tag<R: Repository>(
-    repository: Arc<R>,
-    name: String,
-) -> Result<Tag, AppError> {
+pub fn get_or_create_tag<R: Repository>(repository: Arc<R>, name: String) -> Result<Tag, AppError> {
     // Try to get the tag by name first
     match repository.get_tag_by_name(&name) {
         Ok(tag) => Ok(tag),
@@ -157,9 +169,9 @@ pub fn get_or_create_tag<R: Repository>(
                 Ok(tag)
             }
             RepositoryError::Database(msg) => {
-                AppError::System(crate::error::SystemError::Database(msg))
+                Err(AppError::System(crate::error::SystemError::Database(msg)))
             }
-            RepositoryError::Constraint(msg) => AppError::UserError(msg),
+            RepositoryError::Constraint(msg) => Err(AppError::UserError(msg)),
         },
     }
 }

@@ -2,7 +2,7 @@
 //!
 //! This module defines the Repository trait for data persistence.
 
-use crate::filter::{TagFilter, TaskFilter, TaskSort};
+use crate::filter::{SortOrder, TagFilter, TaskFilter, TaskSort, TaskSortField};
 use crate::models::{Priority, Status, Tag, Task};
 use chrono::{DateTime, Utc};
 use rusqlite::Connection;
@@ -205,11 +205,94 @@ impl Repository for SqliteRepository {
 
     fn list_tasks(
         &self,
-        _filter: &TaskFilter,
-        _sort: &TaskSort,
+        filter: &TaskFilter,
+        sort: &TaskSort,
     ) -> Result<Vec<Task>, RepositoryError> {
-        // For now, just return all tasks ignoring filter and sort
-        self.list_tasks_all()
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+
+        // Build the query with WHERE clause for filtering
+        let mut query = String::from(
+            "SELECT id, title, description, priority, status, created_at, updated_at, due_date FROM tasks"
+        );
+        let mut conditions = Vec::new();
+        let mut params: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
+
+        // Add status filter
+        if let Some(ref status) = filter.status {
+            conditions.push("status = ?");
+            params.push(Box::new(status_to_string(status)));
+        }
+
+        // Add priority filter
+        if let Some(ref priority) = filter.priority {
+            conditions.push("priority = ?");
+            params.push(Box::new(priority_to_i64(priority)));
+        }
+
+        // Add search filter (title or description)
+        if let Some(ref search) = filter.search {
+            conditions.push("(title LIKE ? OR description LIKE ?)");
+            let search_pattern = format!("%{}%", search);
+            params.push(Box::new(search_pattern.clone()));
+            params.push(Box::new(search_pattern));
+        }
+
+        // Append WHERE clause if there are conditions
+        if !conditions.is_empty() {
+            query.push_str(" WHERE ");
+            query.push_str(&conditions.join(" AND "));
+        }
+
+        // Add ORDER BY clause
+        let order_by_field = match sort.field {
+            TaskSortField::CreatedAt => "created_at",
+            TaskSortField::UpdatedAt => "updated_at",
+            TaskSortField::Priority => "priority",
+            TaskSortField::DueDate => "due_date",
+            TaskSortField::Title => "title",
+        };
+        let order_direction = match sort.order {
+            SortOrder::Ascending => "ASC",
+            SortOrder::Descending => "DESC",
+        };
+        query.push_str(&format!(" ORDER BY {} {}", order_by_field, order_direction));
+
+        // Prepare and execute the query
+        let mut stmt = conn
+            .prepare(&query)
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+
+        let params_refs: Vec<&dyn rusqlite::ToSql> = params.iter().map(|p| p.as_ref()).collect();
+
+        let tasks = stmt
+            .query_map(params_refs.as_slice(), |row| {
+                Ok(Task {
+                    id: row.get(0)?,
+                    title: row.get(1)?,
+                    description: row.get(2)?,
+                    priority: i64_to_priority(row.get(3)?),
+                    status: string_to_status(&row.get::<_, String>(4)?),
+                    created_at: string_to_datetime(&row.get::<_, String>(5)?)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    updated_at: string_to_datetime(&row.get::<_, String>(6)?)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    due_date: row
+                        .get::<_, Option<String>>(7)?
+                        .map(|s| {
+                            string_to_datetime(&s)
+                                .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))
+                        })
+                        .transpose()?,
+                })
+            })
+            .map_err(|e| RepositoryError::Database(e.to_string()))?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+
+        Ok(tasks)
     }
 
     fn list_tasks_all(&self) -> Result<Vec<Task>, RepositoryError> {

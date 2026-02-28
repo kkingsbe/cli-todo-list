@@ -24,6 +24,7 @@ use crate::cli::{Cli, Commands};
 use crate::commands::create_task_with_dyn;
 use crate::config::load_config;
 use crate::error::AppError;
+use crate::filter::{SortOrder, TaskFilter, TaskSort, TaskSortField};
 use crate::models::Priority;
 use crate::repository::{Repository, SqliteRepository};
 
@@ -101,9 +102,107 @@ fn main() -> Result<()> {
                 }
             }
         }
-        Commands::List { .. } => {
-            // TODO: Implement list command
-            tracing::info!("List command not yet implemented");
+        Commands::List {
+            status,
+            priority,
+            search,
+            sort_by,
+            order,
+            limit,
+        } => {
+            // Parse sort field
+            let sort_field = match sort_by.as_str() {
+                "created" => TaskSortField::CreatedAt,
+                "updated" => TaskSortField::UpdatedAt,
+                "priority" => TaskSortField::Priority,
+                "due" => TaskSortField::DueDate,
+                "title" => TaskSortField::Title,
+                _ => TaskSortField::CreatedAt,
+            };
+
+            // Parse sort order
+            let sort_order = match order.as_str() {
+                "asc" => SortOrder::Ascending,
+                "desc" => SortOrder::Descending,
+                _ => SortOrder::Descending,
+            };
+
+            // Build filter
+            let mut filter = TaskFilter::new();
+
+            // Parse status filter
+            if let Some(ref status_str) = status {
+                match status_str.to_lowercase().as_str() {
+                    "complete" | "completed" => {
+                        filter = filter.with_status(crate::models::Status::Completed);
+                    }
+                    "incomplete" | "open" => {
+                        filter = filter.with_status(crate::models::Status::Incomplete);
+                    }
+                    _ => {}
+                }
+            }
+
+            // Parse priority filter
+            if let Some(p) = priority {
+                let prio = match p {
+                    1 => crate::models::Priority::P1,
+                    2 => crate::models::Priority::P2,
+                    3 => crate::models::Priority::P3,
+                    4 => crate::models::Priority::P4,
+                    _ => crate::models::Priority::P3,
+                };
+                filter = filter.with_priority(prio);
+            }
+
+            // Add search filter
+            if let Some(ref search_term) = search {
+                filter = filter.with_search(search_term.clone());
+            }
+
+            // Build sort
+            let sort = TaskSort::new(sort_field, sort_order);
+
+            // Call the repository
+            match commands::list_tasks_with_dyn(repository.as_ref(), filter, sort) {
+                Ok(tasks) => {
+                    // Apply limit (pagination)
+                    let tasks: Vec<_> = tasks.into_iter().take(limit as usize).collect();
+
+                    if tasks.is_empty() {
+                        println!("No tasks found.");
+                    } else {
+                        // Print table header
+                        println!(
+                            "{:<38} | {:<30} | {:^8} | {:^12}",
+                            "ID", "TITLE", "PRIORITY", "STATUS"
+                        );
+                        println!("{:-<38}-+-{:-<30 }-+-{:-<8 }-+-{:-<12}", "", "", "", "");
+
+                        // Print each task
+                        for task in tasks {
+                            let title = if task.title.len() > 30 {
+                                format!("{}...", &task.title[..27])
+                            } else {
+                                task.title
+                            };
+                            println!(
+                                "{:<38} | {:<30} | {:^8} | {:^12}",
+                                &task.id[..8],
+                                title,
+                                format!("{:?}", task.priority),
+                                format!("{:?}", task.status)
+                            );
+                        }
+
+                        println!("\nTotal: {} task(s)", limit);
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Error listing tasks: {}", e);
+                    std::process::exit(1);
+                }
+            }
         }
         Commands::Show { id } => {
             match commands::get_task_with_dyn(repository.as_ref(), id.clone()) {
@@ -111,12 +210,20 @@ fn main() -> Result<()> {
                     println!("Task Details:");
                     println!("  ID:          {}", task.id);
                     println!("  Title:       {}", task.title);
-                    println!("  Description: {}", task.description.as_deref().unwrap_or("N/A"));
+                    println!(
+                        "  Description: {}",
+                        task.description.as_deref().unwrap_or("N/A")
+                    );
                     println!("  Priority:    {:?}", task.priority);
                     println!("  Status:      {:?}", task.status);
                     println!("  Created:     {}", task.created_at);
                     println!("  Updated:     {}", task.updated_at);
-                    println!("  Due Date:    {}", task.due_date.map(|d| d.to_string()).unwrap_or_else(|| "N/A".to_string()));
+                    println!(
+                        "  Due Date:    {}",
+                        task.due_date
+                            .map(|d| d.to_string())
+                            .unwrap_or_else(|| "N/A".to_string())
+                    );
                 }
                 Err(e) => match e {
                     AppError::NotFound(_) => {
