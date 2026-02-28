@@ -88,3 +88,19 @@
   - MUST FIX: Replace println! with tracing (src/main.rs lines 41, 45, 49, 53, 57, 61, 65, 69)
 - **Summary:** All acceptance criteria met for CLI functionality, but shares same scope violations and println! usage issues from story-01-3. Must fix before approval.
 
+---
+
+### 01.3: Setup Logging and Error Handling
+
+- **Implemented by:** dev-1
+- **Sprint:** 2
+- **Commits:** e124446..bd124c6
+- **Story file:** `.switchboard/state/stories/story-01-3-setup-logging-error-handling.md`
+- **Files changed:** src/main.rs
+- **Status:** PENDING_REVIEW
+- **Acceptance Criteria:**
+  - [x] Criterion 1 — verified by: cargo check succeeds, error types are public
+  - [x] Criterion 2 — verified by: Application runs without panic on startup, shows logging output
+  - [x] Criterion 3 — verified by: Run with invalid args shows user-friendly error (clap provides this)
+- **Notes:** Infrastructure story. Added tracing initialization to main.rs. AppError types already existed in error.rs (with ValidationError instead of UserError - equivalent). Error handling infrastructure in place.
+

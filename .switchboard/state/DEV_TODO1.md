@@ -14,7 +14,7 @@ Before starting any stories, read these files:
 
 ## Stories
 
-- [ ] **01.3**: Setup Logging and Error Handling (2 pts)
+- [x] **01.3**: Setup Logging and Error Handling (2 pts) ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/story-01-3-setup-logging-error-handling.md`
   - 📚 Skills: `./skills/skills/rust-best-practices/SKILL.md`, `./skills/skills/test-driven-development/SKILL.md`
   - ⚡ Pre-check: Build + tests pass
