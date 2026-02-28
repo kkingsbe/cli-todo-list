@@ -22,14 +22,14 @@ Before starting any stories, read these files:
   - 🔒 Risk: Low
   - 📝 Commit: `feat(dev1): [01.1] Initialize Cargo Project`
 
-- [x] **01.1** (REWORK): Initialize Cargo Project
+- [x] **01.1** (REWORK): Initialize Cargo Project ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/story-01-1-initialize-cargo.md`
   - 🔍 Review: See REVIEW_QUEUE.md — CHANGES_REQUESTED
   - ⚡ Pre-check: Build + tests pass
   - ✅ Post-check: Fix clippy warnings - `cargo clippy -- -D warnings` must pass
   - 📝 Commit: `fix(dev1): [01.1] address review feedback - fix clippy warnings`
 
-- [x] **01.2** (REWORK): Create Module Structure
+- [x] **01.2** (REWORK): Create Module Structure ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/story-01-2-create-module-structure.md`
   - 🔍 Review: See REVIEW_QUEUE.md — CHANGES_REQUESTED
   - ⚡ Pre-check: Build + tests pass
