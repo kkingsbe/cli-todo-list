@@ -119,27 +119,27 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["03.1"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-1"
+        sprint: 4
       - id: "03.3"
         title: "List Tasks Command"
         points: 3
         type: "feature"
         risk: "low"
         depends_on: ["03.2"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-1"
+        sprint: 4
       - id: "03.4"
         title: "Get Task Details Command"
         points: 2
         type: "feature"
         risk: "low"
         depends_on: ["03.3"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-2"
+        sprint: 4
       - id: "03.5"
         title: "Update Task Command"
         points: 5
@@ -162,9 +162,9 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["03.2"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-2"
+        sprint: 4
       - id: "04.2"
         title: "List Tags Command"
         points: 2

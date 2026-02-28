@@ -4,7 +4,7 @@
 
 use crate::filter::{TagFilter, TaskFilter, TaskSort};
 use crate::models::{Priority, Status, Tag, Task};
-use chrono::{DateTime, TimeZone, Utc};
+use chrono::{DateTime, Utc};
 use rusqlite::Connection;
 use std::path::Path;
 use std::sync::Mutex;
@@ -32,33 +32,35 @@ impl std::fmt::Display for RepositoryError {
 
 impl std::error::Error for RepositoryError {}
 
-/// Helper function to convert DateTime<Utc> to i64 (Unix timestamp seconds)
-fn datetime_to_i64(dt: &DateTime<Utc>) -> i64 {
-    dt.timestamp()
+/// Helper function to convert DateTime<Utc> to String (ISO 8601)
+fn datetime_to_string(dt: &DateTime<Utc>) -> String {
+    dt.to_rfc3339()
 }
 
-/// Helper function to convert i64 (Unix timestamp seconds) to DateTime<Utc>
-fn i64_to_datetime(ts: i64) -> DateTime<Utc> {
-    Utc.timestamp_opt(ts, 0).unwrap()
+/// Helper function to convert String (ISO 8601) to DateTime<Utc>
+fn string_to_datetime(s: &str) -> Result<DateTime<Utc>, RepositoryError> {
+    DateTime::parse_from_rfc3339(s)
+        .map(|dt| dt.with_timezone(&Utc))
+        .map_err(|e| RepositoryError::Database(format!("Invalid datetime format: {}", e)))
 }
 
-/// Helper function to convert Priority to String
-fn priority_to_string(p: &Priority) -> String {
+/// Helper function to convert Priority to i64
+fn priority_to_i64(p: &Priority) -> i64 {
     match p {
-        Priority::P1 => "p1".to_string(),
-        Priority::P2 => "p2".to_string(),
-        Priority::P3 => "p3".to_string(),
-        Priority::P4 => "p4".to_string(),
+        Priority::P1 => 1,
+        Priority::P2 => 2,
+        Priority::P3 => 3,
+        Priority::P4 => 4,
     }
 }
 
-/// Helper function to convert String to Priority
-fn string_to_priority(s: &str) -> Priority {
-    match s {
-        "p1" => Priority::P1,
-        "p2" => Priority::P2,
-        "p3" => Priority::P3,
-        "p4" => Priority::P4,
+/// Helper function to convert i64 to Priority
+fn i64_to_priority(n: i64) -> Priority {
+    match n {
+        1 => Priority::P1,
+        2 => Priority::P2,
+        3 => Priority::P3,
+        4 => Priority::P4,
         _ => Priority::P3,
     }
 }
@@ -101,18 +103,17 @@ impl SqliteRepository {
                 id TEXT PRIMARY KEY NOT NULL,
                 title TEXT NOT NULL,
                 description TEXT,
-                priority TEXT NOT NULL,
-                status TEXT NOT NULL,
-                created_at INTEGER NOT NULL,
-                updated_at INTEGER NOT NULL,
-                due_date INTEGER
+                priority INTEGER NOT NULL DEFAULT 3,
+                status TEXT NOT NULL DEFAULT 'incomplete',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                due_date TEXT
             );
             
             CREATE TABLE IF NOT EXISTS tags (
                 id TEXT PRIMARY KEY NOT NULL,
-                name TEXT NOT NULL UNIQUE,
-                color TEXT,
-                created_at INTEGER NOT NULL
+                name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                created_at TEXT NOT NULL
             );
             
             CREATE TABLE IF NOT EXISTS task_tags (
@@ -122,6 +123,12 @@ impl SqliteRepository {
                 FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
                 FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
             );
+
+            CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
+            CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority);
+            CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date);
+            CREATE INDEX IF NOT EXISTS idx_tasks_created_at ON tasks(created_at);
+            CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name COLLATE NOCASE);
             "#
         ).map_err(|e| RepositoryError::Database(e.to_string()))
     }
@@ -137,11 +144,11 @@ impl Repository for SqliteRepository {
                 &task.id,
                 &task.title,
                 &task.description,
-                priority_to_string(&task.priority),
+                priority_to_i64(&task.priority),
                 status_to_string(&task.status),
-                datetime_to_i64(&task.created_at),
-                datetime_to_i64(&task.updated_at),
-                task.due_date.as_ref().map(datetime_to_i64),
+                datetime_to_string(&task.created_at),
+                datetime_to_string(&task.updated_at),
+                task.due_date.as_ref().map(datetime_to_string),
             ),
         ).map_err(|e| RepositoryError::Database(e.to_string()))?;
         Ok(())
@@ -159,11 +166,15 @@ impl Repository for SqliteRepository {
                 id: row.get(0)?,
                 title: row.get(1)?,
                 description: row.get(2)?,
-                priority: string_to_priority(&row.get::<_, String>(3)?),
+                priority: i64_to_priority(row.get(3)?),
                 status: string_to_status(&row.get::<_, String>(4)?),
-                created_at: i64_to_datetime(row.get(5)?),
-                updated_at: i64_to_datetime(row.get(6)?),
-                due_date: row.get::<_, Option<i64>>(7)?.map(i64_to_datetime),
+                created_at: string_to_datetime(&row.get::<_, String>(5)?)
+                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                updated_at: string_to_datetime(&row.get::<_, String>(6)?)
+                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                due_date: row.get::<_, Option<String>>(7)?
+                    .map(|s| string_to_datetime(&s).map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string())))
+                    .transpose()?,
             })
         }).map_err(|e| match e {
             rusqlite::Error::QueryReturnedNoRows => RepositoryError::NotFound(id.to_string()),
@@ -193,11 +204,15 @@ impl Repository for SqliteRepository {
                 id: row.get(0)?,
                 title: row.get(1)?,
                 description: row.get(2)?,
-                priority: string_to_priority(&row.get::<_, String>(3)?),
+                priority: i64_to_priority(row.get(3)?),
                 status: string_to_status(&row.get::<_, String>(4)?),
-                created_at: i64_to_datetime(row.get(5)?),
-                updated_at: i64_to_datetime(row.get(6)?),
-                due_date: row.get::<_, Option<i64>>(7)?.map(i64_to_datetime),
+                created_at: string_to_datetime(&row.get::<_, String>(5)?)
+                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                updated_at: string_to_datetime(&row.get::<_, String>(6)?)
+                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                due_date: row.get::<_, Option<String>>(7)?
+                    .map(|s| string_to_datetime(&s).map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string())))
+                    .transpose()?,
             })
         }).map_err(|e| RepositoryError::Database(e.to_string()))?
         .collect::<Result<Vec<_>, _>>()
@@ -228,11 +243,15 @@ impl Repository for SqliteRepository {
                 id: row.get(0)?,
                 title: row.get(1)?,
                 description: row.get(2)?,
-                priority: string_to_priority(&row.get::<_, String>(3)?),
+                priority: i64_to_priority(row.get(3)?),
                 status: string_to_status(&row.get::<_, String>(4)?),
-                created_at: i64_to_datetime(row.get(5)?),
-                updated_at: i64_to_datetime(row.get(6)?),
-                due_date: row.get::<_, Option<i64>>(7)?.map(i64_to_datetime),
+                created_at: string_to_datetime(&row.get::<_, String>(5)?)
+                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                updated_at: string_to_datetime(&row.get::<_, String>(6)?)
+                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                due_date: row.get::<_, Option<String>>(7)?
+                    .map(|s| string_to_datetime(&s).map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string())))
+                    .transpose()?,
             })
         }).map_err(|e| RepositoryError::Database(e.to_string()))?
         .collect::<Result<Vec<_>, _>>()
@@ -244,12 +263,11 @@ impl Repository for SqliteRepository {
     fn create_tag(&self, tag: &Tag) -> Result<(), RepositoryError> {
         let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
         conn.execute(
-            "INSERT INTO tags (id, name, color, created_at) VALUES (?1, ?2, ?3, ?4)",
+            "INSERT INTO tags (id, name, created_at) VALUES (?1, ?2, ?3)",
             (
                 &tag.id,
                 &tag.name,
-                &tag.color,
-                datetime_to_i64(&tag.created_at),
+                datetime_to_string(&tag.created_at),
             ),
         ).map_err(|e| {
             if e.to_string().contains("UNIQUE constraint") {
@@ -264,7 +282,7 @@ impl Repository for SqliteRepository {
     fn get_tag(&self, id: &str) -> Result<Tag, RepositoryError> {
         let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
         let mut stmt = conn.prepare(
-            "SELECT id, name, color, created_at FROM tags WHERE id = ?1"
+            "SELECT id, name, created_at FROM tags WHERE id = ?1"
         ).map_err(|e| RepositoryError::Database(e.to_string()))?;
 
         stmt.query_row([id], |row| {
@@ -272,7 +290,8 @@ impl Repository for SqliteRepository {
                 id: row.get(0)?,
                 name: row.get(1)?,
                 color: row.get(2)?,
-                created_at: i64_to_datetime(row.get(3)?),
+                created_at: string_to_datetime(&row.get::<_, String>(3)?)
+                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
             })
         }).map_err(|e| match e {
             rusqlite::Error::QueryReturnedNoRows => RepositoryError::NotFound(id.to_string()),
@@ -283,7 +302,7 @@ impl Repository for SqliteRepository {
     fn get_tag_by_name(&self, name: &str) -> Result<Tag, RepositoryError> {
         let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
         let mut stmt = conn.prepare(
-            "SELECT id, name, color, created_at FROM tags WHERE name = ?1"
+            "SELECT id, name, created_at FROM tags WHERE name = ?1"
         ).map_err(|e| RepositoryError::Database(e.to_string()))?;
 
         stmt.query_row([name.to_lowercase()], |row| {
@@ -291,7 +310,8 @@ impl Repository for SqliteRepository {
                 id: row.get(0)?,
                 name: row.get(1)?,
                 color: row.get(2)?,
-                created_at: i64_to_datetime(row.get(3)?),
+                created_at: string_to_datetime(&row.get::<_, String>(3)?)
+                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
             })
         }).map_err(|e| match e {
             rusqlite::Error::QueryReturnedNoRows => RepositoryError::NotFound(name.to_string()),
@@ -310,7 +330,7 @@ impl Repository for SqliteRepository {
     fn list_tags(&self, _filter: &TagFilter) -> Result<Vec<Tag>, RepositoryError> {
         let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
         let mut stmt = conn.prepare(
-            "SELECT id, name, color, created_at FROM tags"
+            "SELECT id, name, created_at FROM tags"
         ).map_err(|e| RepositoryError::Database(e.to_string()))?;
 
         let tags = stmt.query_map([], |row| {
@@ -318,7 +338,8 @@ impl Repository for SqliteRepository {
                 id: row.get(0)?,
                 name: row.get(1)?,
                 color: row.get(2)?,
-                created_at: i64_to_datetime(row.get(3)?),
+                created_at: string_to_datetime(&row.get::<_, String>(3)?)
+                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
             })
         }).map_err(|e| RepositoryError::Database(e.to_string()))?
         .collect::<Result<Vec<_>, _>>()
@@ -354,7 +375,7 @@ impl Repository for SqliteRepository {
     fn get_task_tags(&self, task_id: &str) -> Result<Vec<Tag>, RepositoryError> {
         let conn = self.conn.lock().map_err(|e| RepositoryError::Database(e.to_string()))?;
         let mut stmt = conn.prepare(
-            "SELECT t.id, t.name, t.color, t.created_at \n            FROM tags t \n            INNER JOIN task_tags tt ON t.id = tt.tag_id \n            WHERE tt.task_id = ?1"
+            "SELECT t.id, t.name, t.created_at \n            FROM tags t \n            INNER JOIN task_tags tt ON t.id = tt.tag_id \n            WHERE tt.task_id = ?1"
         ).map_err(|e| RepositoryError::Database(e.to_string()))?;
 
         let tags = stmt.query_map([task_id], |row| {
@@ -362,7 +383,8 @@ impl Repository for SqliteRepository {
                 id: row.get(0)?,
                 name: row.get(1)?,
                 color: row.get(2)?,
-                created_at: i64_to_datetime(row.get(3)?),
+                created_at: string_to_datetime(&row.get::<_, String>(3)?)
+                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
             })
         }).map_err(|e| RepositoryError::Database(e.to_string()))?
         .collect::<Result<Vec<_>, _>>()
@@ -382,11 +404,15 @@ impl Repository for SqliteRepository {
                 id: row.get(0)?,
                 title: row.get(1)?,
                 description: row.get(2)?,
-                priority: string_to_priority(&row.get::<_, String>(3)?),
+                priority: i64_to_priority(row.get(3)?),
                 status: string_to_status(&row.get::<_, String>(4)?),
-                created_at: i64_to_datetime(row.get(5)?),
-                updated_at: i64_to_datetime(row.get(6)?),
-                due_date: row.get::<_, Option<i64>>(7)?.map(i64_to_datetime),
+                created_at: string_to_datetime(&row.get::<_, String>(5)?)
+                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                updated_at: string_to_datetime(&row.get::<_, String>(6)?)
+                    .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                due_date: row.get::<_, Option<String>>(7)?
+                    .map(|s| string_to_datetime(&s).map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string())))
+                    .transpose()?,
             })
         }).map_err(|e| RepositoryError::Database(e.to_string()))?
         .collect::<Result<Vec<_>, _>>()
