@@ -2,6 +2,8 @@
 //!
 //! This module defines the Task struct and related types.
 
+use std::str::FromStr;
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -28,6 +30,20 @@ impl Priority {
             Priority::P2 => 2,
             Priority::P3 => 3,
             Priority::P4 => 4,
+        }
+    }
+}
+
+impl FromStr for Priority {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "P1" => Ok(Priority::P1),
+            "P2" => Ok(Priority::P2),
+            "P3" => Ok(Priority::P3),
+            "P4" => Ok(Priority::P4),
+            _ => Err(format!("Invalid priority: {}. Expected P1, P2, P3, or P4.", s)),
         }
     }
 }
@@ -193,5 +209,37 @@ mod tests {
     #[test]
     fn status_default_returns_incomplete() {
         assert_eq!(Status::default(), Status::Incomplete);
+    }
+
+    #[test]
+    fn priority_from_str_parses_p1() {
+        assert_eq!("P1".parse::<Priority>(), Ok(Priority::P1));
+    }
+
+    #[test]
+    fn priority_from_str_parses_all_values() {
+        assert_eq!("P1".parse::<Priority>(), Ok(Priority::P1));
+        assert_eq!("P2".parse::<Priority>(), Ok(Priority::P2));
+        assert_eq!("P3".parse::<Priority>(), Ok(Priority::P3));
+        assert_eq!("P4".parse::<Priority>(), Ok(Priority::P4));
+    }
+
+    #[test]
+    fn priority_from_str_returns_error_for_invalid() {
+        assert!("P5".parse::<Priority>().is_err());
+        assert!("invalid".parse::<Priority>().is_err());
+    }
+
+    #[test]
+    fn status_serializes_to_lowercase() {
+        use serde_json;
+        let incomplete = Status::Incomplete;
+        let completed = Status::Completed;
+        
+        let incomplete_json = serde_json::to_string(&incomplete).unwrap();
+        let completed_json = serde_json::to_string(&completed).unwrap();
+        
+        assert_eq!(incomplete_json, "\"incomplete\"");
+        assert_eq!(completed_json, "\"completed\"");
     }
 }
