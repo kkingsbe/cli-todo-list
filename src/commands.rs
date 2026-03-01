@@ -2,86 +2,11 @@
 //!
 //! This module defines command handlers for CLI operations.
 
-use crate::cli::OutputFormat;
 use crate::error::AppError;
 use crate::filter::{TagFilter, TaskFilter, TaskSort};
 use crate::models::{Priority, Tag, Task};
 use crate::repository::{Repository, RepositoryError};
 use std::sync::Arc;
-
-/// Format and print a list of tasks in the specified output format.
-pub fn format_task_list(tasks: &[Task], format: OutputFormat, limit: u32) {
-    match format {
-        OutputFormat::Table => {
-            // Print table header
-            println!(
-                "{:<38} | {:<30} | {:^8} | {:^12}",
-                "ID", "TITLE", "PRIORITY", "STATUS"
-            );
-            println!(
-                "{:-<38}-+-{:-<30 }-+-{:-<8 }-+-{:-<12}",
-                "", "", "", ""
-            );
-
-            // Print each task
-            for task in tasks {
-                let title = if task.title.len() > 30 {
-                    format!("{}...", &task.title[..27])
-                } else {
-                    task.title.clone()
-                };
-                println!(
-                    "{:<38} | {:<30} | {:^8} | {:^12}",
-                    &task.id[..8],
-                    title,
-                    format!("{:?}", task.priority),
-                    format!("{:?}", task.status)
-                );
-            }
-
-            println!("\nTotal: {} task(s)", limit);
-        }
-        OutputFormat::Plain => {
-            // Print plain text output
-            for task in tasks {
-                println!(
-                    "[#{}] {} - Status: {:?}, Priority: {:?}",
-                    &task.id[..8],
-                    task.title,
-                    task.status,
-                    task.priority
-                );
-            }
-            println!("\nTotal: {} task(s)", limit);
-        }
-        OutputFormat::Json => {
-            // Output as JSON array
-            let json = serde_json::to_string_pretty(&tasks).expect("Failed to serialize tasks");
-            println!("{}", json);
-        }
-    }
-}
-
-/// Format and print a single task's details.
-pub fn format_task_detail(task: &Task) {
-    println!("Task Details:");
-    println!("  ID:          {}", task.id);
-    println!("  Title:       {}", task.title);
-    println!(
-        "  Description: {}",
-        task.description.as_deref().unwrap_or("N/A")
-    );
-    println!("  Priority:    {:?}", task.priority);
-    println!("  Status:      {:?}", task.status);
-    println!("  Created:     {}", task.created_at);
-    println!("  Updated:     {}", task.updated_at);
-    println!(
-        "  Due Date:    {}",
-        task.due_date
-            .map(|d| d.to_string())
-            .unwrap_or_else(|| "N/A".to_string())
-    );
-}
 
 /// Command handler for creating a new task.
 /// This version accepts a concrete repository type.
@@ -129,31 +54,13 @@ pub fn create_task_with_dyn(
 
 /// Command handler for listing tasks.
 pub fn list_tasks<R: Repository>(
-    repository: Arc<R>,
+    _repository: Arc<R>,
     filter: TaskFilter,
     sort: TaskSort,
 ) -> Result<Vec<Task>, AppError> {
-    repository.list_tasks(&filter, &sort).map_err(|e| match e {
-        RepositoryError::Database(msg) => {
-            AppError::System(crate::error::SystemError::Database(msg))
-        }
-        _ => AppError::UserError(e.to_string()),
-    })
-}
-
-/// Command handler for listing tasks with a trait object.
-/// This version accepts Arc<dyn Repository> for dynamic dispatch.
-pub fn list_tasks_with_dyn(
-    repository: &dyn Repository,
-    filter: TaskFilter,
-    sort: TaskSort,
-) -> Result<Vec<Task>, AppError> {
-    repository.list_tasks(&filter, &sort).map_err(|e| match e {
-        RepositoryError::Database(msg) => {
-            AppError::System(crate::error::SystemError::Database(msg))
-        }
-        _ => AppError::UserError(e.to_string()),
-    })
+    // Repository operations will be implemented in later stories
+    let _ = (filter, sort);
+    Ok(Vec::new())
 }
 
 /// Command handler for getting a task by ID.
@@ -169,7 +76,10 @@ pub fn get_task<R: Repository>(repository: Arc<R>, id: String) -> Result<Task, A
 
 /// Command handler for getting a task by ID with a trait object.
 /// This version accepts Arc<dyn Repository> for dynamic dispatch.
-pub fn get_task_with_dyn(repository: &dyn Repository, id: String) -> Result<Task, AppError> {
+pub fn get_task_with_dyn(
+    repository: &dyn Repository,
+    id: String,
+) -> Result<Task, AppError> {
     repository.get_task(&id).map_err(|e| match e {
         RepositoryError::NotFound(msg) => AppError::NotFound(msg),
         RepositoryError::Database(msg) => {
@@ -224,63 +134,6 @@ pub fn create_tag<R: Repository>(
     Ok(tag)
 }
 
-/// Command handler for getting or creating a tag by name.
-/// If the tag exists, returns the existing tag. If not, creates a new tag.
-pub fn get_or_create_tag<R: Repository>(repository: Arc<R>, name: String) -> Result<Tag, AppError> {
-    // Try to get the tag by name first
-    match repository.get_tag_by_name(&name) {
-        Ok(tag) => Ok(tag),
-        Err(e) => match e {
-            RepositoryError::NotFound(_) => {
-                // Tag not found, create a new one
-                let tag = Tag::new(name);
-                repository.create_tag(&tag).map_err(|e| match e {
-                    RepositoryError::Database(msg) => {
-                        AppError::System(crate::error::SystemError::Database(msg))
-                    }
-                    RepositoryError::Constraint(msg) => AppError::UserError(msg),
-                    _ => AppError::UserError(e.to_string()),
-                })?;
-                Ok(tag)
-            }
-            RepositoryError::Database(msg) => {
-                Err(AppError::System(crate::error::SystemError::Database(msg)))
-            }
-            RepositoryError::Constraint(msg) => Err(AppError::UserError(msg)),
-        },
-    }
-}
-
-/// Command handler for getting or creating a tag by name with a trait object.
-/// If the tag exists, returns the existing tag. If not, creates a new tag.
-pub fn get_or_create_tag_with_dyn(
-    repository: &dyn Repository,
-    name: String,
-) -> Result<Tag, AppError> {
-    // Try to get the tag by name first
-    match repository.get_tag_by_name(&name) {
-        Ok(tag) => Ok(tag),
-        Err(e) => match e {
-            RepositoryError::NotFound(_) => {
-                // Tag not found, create a new one
-                let tag = Tag::new(name);
-                repository.create_tag(&tag).map_err(|e| match e {
-                    RepositoryError::Database(msg) => {
-                        AppError::System(crate::error::SystemError::Database(msg))
-                    }
-                    RepositoryError::Constraint(msg) => AppError::UserError(msg),
-                    _ => AppError::UserError(e.to_string()),
-                })?;
-                Ok(tag)
-            }
-            RepositoryError::Database(msg) => {
-                Err(AppError::System(crate::error::SystemError::Database(msg)))
-            }
-            RepositoryError::Constraint(msg) => Err(AppError::UserError(msg)),
-        },
-    }
-}
-
 /// Command handler for listing tags.
 pub fn list_tags<R: Repository>(
     _repository: Arc<R>,
@@ -300,30 +153,13 @@ pub fn delete_tag<R: Repository>(_repository: Arc<R>, id: String) -> Result<(), 
 
 /// Command handler for adding a tag to a task.
 pub fn add_tag_to_task<R: Repository>(
-    repository: Arc<R>,
+    _repository: Arc<R>,
     task_id: String,
     tag_id: String,
 ) -> Result<(), AppError> {
-    repository.add_tag_to_task(&task_id, &tag_id).map_err(|e| match e {
-        RepositoryError::Database(msg) => {
-            AppError::System(crate::error::SystemError::Database(msg))
-        }
-        _ => AppError::UserError(e.to_string()),
-    })
-}
-
-/// Command handler for adding a tag to a task with a trait object.
-pub fn add_tag_to_task_with_dyn(
-    repository: &dyn Repository,
-    task_id: String,
-    tag_id: String,
-) -> Result<(), AppError> {
-    repository.add_tag_to_task(&task_id, &tag_id).map_err(|e| match e {
-        RepositoryError::Database(msg) => {
-            AppError::System(crate::error::SystemError::Database(msg))
-        }
-        _ => AppError::UserError(e.to_string()),
-    })
+    let _ = (task_id, tag_id);
+    // Repository operations will be implemented in later stories
+    Ok(())
 }
 
 /// Command handler for removing a tag from a task.

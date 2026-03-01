@@ -21,13 +21,9 @@ mod tag;
 mod task;
 
 use crate::cli::{Cli, Commands};
-use crate::commands::{
-    add_tag_to_task_with_dyn, create_task_with_dyn, format_task_detail, format_task_list,
-    get_or_create_tag_with_dyn,
-};
+use crate::commands::create_task_with_dyn;
 use crate::config::load_config;
 use crate::error::AppError;
-use crate::filter::{SortOrder, TaskFilter, TaskSort, TaskSortField};
 use crate::models::Priority;
 use crate::repository::{Repository, SqliteRepository};
 
@@ -85,7 +81,6 @@ fn main() -> Result<()> {
             title,
             description,
             priority,
-            tag,
         } => {
             let priority = match priority {
                 1 => Priority::P1,
@@ -97,23 +92,6 @@ fn main() -> Result<()> {
 
             match create_task_with_dyn(repository.as_ref(), title, description, priority) {
                 Ok(task) => {
-                    // Process tags if any were provided
-                    for tag_name in tag {
-                        match get_or_create_tag_with_dyn(repository.as_ref(), tag_name) {
-                            Ok(tag) => {
-                                if let Err(e) = add_tag_to_task_with_dyn(
-                                    repository.as_ref(),
-                                    task.id.clone(),
-                                    tag.id,
-                                ) {
-                                    eprintln!("Warning: Failed to add tag to task: {}", e);
-                                }
-                            }
-                            Err(e) => {
-                                eprintln!("Warning: Failed to create/get tag: {}", e);
-                            }
-                        }
-                    }
                     println!("Created task: {}", task.id);
                 }
                 Err(e) => {
@@ -122,98 +100,22 @@ fn main() -> Result<()> {
                 }
             }
         }
-        Commands::List {
-            status,
-            priority,
-            search,
-            tag,
-            sort_by,
-            order,
-            limit,
-            format,
-        } => {
-            // Parse sort field
-            let sort_field = match sort_by.as_str() {
-                "created" => TaskSortField::CreatedAt,
-                "updated" => TaskSortField::UpdatedAt,
-                "priority" => TaskSortField::Priority,
-                "due" => TaskSortField::DueDate,
-                "title" => TaskSortField::Title,
-                _ => TaskSortField::CreatedAt,
-            };
-
-            // Parse sort order
-            let sort_order = match order.as_str() {
-                "asc" => SortOrder::Ascending,
-                "desc" => SortOrder::Descending,
-                _ => SortOrder::Descending,
-            };
-
-            // Build filter
-            let mut filter = TaskFilter::new();
-
-            // Parse status filter
-            if let Some(ref status_str) = status {
-                match status_str.to_lowercase().as_str() {
-                    "complete" | "completed" => {
-                        filter = filter.with_status(crate::models::Status::Completed);
-                    }
-                    "incomplete" | "open" => {
-                        filter = filter.with_status(crate::models::Status::Incomplete);
-                    }
-                    _ => {}
-                }
-            }
-
-            // Parse priority filter
-            if let Some(p) = priority {
-                let prio = match p {
-                    1 => crate::models::Priority::P1,
-                    2 => crate::models::Priority::P2,
-                    3 => crate::models::Priority::P3,
-                    4 => crate::models::Priority::P4,
-                    _ => crate::models::Priority::P3,
-                };
-                filter = filter.with_priority(prio);
-            }
-
-            // Add search filter
-            if let Some(ref search_term) = search {
-                filter = filter.with_search(search_term.clone());
-            }
-
-            // Add tag filter
-            if let Some(ref tags) = tag {
-                filter = filter.with_tags(tags.clone());
-            }
-
-            // Build sort
-            let sort = TaskSort::new(sort_field, sort_order);
-
-            // Call the repository
-            match commands::list_tasks_with_dyn(repository.as_ref(), filter, sort) {
-                Ok(tasks) => {
-                    // Apply limit (pagination)
-                    let tasks: Vec<_> = tasks.into_iter().take(limit as usize).collect();
-
-                    if tasks.is_empty() {
-                        println!("No tasks found.");
-                    } else {
-                        // Use the format function from commands.rs
-                        format_task_list(&tasks, format, limit);
-                    }
-                }
-                Err(e) => {
-                    eprintln!("Error listing tasks: {}", e);
-                    std::process::exit(1);
-                }
-            }
+        Commands::List { .. } => {
+            // TODO: Implement list command
+            tracing::info!("List command not yet implemented");
         }
         Commands::Show { id } => {
             match commands::get_task_with_dyn(repository.as_ref(), id.clone()) {
                 Ok(task) => {
-                    // Use the format function from commands.rs
-                    format_task_detail(&task);
+                    println!("Task Details:");
+                    println!("  ID:          {}", task.id);
+                    println!("  Title:       {}", task.title);
+                    println!("  Description: {}", task.description.as_deref().unwrap_or("N/A"));
+                    println!("  Priority:    {:?}", task.priority);
+                    println!("  Status:      {:?}", task.status);
+                    println!("  Created:     {}", task.created_at);
+                    println!("  Updated:     {}", task.updated_at);
+                    println!("  Due Date:    {}", task.due_date.map(|d| d.to_string()).unwrap_or_else(|| "N/A".to_string()));
                 }
                 Err(e) => match e {
                     AppError::NotFound(_) => {

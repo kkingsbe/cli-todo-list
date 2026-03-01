@@ -39,10 +39,6 @@ pub enum Commands {
         /// Task priority (1-4, where 1 is highest).
         #[arg(short, long, default_value = "3")]
         priority: u8,
-
-        /// Task tags.
-        #[arg(long)]
-        tag: Vec<String>,
     },
 
     /// List tasks.
@@ -59,25 +55,13 @@ pub enum Commands {
         #[arg(long)]
         search: Option<String>,
 
-        /// Filter by tags (multiple tags use AND logic).
-        #[arg(long)]
-        tag: Option<Vec<String>>,
-
         /// Sort field (created, priority, due, title).
         #[arg(short, long, default_value = "created")]
         sort_by: String,
 
         /// Sort order (asc/desc).
-        #[arg(short, long, default_value = "desc")]
+        #[arg(short, long, default_value = "asc")]
         order: String,
-
-        /// Maximum number of tasks to return.
-        #[arg(short, long, default_value = "50")]
-        limit: u32,
-
-        /// Output format (table, plain, json)
-        #[arg(long, default_value = "table")]
-        format: OutputFormat,
     },
 
     /// Show a task.
@@ -222,50 +206,6 @@ mod tests {
                 _ => panic!("Expected Tag Create command"),
             },
             _ => panic!("Expected Tag command"),
-        }
-    }
-
-    #[test]
-    fn cli_parse_list_format_default() {
-        let cli = Cli::parse_from(&["taskforge", "list"]);
-        match cli.command {
-            Commands::List { format, .. } => {
-                assert_eq!(format, OutputFormat::Table);
-            }
-            _ => panic!("Expected List command"),
-        }
-    }
-
-    #[test]
-    fn cli_parse_list_format_plain() {
-        let cli = Cli::parse_from(&["taskforge", "list", "--format", "plain"]);
-        match cli.command {
-            Commands::List { format, .. } => {
-                assert_eq!(format, OutputFormat::Plain);
-            }
-            _ => panic!("Expected List command"),
-        }
-    }
-
-    #[test]
-    fn cli_parse_list_format_json() {
-        let cli = Cli::parse_from(&["taskforge", "list", "--format", "json"]);
-        match cli.command {
-            Commands::List { format, .. } => {
-                assert_eq!(format, OutputFormat::Json);
-            }
-            _ => panic!("Expected List command"),
-        }
-    }
-
-    #[test]
-    fn cli_parse_list_format_table() {
-        let cli = Cli::parse_from(&["taskforge", "list", "--format", "table"]);
-        match cli.command {
-            Commands::List { format, .. } => {
-                assert_eq!(format, OutputFormat::Table);
-            }
-            _ => panic!("Expected List command"),
         }
     }
 }
