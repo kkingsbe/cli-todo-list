@@ -28,7 +28,7 @@ use crate::commands::reopen_task_with_dyn;
 use crate::commands::update_task_with_dyn;
 use crate::config::load_config;
 use crate::error::AppError;
-use crate::filter::{SortOrder, TaskFilter, TaskSort, TaskSortField};
+use crate::filter::{SortOrder, TagFilter, TaskFilter, TaskSort, TaskSortField};
 use crate::models::{Priority, Status, Tag};
 use crate::repository::{Repository, RepositoryError, SqliteRepository};
 
@@ -189,7 +189,8 @@ fn main() -> Result<()> {
             // Parse due_after date filter
             if let Some(ref due_after_str) = due_after {
                 if let Ok(date) = chrono::NaiveDate::parse_from_str(due_after_str, "%Y-%m-%d") {
-                    let datetime = date.and_hms_opt(0, 0, 0).unwrap().and_utc();
+                    // Add 1 day so --due-after 2026-03-01 means after end of that day
+                    let datetime = (date + chrono::Duration::days(1)).and_hms_opt(0, 0, 0).unwrap().and_utc();
                     filter.due_after = Some(datetime);
                 } else {
                     eprintln!("Warning: Invalid due_after date '{}', ignoring (expected YYYY-MM-DD)", due_after_str);
@@ -412,6 +413,31 @@ fn main() -> Result<()> {
         Commands::Tag { .. } => {
             // TODO: Implement tag command
             tracing::info!("Tag command not yet implemented");
+        }
+        Commands::Tags => {
+            match repository.list_tags(&TagFilter::default()) {
+                Ok(tags) => {
+                    if tags.is_empty() {
+                        println!("No tags found.");
+                    } else {
+                        // Print table header
+                        println!("{:<20} | {:<15}", "Tag Name", "Usage Count");
+                        println!("{:-<20}-+-{:-<15}", "", "");
+                        // Print each tag with its usage count
+                        for tag_with_count in &tags {
+                            println!(
+                                "{:<20} | {:<15}",
+                                tag_with_count.tag.name,
+                                tag_with_count.usage_count
+                            );
+                        }
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Error listing tags: {}", e);
+                    std::process::exit(1);
+                }
+            }
         }
     }
 

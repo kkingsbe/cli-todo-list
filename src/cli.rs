@@ -140,6 +140,9 @@ pub enum Commands {
         #[command(subcommand)]
         command: TagCommands,
     },
+
+    /// List all tags with usage count.
+    Tags,
 }
 
 /// Tag-related subcommands.
