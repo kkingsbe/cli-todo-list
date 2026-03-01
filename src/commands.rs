@@ -503,4 +503,182 @@ mod tests {
             _ => panic!("Expected AppError::NotFound, got {:?}", error),
         }
     }
+
+    // ============ Tag Functionality Tests ============
+
+    #[test]
+    fn test_create_task_with_single_tag_creates_tag_and_links() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = Arc::new(SqliteRepository::new(&db_path).unwrap());
+        repo.initialize().unwrap();
+
+        // Create a task
+        let task = Task::with_details(
+            "Test task with tag".to_string(),
+            Some("Description".to_string()),
+            Priority::P1,
+        );
+        repo.create_task(&task).unwrap();
+
+        // Create a tag and link to task
+        let tag = Tag::new("work".to_string());
+        repo.create_tag(&tag).unwrap();
+        repo.add_tag_to_task(&task.id, &tag.id).unwrap();
+
+        // Verify the tag was created in the database
+        let retrieved_tag = repo.get_tag(&tag.id).unwrap();
+        assert_eq!(retrieved_tag.name, "work");
+        assert_eq!(retrieved_tag.id, tag.id);
+
+        // Verify the tag is linked to the task
+        let task_tags = repo.get_task_tags(&task.id).unwrap();
+        assert_eq!(task_tags.len(), 1);
+        assert_eq!(task_tags[0].name, "work");
+    }
+
+    #[test]
+    fn test_create_task_with_multiple_tags() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = Arc::new(SqliteRepository::new(&db_path).unwrap());
+        repo.initialize().unwrap();
+
+        // Create a task
+        let task = Task::with_details(
+            "Test task with multiple tags".to_string(),
+            Some("Description".to_string()),
+            Priority::P2,
+        );
+        repo.create_task(&task).unwrap();
+
+        // Create multiple tags and link to task
+        let tag1 = Tag::new("work".to_string());
+        let tag2 = Tag::new("urgent".to_string());
+        let tag3 = Tag::new("project-a".to_string());
+
+        repo.create_tag(&tag1).unwrap();
+        repo.create_tag(&tag2).unwrap();
+        repo.create_tag(&tag3).unwrap();
+
+        repo.add_tag_to_task(&task.id, &tag1.id).unwrap();
+        repo.add_tag_to_task(&task.id, &tag2.id).unwrap();
+        repo.add_tag_to_task(&task.id, &tag3.id).unwrap();
+
+        // Verify all tags are linked to the task
+        let task_tags = repo.get_task_tags(&task.id).unwrap();
+        assert_eq!(task_tags.len(), 3);
+
+        let tag_names: Vec<String> = task_tags.iter().map(|t| t.name.clone()).collect();
+        assert!(tag_names.contains(&"work".to_string()));
+        assert!(tag_names.contains(&"urgent".to_string()));
+        assert!(tag_names.contains(&"project-a".to_string()));
+    }
+
+    #[test]
+    fn test_create_task_with_existing_tag_reuses_it() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = Arc::new(SqliteRepository::new(&db_path).unwrap());
+        repo.initialize().unwrap();
+
+        // Create first tag
+        let existing_tag = Tag::new("work".to_string());
+        repo.create_tag(&existing_tag).unwrap();
+
+        // Create first task and link tag
+        let task1 = Task::with_details(
+            "First task".to_string(),
+            Some("Description".to_string()),
+            Priority::P1,
+        );
+        repo.create_task(&task1).unwrap();
+        repo.add_tag_to_task(&task1.id, &existing_tag.id).unwrap();
+
+        // Try to create another tag with same name - should fail due to unique constraint
+        let result = repo.create_tag(&Tag::new("work".to_string()));
+        assert!(result.is_err());
+
+        // Instead, get the existing tag by name
+        let retrieved_tag = repo.get_tag_by_name("work").unwrap();
+        assert_eq!(retrieved_tag.name, "work");
+        assert_eq!(retrieved_tag.id, existing_tag.id);
+
+        // Create second task and link to existing tag
+        let task2 = Task::with_details(
+            "Second task".to_string(),
+            Some("Description".to_string()),
+            Priority::P2,
+        );
+        repo.create_task(&task2).unwrap();
+        repo.add_tag_to_task(&task2.id, &retrieved_tag.id).unwrap();
+
+        // Verify both tasks have the same tag
+        let task1_tags = repo.get_task_tags(&task1.id).unwrap();
+        let task2_tags = repo.get_task_tags(&task2.id).unwrap();
+
+        assert_eq!(task1_tags.len(), 1);
+        assert_eq!(task2_tags.len(), 1);
+        assert_eq!(task1_tags[0].id, task2_tags[0].id);
+
+        // Verify only one tag exists in the database
+        let all_tags = repo.list_tags(&crate::filter::TagFilter::default()).unwrap();
+        assert_eq!(all_tags.len(), 1);
+    }
+
+    #[test]
+    fn test_tags_are_properly_associated_with_tasks() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = Arc::new(SqliteRepository::new(&db_path).unwrap());
+        repo.initialize().unwrap();
+
+        // Create tags
+        let tag1 = Tag::new("work".to_string());
+        let tag2 = Tag::new("personal".to_string());
+        repo.create_tag(&tag1).unwrap();
+        repo.create_tag(&tag2).unwrap();
+
+        // Create two tasks with different tags
+        let task1 = Task::with_details(
+            "Work task".to_string(),
+            Some("Work description".to_string()),
+            Priority::P1,
+        );
+        let task2 = Task::with_details(
+            "Personal task".to_string(),
+            Some("Personal description".to_string()),
+            Priority::P3,
+        );
+
+        repo.create_task(&task1).unwrap();
+        repo.create_task(&task2).unwrap();
+
+        // Link tags to tasks
+        repo.add_tag_to_task(&task1.id, &tag1.id).unwrap();
+        repo.add_tag_to_task(&task2.id, &tag2.id).unwrap();
+
+        // Verify task1 has only "work" tag
+        let task1_tags = repo.get_task_tags(&task1.id).unwrap();
+        assert_eq!(task1_tags.len(), 1);
+        assert_eq!(task1_tags[0].name, "work");
+
+        // Verify task2 has only "personal" tag
+        let task2_tags = repo.get_task_tags(&task2.id).unwrap();
+        assert_eq!(task2_tags.len(), 1);
+        assert_eq!(task2_tags[0].name, "personal");
+
+        // Verify we can get tasks by tag
+        let work_tasks = repo.get_tasks_by_tag(&tag1.id).unwrap();
+        assert_eq!(work_tasks.len(), 1);
+        assert_eq!(work_tasks[0].id, task1.id);
+
+        let personal_tasks = repo.get_tasks_by_tag(&tag2.id).unwrap();
+        assert_eq!(personal_tasks.len(), 1);
+        assert_eq!(personal_tasks[0].id, task2.id);
+    }
 }

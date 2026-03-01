@@ -27,8 +27,8 @@ use crate::commands::complete_task_with_dyn;
 use crate::commands::reopen_task_with_dyn;
 use crate::config::load_config;
 use crate::error::AppError;
-use crate::models::Priority;
-use crate::repository::{Repository, SqliteRepository};
+use crate::models::{Priority, Tag};
+use crate::repository::{Repository, RepositoryError, SqliteRepository};
 
 fn main() -> Result<()> {
     // Initialize tracing subscriber for logging
@@ -84,6 +84,7 @@ fn main() -> Result<()> {
             title,
             description,
             priority,
+            tag,
         } => {
             let priority = match priority {
                 1 => Priority::P1,
@@ -95,6 +96,32 @@ fn main() -> Result<()> {
 
             match create_task_with_dyn(repository.as_ref(), title, description, priority) {
                 Ok(task) => {
+                    // Handle tags if provided
+                    if let Some(tags) = tag {
+                        for tag_name in tags {
+                            // Try to get existing tag, or create new one
+                            let tag = match repository.get_tag_by_name(&tag_name) {
+                                Ok(existing_tag) => existing_tag,
+                                Err(RepositoryError::NotFound(_)) => {
+                                    // Create new tag
+                                    let new_tag = Tag::new(tag_name);
+                                    repository.create_tag(&new_tag).map_err(|e| {
+                                        anyhow::anyhow!("Failed to create tag: {}", e)
+                                    })?;
+                                    new_tag
+                                }
+                                Err(e) => {
+                                    anyhow::bail!("Error looking up tag: {}", e);
+                                }
+                            };
+
+                            // Link tag to task
+                            repository.add_tag_to_task(&task.id, &tag.id).map_err(|e| {
+                                anyhow::anyhow!("Failed to link tag to task: {}", e)
+                            })?;
+                        }
+                    }
+
                     println!("Created task: {}", task.id);
                 }
                 Err(e) => {
