@@ -70,6 +70,18 @@ pub enum Commands {
         /// Output format (table, plain, json).
         #[arg(long, value_enum, default_value = "table")]
         format: OutputFormat,
+
+        /// Filter tasks due before this date (YYYY-MM-DD).
+        #[arg(long)]
+        due_before: Option<String>,
+
+        /// Filter tasks due after this date (YYYY-MM-DD).
+        #[arg(long)]
+        due_after: Option<String>,
+
+        /// Filter tasks due on this exact date (YYYY-MM-DD).
+        #[arg(long)]
+        due: Option<String>,
     },
 
     /// Show a task.

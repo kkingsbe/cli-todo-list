@@ -16,6 +16,13 @@ Before starting any stories, read these files:
 
 ## Stories
 
+- [ ] **{03.4}** (REWORK): Get Task Details Command
+  - 📄 Story: `.switchboard/state/stories/archive/sprint-7/story-03-4-get-task-details-command.md`
+  - 🔍 Review: See REVIEW_QUEUE.md — CHANGES_REQUESTED
+  - ⚡ Pre-check: Build + tests pass
+  - ✅ Post-check: Address ALL "Must Fix" items (revert out-of-scope changes to commands.rs and main.rs)
+  - 📝 Commit: `fix(dev2): [03.4] address review feedback`
+
 - [ ] **{05.1}**: Filter by Status (2 pts)
   - 📄 Story: `.switchboard/state/stories/story-05-1-filter-by-status.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`

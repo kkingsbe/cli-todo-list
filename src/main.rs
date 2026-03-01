@@ -139,6 +139,7 @@ fn main() -> Result<()> {
             sort_by,
             order,
             format,
+            ..
         } => {
             // Build filter from command arguments
             let mut filter = TaskFilter::new();
