@@ -81,6 +81,35 @@ fn string_to_status(s: &str) -> Status {
     }
 }
 
+/// Helper function to build ORDER BY clause from TaskSort
+/// Note: Priority is stored as integer (1-4), where 1 = P1 (highest priority)
+fn build_sort_clause(sort: &TaskSort) -> String {
+    use crate::filter::{SortOrder, TaskSortField};
+
+    let field = match sort.field {
+        TaskSortField::CreatedAt => "created_at",
+        TaskSortField::UpdatedAt => "updated_at",
+        TaskSortField::Priority => "priority",
+        TaskSortField::DueDate => "due_date",
+        TaskSortField::Title => "title",
+    };
+
+    let order = match sort.order {
+        SortOrder::Ascending => "ASC",
+        SortOrder::Descending => "DESC",
+    };
+
+    // For due_date, handle NULLs (put them last)
+    if sort.field == TaskSortField::DueDate {
+        format!(
+            " ORDER BY CASE WHEN due_date IS NULL THEN 1 ELSE 0 END, due_date {}",
+            order
+        )
+    } else {
+        format!(" ORDER BY {} {}", field, order)
+    }
+}
+
 /// SQLite implementation of the Repository
 pub struct SqliteRepository {
     conn: Mutex<Connection>,
@@ -206,7 +235,7 @@ impl Repository for SqliteRepository {
     fn list_tasks(
         &self,
         filter: &TaskFilter,
-        _sort: &TaskSort,
+        sort: &TaskSort,
     ) -> Result<Vec<Task>, RepositoryError> {
         let conn = self
             .conn
@@ -244,14 +273,21 @@ impl Repository for SqliteRepository {
             params.push(Box::new(datetime_to_string(&due_end)));
         }
 
+        // Build ORDER BY clause based on sort field and order
+        let order_clause = build_sort_clause(sort);
+
         // Build query
         let query = if conditions.is_empty() {
-            "SELECT id, title, description, priority, status, created_at, updated_at, due_date FROM tasks".to_string()
+            format!(
+                "SELECT id, title, description, priority, status, created_at, updated_at, due_date FROM tasks{}",
+                order_clause
+            )
         } else {
             let where_clause = conditions.join(" AND ");
             format!(
-                "SELECT id, title, description, priority, status, created_at, updated_at, due_date FROM tasks WHERE {}",
-                where_clause
+                "SELECT id, title, description, priority, status, created_at, updated_at, due_date FROM tasks WHERE {}{}",
+                where_clause,
+                order_clause
             )
         };
 
