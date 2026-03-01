@@ -16,13 +16,13 @@ Before starting any stories, read these files:
 
 ## Stories
 
-- [ ] **{06.2}**: Output Format Support (2 pts)
+- [x] **{06.2}**: Output Format Support (2 pts) ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/story-06-2-output-format.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`
   - ⚡ Pre-check: Build + tests pass
   - ✅ Post-check: Build + tests pass, `cargo run -- list --format json` outputs valid JSON
   - 🔒 Risk: Low
-  - 📝 Commit: `feat(dev1): [06.2] Output Format Support`
+  - 📝 Commit: `feat(dev1): [06.2] Add output format support to list command`
 
 ## AGENT QA
 

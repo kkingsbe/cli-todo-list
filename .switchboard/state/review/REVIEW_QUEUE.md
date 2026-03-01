@@ -485,3 +485,24 @@
 - **Findings:**
   - None
 - **Summary:** All acceptance criteria met. The --tag option works correctly to add tags when creating tasks. Tags are auto-created if they don't exist. Multiple tags can be associated with a task. All tests pass.
+
+---
+
+### story-06.2: Output Format Support
+
+- **Implemented by:** dev-1
+- **Sprint:** 7
+- **Commits:** 3111176
+- **Story file:** `.switchboard/state/stories/story-06-2-output-format.md`
+- **Files changed:** src/cli.rs, src/main.rs
+- **Status:** PENDING_REVIEW
+- **Acceptance Criteria:**
+  - [x] `task list --format table` shows table output (default) — **MET**: Verified - table formatted output with ID, Title, Priority, Status columns
+  - [x] `task list --format plain` shows plain text — **MET**: Verified - simple line-by-line output
+  - [x] `task list --format json` shows JSON output — **MET**: Verified - valid JSON array output
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (74 + 73 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+  - cargo fmt --check: ✅ PASS
+- **Notes:** Implementation adds --format argument to List command with OutputFormat enum (Table, Plain, Json). Format handling implemented in main.rs::Commands::List match arm. Previously CHANGES_REQUESTED in Sprint 5 - this is the re-implementation.
