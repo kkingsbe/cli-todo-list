@@ -540,6 +540,27 @@
   - src/cli.rs - added Tags command
   - src/main.rs - added handler for tags command
   - src/tag.rs - added 7 tests for tag listing
+### story-04-2: List Tags Command
+
+- **Status:** ✅ APPROVED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-03-01T05:55:00Z
+- **Acceptance Criteria:**
+  - [x] `task tags` shows all unique tags — **MET**: Verified with `cargo run -- tags`
+  - [x] Shows usage count for each tag — **MET**: Table shows "Tag Name" and "Usage Count" columns
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (177 tests pass, 89+88)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+- **Diff Analysis:**
+  - Commits: 70a7a63, a4b9e0a, 0341aae
+  - Files changed: 6 files (cli.rs, commands.rs, main.rs, models.rs, repository.rs, tag.rs)
+- **Findings:**
+  - NICE TO HAVE: Consider re-exporting TagWithCount from lib.rs for library users
+- **Summary:** Implementation complete and functional. Tags command shows all unique tags with usage count. Tests cover empty, single, and multiple tag scenarios with various usage counts. Minor scope addition (models.rs) was necessary for TagWithCount data structure.
+
+---
+
 - **Status:** PENDING_REVIEW
 - **Acceptance Criteria:**
   - [x] `task tags` shows all unique tags — verified by: cargo run -- tags shows "No tags found" (empty is correct)

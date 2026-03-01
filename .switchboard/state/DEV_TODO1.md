@@ -16,7 +16,7 @@ Before starting any stories, read these files:
 
 ## Stories
 
-- [ ] **{04.2}**: List Tags Command (2 pts)
+- [x] **{04.2}**: List Tags Command (2 pts) ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/story-04-2-list-tags-command.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
   - ⚡ Pre-check: Build + tests pass
