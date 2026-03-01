@@ -18,6 +18,13 @@ Before starting any stories, read these files:
 
 ## Stories
 
+- [ ] **{04.4}** (REWORK): Manage Tags on Existing Tasks
+  - 📄 Story: `.switchboard/state/stories/archive/sprint-8/story-04-4-manage-tags-on-existing-tasks.md`
+  - 🔍 Review: See `.switchboard/state/review/REVIEW_QUEUE.md` — CHANGES_REQUESTED
+  - ⚡ Pre-check: Build + tests pass
+  - ✅ Post-check: Replace eprintln!/println! with tracing::error!/tracing::info! in src/main.rs
+  - 📝 Commit: `fix(dev1): [04.4] Replace eprintln!/println! with tracing`
+
 - [ ] **{04.3}**: Delete Tag Command (2 pts)
   - 📄 Story: `.switchboard/state/stories/story-04-3-delete-tag-command.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`

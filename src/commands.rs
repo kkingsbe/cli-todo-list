@@ -7,6 +7,7 @@ use crate::filter::{TagFilter, TaskFilter, TaskSort};
 use crate::models::{Priority, Tag, TagWithCount, Task};
 use crate::repository::{Repository, RepositoryError};
 use chrono::{DateTime, NaiveDate, Utc};
+use std::io::Write;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -256,9 +257,43 @@ pub fn update_task<R: Repository>(
 }
 
 /// Command handler for deleting a task.
-pub fn delete_task<R: Repository>(_repository: Arc<R>, id: String) -> Result<(), AppError> {
-    let _ = id;
-    // Repository operations will be implemented in later stories
+pub fn delete_task<R: Repository>(
+    repository: Arc<R>,
+    id: String,
+    force: bool,
+) -> Result<(), AppError> {
+    // Verify the task exists
+    repository.get_task(&id).map_err(|e| match e {
+        RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+    })?;
+
+    // Prompt for confirmation if not forced
+    if !force {
+        print!("Delete task {}? [y/N]: ", id);
+        std::io::stdout().flush().map_err(|e| AppError::UserError(e.to_string()))?;
+        let mut confirmation = String::new();
+        std::io::stdin()
+            .read_line(&mut confirmation)
+            .map_err(|e| AppError::UserError(e.to_string()))?;
+
+        if !confirmation.trim().eq_ignore_ascii_case("y") {
+            return Ok(());
+        }
+    }
+
+    // Delete the task
+    repository.delete_task(&id).map_err(|e| match e {
+        RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+    })?;
+
     Ok(())
 }
 

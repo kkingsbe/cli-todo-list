@@ -191,10 +191,10 @@ epics:
         type: "feature"
         risk: "medium"
         depends_on: ["04.1"]
-        status: "in-progress"
+        status: "in-review"
         assigned_to: "dev-1"
         sprint: 8
-        blocker_reason: null
+        blocker_reason: "CHANGES_REQUESTED: Replace eprintln!/println! with tracing"
 
   - id: "epic-05"
     title: "Filtering & Sorting"

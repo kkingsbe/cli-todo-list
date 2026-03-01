@@ -129,6 +129,9 @@ pub enum Commands {
     Delete {
         /// Task ID.
         id: String,
+        /// Force deletion without confirmation
+        #[arg(long, short)]
+        force: bool,
     },
 
     /// Complete a task.
@@ -230,7 +233,7 @@ mod tests {
     fn cli_parse_delete_command() {
         let cli = Cli::parse_from(&["taskforge", "delete", "task-123"]);
         match cli.command {
-            Commands::Delete { id } => {
+            Commands::Delete { id, .. } => {
                 assert_eq!(id, "task-123");
             }
             _ => panic!("Expected Delete command"),

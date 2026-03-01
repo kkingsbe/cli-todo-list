@@ -606,17 +606,40 @@
 
 ### story-04-4: Manage Tags on Existing Tasks
 
-- **Status:** PENDING_REVIEW
-- **Reviewed by:** 
-- **Review date:** 
+- **Status:** ❌ CHANGES_REQUESTED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-03-01T07:55:00Z
 - **Acceptance Criteria:**
-  - [x] `task update <id> --add-tag <name>` adds tags to existing tasks — verified by: manual test with `cargo run -- edit <id> --add-tag work`
-  - [x] `task update <id> --remove-tag <name>` removes tags from tasks — verified by: manual test with `cargo run -- edit <id> --remove-tag work`
-  - [x] Tags are case-insensitive for lookup but preserve display case — verified by: test_remove_tag_case_insensitivity() and test_remove_tag_with_different_case()
-- **Implemented by:** dev-1
-- **Sprint:** 8
-- **Commits:** adb0dcc, 2565658
-- **Story file:** .switchboard/state/stories/story-04-4-manage-tags-on-existing-tasks.md
-- **Files changed:** src/main.rs (wire-up), src/commands.rs (tests)
+  - [x] `task update <id> --add-tag <name>` adds tags to existing tasks — **MET**: CLI arg in cli.rs:119-121, handler in main.rs:377-409
+  - [x] `task update <id> --remove-tag <name>` removes tags from tasks — **MET**: CLI arg in cli.rs:123-125, handler in main.rs:420-431
+  - [x] Tags case-insensitive for lookup but preserve display case — **MET**: Uses tag_name.to_lowercase(), tests verify
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (93 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+- **Diff Analysis:**
+  - Commits: 5f6d64c, 6c3f49e, 5a2ab49, adb0dcc, 2565658
+  - Files changed: src/cli.rs (+8 lines), src/commands.rs (+194 lines), src/main.rs (+64 lines)
+- **Scope Verification:**
+  - In scope: src/cli.rs, src/commands.rs, src/main.rs — ✅
+  - NOT in scope: src/task.rs, src/tag.rs, src/filter.rs, src/models.rs — ✅ not modified
+- **Must Fix:**
+  1. Replace `eprintln!` with `tracing::error!` in src/main.rs (lines 383, 398, 405, 409, 425, 430)
+     - Current: Uses eprintln! for error output
+     - Expected: Use tracing::error! macro per project convention (project-context.md line 60)
+     - Why: Project convention forbids eprintln! - must use tracing for logging
+  2. Replace `println!` with `tracing::info!` in src/main.rs (lines 385, 400, 427)
+     - Current: Uses println! for success output
+     - Expected: Use tracing::info! macro per project convention
+     - Why: Project convention forbids println! - must use tracing for logging
+- **Should Fix:**
+  1. None
+- **Requeue Instructions:**
+  1. Replace all eprintln! calls with tracing::error! in src/main.rs
+  2. Replace all println! calls with tracing::info! in src/main.rs
+  3. Ensure build/test/clippy pass
+  4. Requeue to dev-1 for review
 
-**Notes:** The tag management feature was already partially implemented in main.rs (commit adb0dcc). This iteration added tests for case-insensitive tag removal (commit 2565658) to verify acceptance criterion #3. All tests pass (187 total).
+---
+
+### story-04-4: Manage Tags on Existing Tasks (ARCHIVED - See above for current review)
