@@ -85,3 +85,22 @@
 **Should Fix Issues:**
 
 - CLI test at cli.rs:233 doesn't test the --force flag
+
+### story-06.1: Delete Task Command
+
+- **Status:** ❌ CHANGES_REQUESTED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-03-01T10:50:03Z
+- **Acceptance Criteria:**
+  - [x] Criterion 1 — MET: `task delete <id>` prompts for confirmation
+  - [x] Criterion 2 — MET: `task delete <id> --force` deletes without confirmation
+  - [x] Criterion 3 — MET: Deleted task no longer appears in list
+  - [x] Criterion 4 — MET: Returns error for non-existent task ID
+- **Must Fix:**
+  1. Formatting issue in `src/commands.rs:995`
+     - Current: Line too long for assert macro (fails `cargo fmt --check`)
+     - Expected: Run `cargo fmt` to fix formatting
+     - Why: Build & test gate requires `cargo fmt --check` to pass
+- **Should Fix:**
+  1. Clippy warning in `src/main.rs:11` — unused imports (pre-existing, not from this story)
+- **Requeue Instructions:** Run `cargo fmt` to fix the formatting issue, then re-queue for review

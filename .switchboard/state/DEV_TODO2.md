@@ -25,3 +25,10 @@ No stories available for this sprint. The project is awaiting final review appro
   - ⚡ Pre-check: Build + tests pass
   - ✅ Post-check: Addressed ALL "Must Fix" items
   - 📝 Commit: `fix(dev2): [06.1] address review feedback`
+
+- [ ] **(story-06.1)** (REWORK): Delete Task Command — CHANGES_REQUESTED
+  - 📄 Story: .switchboard/state/stories/archive/sprint-9/story-06-1-delete-task-command.md
+  - 🔍 Review: See REVIEW_QUEUE.md — CHANGES_REQUESTED (2026-03-01T10:50:03Z)
+  - ⚠️ Issue: Formatting issue in `src/commands.rs:995` (fails `cargo fmt --check`)
+  - ✅ Fix: Run `cargo fmt` to fix formatting
+  - 📋 Requeue after fix
