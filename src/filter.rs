@@ -36,6 +36,8 @@ pub struct TaskFilter {
     pub due_before: Option<chrono::DateTime<chrono::Utc>>,
     /// Filter by due date (tasks due after this date).
     pub due_after: Option<chrono::DateTime<chrono::Utc>>,
+    /// Filter by due date (tasks due on this exact date).
+    pub due: Option<chrono::DateTime<chrono::Utc>>,
     /// Search term in title or description.
     pub search: Option<String>,
 }

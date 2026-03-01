@@ -208,25 +208,60 @@ impl Repository for SqliteRepository {
         filter: &TaskFilter,
         _sort: &TaskSort,
     ) -> Result<Vec<Task>, RepositoryError> {
-        // If no filter, return all tasks
-        if filter.status.is_none() {
-            return self.list_tasks_all();
-        }
-
-        // Filter by status
-        let status = filter.status.as_ref().unwrap();
         let conn = self
             .conn
             .lock()
             .map_err(|e| RepositoryError::Database(e.to_string()))?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT id, title, description, priority, status, created_at, updated_at, due_date FROM tasks WHERE status = ?1",
+
+        // Build dynamic WHERE clause based on filter fields
+        let mut conditions: Vec<String> = Vec::new();
+        let mut params: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
+
+        // Add status condition
+        if let Some(ref status) = filter.status {
+            conditions.push("status = ?".to_string());
+            params.push(Box::new(status_to_string(status)));
+        }
+
+        // Add due_before condition (tasks with due_date < specified date)
+        if let Some(ref due_before) = filter.due_before {
+            conditions.push("due_date < ?".to_string());
+            params.push(Box::new(datetime_to_string(due_before)));
+        }
+
+        // Add due_after condition (tasks with due_date > specified date)
+        if let Some(ref due_after) = filter.due_after {
+            conditions.push("due_date > ?".to_string());
+            params.push(Box::new(datetime_to_string(due_after)));
+        }
+
+        // Add due condition (tasks with due_date = specified date)
+        // Use a range to match any time on that specific date
+        if let Some(ref due) = filter.due {
+            let due_end = *due + chrono::Duration::days(1);
+            conditions.push("due_date >= ? AND due_date < ?".to_string());
+            params.push(Box::new(datetime_to_string(due)));
+            params.push(Box::new(datetime_to_string(&due_end)));
+        }
+
+        // Build query
+        let query = if conditions.is_empty() {
+            "SELECT id, title, description, priority, status, created_at, updated_at, due_date FROM tasks".to_string()
+        } else {
+            let where_clause = conditions.join(" AND ");
+            format!(
+                "SELECT id, title, description, priority, status, created_at, updated_at, due_date FROM tasks WHERE {}",
+                where_clause
             )
-            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+        };
+
+        let mut stmt = conn.prepare(&query).map_err(|e| RepositoryError::Database(e.to_string()))?;
+
+        // Convert params to slice of trait objects
+        let params_refs: Vec<&dyn rusqlite::ToSql> = params.iter().map(|p| p.as_ref()).collect();
 
         let tasks = stmt
-            .query_map([status_to_string(status)], |row| {
+            .query_map(params_refs.as_slice(), |row| {
                 Ok(Task {
                     id: row.get(0)?,
                     title: row.get(1)?,
@@ -776,6 +811,186 @@ mod tests {
         let tasks = repo.list_tasks(&filter_none, &sort).unwrap();
 
         assert_eq!(tasks.len(), 3);
+    }
+
+    #[test]
+    fn test_list_tasks_filters_by_due_before() {
+        use chrono::Duration;
+
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = SqliteRepository::new(&db_path).unwrap();
+        repo.initialize().unwrap();
+
+        // Create tasks with different due dates
+        let mut task1 = Task::new("Task 1".to_string());
+        task1.due_date = Some(Utc::now() + Duration::days(10)); // due in 10 days
+        let mut task2 = Task::new("Task 2".to_string());
+        task2.due_date = Some(Utc::now() - Duration::days(5)); // overdue
+        let mut task3 = Task::new("Task 3".to_string());
+        task3.due_date = Some(Utc::now() + Duration::days(5)); // due in 5 days
+        let task4 = Task::new("Task 4".to_string()); // no due date
+
+        repo.create_task(&task1).unwrap();
+        repo.create_task(&task2).unwrap();
+        repo.create_task(&task3).unwrap();
+        repo.create_task(&task4).unwrap();
+
+        // Filter for tasks due before now (should include overdue and no due date)
+        let filter_due_before = TaskFilter {
+            due_before: Some(Utc::now()),
+            ..Default::default()
+        };
+        let sort = TaskSort::default();
+        let tasks = repo.list_tasks(&filter_due_before, &sort).unwrap();
+
+        // Should include task2 (overdue) - task4 has no due_date so it's included
+        assert!(tasks.iter().any(|t| t.id == task2.id));
+        // Should NOT include task1 (due in future) or task3 (due in future)
+        assert!(!tasks.iter().any(|t| t.id == task1.id));
+        assert!(!tasks.iter().any(|t| t.id == task3.id));
+    }
+
+    #[test]
+    fn test_list_tasks_filters_by_due_after() {
+        use chrono::Duration;
+
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = SqliteRepository::new(&db_path).unwrap();
+        repo.initialize().unwrap();
+
+        // Create tasks with different due dates
+        let mut task1 = Task::new("Task 1".to_string());
+        task1.due_date = Some(Utc::now() + Duration::days(10)); // due in 10 days
+        let mut task2 = Task::new("Task 2".to_string());
+        task2.due_date = Some(Utc::now() - Duration::days(5)); // overdue
+        let mut task3 = Task::new("Task 3".to_string());
+        task3.due_date = Some(Utc::now() + Duration::days(5)); // due in 5 days
+        let task4 = Task::new("Task 4".to_string()); // no due date
+
+        repo.create_task(&task1).unwrap();
+        repo.create_task(&task2).unwrap();
+        repo.create_task(&task3).unwrap();
+        repo.create_task(&task4).unwrap();
+
+        // Filter for tasks due after now
+        let filter_due_after = TaskFilter {
+            due_after: Some(Utc::now()),
+            ..Default::default()
+        };
+        let sort = TaskSort::default();
+        let tasks = repo.list_tasks(&filter_due_after, &sort).unwrap();
+
+        // Should include task1 and task3 (both due in future)
+        assert!(tasks.iter().any(|t| t.id == task1.id));
+        assert!(tasks.iter().any(|t| t.id == task3.id));
+        // Should NOT include task2 (overdue)
+        assert!(!tasks.iter().any(|t| t.id == task2.id));
+    }
+
+    #[test]
+    fn test_list_tasks_filters_by_combined_status_and_due_date() {
+        use chrono::Duration;
+
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = SqliteRepository::new(&db_path).unwrap();
+        repo.initialize().unwrap();
+
+        // Create tasks with different statuses and due dates
+        let mut task1 = Task::new("Task 1".to_string());
+        task1.status = Status::Incomplete;
+        task1.due_date = Some(Utc::now() + Duration::days(10));
+        let mut task2 = Task::new("Task 2".to_string());
+        task2.status = Status::Completed;
+        task2.due_date = Some(Utc::now() + Duration::days(10));
+        let mut task3 = Task::new("Task 3".to_string());
+        task3.status = Status::Incomplete;
+        task3.due_date = Some(Utc::now() - Duration::days(5));
+
+        repo.create_task(&task1).unwrap();
+        repo.create_task(&task2).unwrap();
+        repo.create_task(&task3).unwrap();
+
+        // Filter for incomplete tasks due after now
+        let filter = TaskFilter {
+            status: Some(Status::Incomplete),
+            due_after: Some(Utc::now()),
+            ..Default::default()
+        };
+        let sort = TaskSort::default();
+        let tasks = repo.list_tasks(&filter, &sort).unwrap();
+
+        // Should only include task1 (incomplete and due in future)
+        assert_eq!(tasks.len(), 1);
+        assert_eq!(tasks[0].id, task1.id);
+    }
+
+    #[test]
+    fn test_list_tasks_with_no_filter_returns_all() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = SqliteRepository::new(&db_path).unwrap();
+        repo.initialize().unwrap();
+
+        let task1 = Task::new("Task 1".to_string());
+        let task2 = Task::new("Task 2".to_string());
+
+        repo.create_task(&task1).unwrap();
+        repo.create_task(&task2).unwrap();
+
+        let filter = TaskFilter::new();
+        let sort = TaskSort::default();
+        let tasks = repo.list_tasks(&filter, &sort).unwrap();
+
+        assert_eq!(tasks.len(), 2);
+    }
+
+    #[test]
+    fn test_list_tasks_filters_by_due_exact_date() {
+        use chrono::Duration;
+
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = SqliteRepository::new(&db_path).unwrap();
+        repo.initialize().unwrap();
+
+        // Create tasks with different due dates
+        let target_date = Utc::now().date_naive();
+        let mut task1 = Task::new("Task 1".to_string());
+        task1.due_date = Some(target_date.and_hms_opt(10, 0, 0).unwrap().and_utc());
+        let mut task2 = Task::new("Task 2".to_string());
+        task2.due_date = Some(target_date.and_hms_opt(14, 0, 0).unwrap().and_utc());
+        let mut task3 = Task::new("Task 3".to_string());
+        task3.due_date = Some((target_date + chrono::Duration::days(1)).and_hms_opt(10, 0, 0).unwrap().and_utc());
+        let task4 = Task::new("Task 4".to_string()); // no due date
+
+        repo.create_task(&task1).unwrap();
+        repo.create_task(&task2).unwrap();
+        repo.create_task(&task3).unwrap();
+        repo.create_task(&task4).unwrap();
+
+        // Filter for tasks due on the exact target date (using 00:00:00, like CLI does)
+        let filter_due = TaskFilter {
+            due: Some(target_date.and_hms_opt(0, 0, 0).unwrap().and_utc()),
+            ..Default::default()
+        };
+        let sort = TaskSort::default();
+        let tasks = repo.list_tasks(&filter_due, &sort).unwrap();
+
+        // Should include task1 and task2 (both due on target date)
+        assert_eq!(tasks.len(), 2);
+        assert!(tasks.iter().any(|t| t.id == task1.id));
+        assert!(tasks.iter().any(|t| t.id == task2.id));
+        // Should NOT include task3 (due tomorrow) or task4 (no due date)
+        assert!(!tasks.iter().any(|t| t.id == task3.id));
+        assert!(!tasks.iter().any(|t| t.id == task4.id));
     }
 
     #[test]

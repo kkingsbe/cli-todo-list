@@ -139,6 +139,9 @@ fn main() -> Result<()> {
             sort_by,
             order,
             format,
+            due_before,
+            due_after,
+            due,
             ..
         } => {
             // Build filter from command arguments
@@ -171,6 +174,36 @@ fn main() -> Result<()> {
             // Add search filter
             if let Some(ref search_term) = search {
                 filter = filter.with_search(search_term.clone());
+            }
+
+            // Parse due_before date filter
+            if let Some(ref due_before_str) = due_before {
+                if let Ok(date) = chrono::NaiveDate::parse_from_str(due_before_str, "%Y-%m-%d") {
+                    let datetime = date.and_hms_opt(23, 59, 59).unwrap().and_utc();
+                    filter.due_before = Some(datetime);
+                } else {
+                    eprintln!("Warning: Invalid due_before date '{}', ignoring (expected YYYY-MM-DD)", due_before_str);
+                }
+            }
+
+            // Parse due_after date filter
+            if let Some(ref due_after_str) = due_after {
+                if let Ok(date) = chrono::NaiveDate::parse_from_str(due_after_str, "%Y-%m-%d") {
+                    let datetime = date.and_hms_opt(0, 0, 0).unwrap().and_utc();
+                    filter.due_after = Some(datetime);
+                } else {
+                    eprintln!("Warning: Invalid due_after date '{}', ignoring (expected YYYY-MM-DD)", due_after_str);
+                }
+            }
+
+            // Parse due (exact date) filter
+            if let Some(ref due_str) = due {
+                if let Ok(date) = chrono::NaiveDate::parse_from_str(due_str, "%Y-%m-%d") {
+                    let datetime = date.and_hms_opt(0, 0, 0).unwrap().and_utc();
+                    filter.due = Some(datetime);
+                } else {
+                    eprintln!("Warning: Invalid due date '{}', ignoring (expected YYYY-MM-DD)", due_str);
+                }
             }
 
             // Build sort from command arguments
