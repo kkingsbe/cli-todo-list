@@ -182,9 +182,9 @@ epics:
         type: "feature"
         risk: "medium"
         depends_on: ["04.2"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-1"
+        sprint:  9
       - id: "04.4"
         title: "Manage Tags on Existing Tasks"
         points: 3
@@ -237,9 +237,9 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["05.1"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-1"
+        sprint:  9
 
   - id: "epic-06"
     title: "Delete Task and Output Formats"
@@ -253,9 +253,9 @@ epics:
         type: "feature"
         risk: "medium"
         depends_on: ["05.1"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-2"
+        sprint:  9
       - id: "06.2"
         title: "Output Format Support"
         points: 2

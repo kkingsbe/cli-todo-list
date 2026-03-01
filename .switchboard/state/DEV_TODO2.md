@@ -1,9 +1,9 @@
 # DEV_TODO2 — Development Agent 2
 
-> Sprint: 8
-> Focus Area: Filtering Commands
-> Last Updated: 2026-03-01T04:37:35Z
-> Total Points: 5 pts
+> Sprint: 9
+> Focus Area: Task Deletion
+> Last Updated: 2026-03-01T07:40:00Z
+> Total Points: 3 pts
 
 ## Orientation
 
@@ -11,31 +11,20 @@ Before starting any stories, read these files:
 
 - `.switchboard/planning/project-context.md`
 - `.switchboard/planning/architecture.md`
-- `src/filter.rs` — Current filter implementation
+- `src/cli.rs` — CLI command definitions
 - `src/commands.rs` — Command handlers
+- `src/task.rs` — Current task implementation
+- `src/repository.rs` — Database operations
 
 ## Stories
 
-- [x] **{03.4}** (REWORK): Get Task Details Command ✅ APPROVED
-  - 📄 Story: `.switchboard/state/stories/archive/sprint-7/story-03-4-get-task-details-command.md`
-  - 🔒 Already approved in previous sprints
-  - ✅ Completed
-
-- [x] **{05.1}**: Filter by Status (2 pts) ✅ queued for review
-  - 📄 Story: `.switchboard/state/stories/story-05-1-filter-by-status.md`
+- [ ] **{06.1}**: Delete Task Command (3 pts)
+  - 📄 Story: `.switchboard/state/stories/story-06-1-delete-task-command.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
   - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Build + tests pass, `cargo run -- list --status incomplete` works
-  - 🔒 Risk: Low
-  - 📝 Commit: `feat(dev2): [05.1] Add filter by status`
-
-- [x] **{05.3}**: Filter by Due Date (3 pts) ✅ queued for review
-  - 📄 Story: `.switchboard/state/stories/story-05-3-filter-by-due-date.md`
-  - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
-  - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Build + tests pass, `cargo run -- list --due-before 2026-03-01` works
-  - 🔒 Risk: Low
-  - 📝 Commit: `feat(dev2): [05.3] Add filter by due date`
+  - ✅ Post-check: Build + tests pass, `cargo run -- delete <id> --force` removes task
+  - 🔒 Risk: Medium
+  - 📝 Commit: `feat(dev2): [06.1] Add delete task command with confirmation`
 
 ## AGENT QA
 

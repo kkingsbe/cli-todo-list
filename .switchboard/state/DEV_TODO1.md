@@ -1,9 +1,9 @@
 # DEV_TODO1 — Development Agent 1
 
-> Sprint: 8
-> Focus Area: Tag Management Commands
-> Last Updated: 2026-03-01T04:37:35Z
-> Total Points: 5 pts
+> Sprint: 9
+> Focus Area: Tag Management & Sorting
+> Last Updated: 2026-03-01T07:40:00Z
+> Total Points: 4 pts
 
 ## Orientation
 
@@ -12,25 +12,27 @@ Before starting any stories, read these files:
 - `.switchboard/planning/project-context.md`
 - `.switchboard/planning/architecture.md`
 - `src/tag.rs` — Current tag implementation
+- `src/filter.rs` — Current filter/sort implementation
+- `src/repository.rs` — Database operations
 - `src/commands.rs` — Command handlers
 
 ## Stories
 
-- [x] **{04.2}**: List Tags Command (2 pts) ✅ queued for review
-  - 📄 Story: `.switchboard/state/stories/story-04-2-list-tags-command.md`
+- [ ] **{04.3}**: Delete Tag Command (2 pts)
+  - 📄 Story: `.switchboard/state/stories/story-04-3-delete-tag-command.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
   - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Build + tests pass, `cargo run -- tags` shows all tags
-  - 🔒 Risk: Low
-  - 📝 Commit: `feat(dev1): [04.2] Add list tags command`
-
-- [x] **{04.4}**: Manage Tags on Existing Tasks (3 pts)
-  - 📄 Story: `.switchboard/state/stories/story-04-4-manage-tags-on-existing-tasks.md`
-  - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
-  - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Build + tests pass, `cargo run -- update <id> --add-tag work` works
+  - ✅ Post-check: Build + tests pass, `cargo run -- tag delete work` removes tag
   - 🔒 Risk: Medium
-  - 📝 Commit: `feat(dev1): [04.4] Add manage tags on existing tasks`
+  - 📝 Commit: `feat(dev1): [04.3] Add delete tag command`
+
+- [ ] **{05.4}**: Sorting (2 pts)
+  - 📄 Story: `.switchboard/state/stories/story-05-4-sorting.md`
+  - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
+  - ⚡ Pre-check: Build + tests pass
+  - ✅ Post-check: Build + tests pass, `cargo run -- list --sort priority` sorts correctly
+  - 🔒 Risk: Low
+  - 📝 Commit: `feat(dev1): [05.4] Add task sorting functionality`
 
 ## AGENT QA
 
