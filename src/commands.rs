@@ -972,4 +972,54 @@ mod tests {
         let task_tags_after = repo.get_task_tags(&task.id).unwrap();
         assert_eq!(task_tags_after.len(), 0);
     }
+
+    // ============ Delete Task Tests ============
+
+    #[test]
+    fn test_delete_task_with_dyn_deletes_existing_task() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = Arc::new(SqliteRepository::new(&db_path).unwrap());
+        repo.initialize().unwrap();
+
+        // Create a task first
+        let task = Task::with_details(
+            "Task to delete".to_string(),
+            Some("Description".to_string()),
+            Priority::P2,
+        );
+        repo.create_task(&task).unwrap();
+        let task_id = task.id.clone();
+
+        // Delete the task using delete_task_with_dyn with force=true
+        let result = delete_task_with_dyn(repo.as_ref(), task_id.clone(), true);
+
+        assert!(result.is_ok(), "Expected delete to succeed, got {:?}", result);
+
+        // Verify the task is deleted
+        let get_result = repo.get_task(&task_id);
+        assert!(get_result.is_err());
+    }
+
+    #[test]
+    fn test_delete_task_with_dyn_returns_not_found_for_non_existent() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = Arc::new(SqliteRepository::new(&db_path).unwrap());
+        repo.initialize().unwrap();
+
+        // Try to delete a task that doesn't exist
+        let non_existent_id = "non-existent-task-id".to_string();
+        let result = delete_task_with_dyn(repo.as_ref(), non_existent_id.clone(), true);
+
+        assert!(result.is_err(), "Expected error for non-existent task");
+        match result.unwrap_err() {
+            AppError::NotFound(msg) => {
+                assert!(msg.contains(&non_existent_id));
+            }
+            _ => panic!("Expected AppError::NotFound, got different error"),
+        }
+    }
 }

@@ -2,7 +2,7 @@
 # Source: .switchboard/input/PRD.md → .switchboard/planning/epics/
 
 project: "TaskForge - Rust CLI Task Manager"
-current_sprint: 8
+current_sprint: 9
 created: "2026-02-28T16:15:00Z"
 last_updated: "2026-03-01T02:41:00Z"
 solutioning_complete: true
@@ -232,7 +232,7 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["05.2"]
-        status: "in-review"
+        status: "complete"
         assigned_to: "dev-2"
         sprint: 8
         blocker_reason: null
@@ -242,9 +242,9 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["05.1"]
-        status: "in-progress"
+        status: "complete"
         assigned_to: "dev-2"
-        sprint:  9
+        sprint: 9
         rebalanced_from: "dev-1"
         rebalanced_date: "2026-03-01"
 
@@ -260,7 +260,7 @@ epics:
         type: "feature"
         risk: "medium"
         depends_on: ["05.1"]
-        status: "in-review"
+        status: "in-progress"
         assigned_to: "dev-2"
         sprint:  9
       - id: "06.2"

@@ -8,7 +8,7 @@ use clap::Parser;
 use std::env;
 use std::str::FromStr;
 use std::sync::Arc;
-use tracing::info;
+use tracing::{info, warn, error};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 mod cli;
@@ -454,15 +454,15 @@ fn main() -> Result<()> {
         Commands::Delete { id, force } => {
             match delete_task_with_dyn(repository.as_ref(), id.clone(), force) {
                 Ok(()) => {
-                    println!("Deleted task: {}", id);
+                    tracing::info!("Deleted task: {}", id);
                 }
                 Err(e) => match e {
                     AppError::NotFound(_) => {
-                        eprintln!("Task not found");
+                        tracing::warn!("Task not found");
                         std::process::exit(1);
                     }
                     _ => {
-                        eprintln!("Error: {}", e);
+                        tracing::error!("Error: {}", e);
                         std::process::exit(1);
                     }
                 },

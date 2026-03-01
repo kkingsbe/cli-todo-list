@@ -58,7 +58,7 @@
   - Add WHERE clause for due dates in list_tasks query
   - Filter tasks by due_date column using <, >, = operators
   - Handle NULL due_date (tasks without due date)
-- **Status:** ⏳ PENDING_REVIEW
+- **Status:** ✅ APPROVED
 
 ## Sprint 9
 
@@ -69,10 +69,21 @@
 - **Commits:** 4310cdc..f7c5ae7
 - **Story file:** `.switchboard/state/stories/story-06-1-delete-task-command.md`
 - **Files changed:** src/cli.rs, src/commands.rs, src/main.rs
-- **Status:** ⏳ PENDING_REVIEW
+- **Status:** ❌ CHANGES_REQUESTED
 - **Acceptance Criteria:**
   - [x] Criterion 1 — verified by: Implementation prompts for confirmation when --force is not provided
   - [x] Criterion 2 — verified by: Implementation accepts --force flag to skip confirmation
   - [x] Criterion 3 — verified by: Repository.delete_task removes task from database
   - [x] Criterion 4 — verified by: Implementation returns AppError::NotFound for non-existent IDs
 - **Notes:** Implemented delete command with confirmation prompt, --force flag, and proper error handling. All 187 tests pass.
+
+**Must Fix Issues (MUST FIX - blocks approval):**
+
+1. **Convention violation:** Uses `println!`/`eprintln!` instead of `tracing!` - violates project convention from project-context.md which states "Use `tracing` for logging — never `println!` or `eprintln!`"
+   - File: src/main.rs:450 - "Deleted task: {id}" uses println!
+   - File: src/main.rs:454 - "Task not found" uses eprintln!
+2. **Missing tests:** No unit/integration tests for delete_task_with_dyn function - violates convention from project-context.md: "Tests colocated in #[cfg(test)] modules within the same file as the code they test"
+
+**Should Fix Issues:**
+
+- CLI test at cli.rs:233 doesn't test the --force flag
