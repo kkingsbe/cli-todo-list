@@ -383,3 +383,54 @@
 - **Findings:**
   - NICE TO HAVE: Consider adding integration test for end-to-end tag filtering
 - **Summary:** All acceptance criteria met. Implemented tag filtering with AND logic using subquery with GROUP BY and HAVING COUNT. CLI properly exposes --tag option. All build gates pass. Clean implementation within scope.
+
+### 03.5: Update Task Command
+
+- **Implemented by:** dev-2
+- **Sprint:** 7
+- **Commits:** d9121f4
+- **Story file:** `.switchboard/state/stories/story-03.5-update-task-command.md`
+- **Files changed:** src/cli.rs, src/commands.rs, src/main.rs, src/error.rs, src/repository.rs
+- **Status:** ✅ APPROVED
+- **Review date:** 2026-03-01T02:55:00Z
+- **Acceptance Criteria:**
+  - [x] Update title with --title flag — **MET**: Verified with `cargo run -- edit <id> --title "Updated Title"`
+  - [x] Update description with --description flag — **MET**: Code inspection confirms description update logic
+  - [x] Update priority with --priority flag — **MET**: Verified with `--priority 1` changes to P1
+  - [x] Mark complete/incomplete with --status flag — **MET**: Verified with `--status completed` changes status
+  - [x] Update due date with --due flag — **MET**: Code inspection confirms date parsing and update
+  - [x] updated_at timestamp updates on any change — **MET**: Verified - timestamp updates after edit (02:53:40 → 02:53:55)
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (113 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+- **Diff Analysis:**
+  - Commit: d9121f4 - feat(dev2): [03.5] implement update task command
+  - Files changed: 5 files (cli.rs, commands.rs, error.rs, main.rs, repository.rs)
+- **Findings:**
+  - SHOULD FIX: error.rs changes (InvalidStatus, InvalidDate) slightly outside scope but necessary for implementation
+- **Summary:** All acceptance criteria met. Update command fully functional with title, description, priority, status, and due date updates. Timestamp properly updates on changes. Build and tests pass.
+
+### 06.3: Complete and Toggle Status
+
+- **Implemented by:** dev-2
+- **Sprint:** 7
+- **Commits:** 80b630b
+- **Story file:** `.switchboard/state/stories/story-06.3-complete-and-toggle-status.md`
+- **Files changed:** src/commands.rs, src/main.rs
+- **Status:** ✅ APPROVED
+- **Review date:** 2026-03-01T02:55:00Z
+- **Acceptance Criteria:**
+  - [x] `task complete <id>` marks task as completed — **MET**: Verified with `cargo run -- complete <id>` shows "Completed task"
+  - [x] `task reopen <id>` marks task as incomplete — **MET**: Verified with `cargo run -- reopen <id>` shows "Reopened task"
+  - [x] Output confirms the status change — **MET**: Output shows task ID, title, and status
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (113 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+- **Diff Analysis:**
+  - Commit: 80b630b - feat(dev2): [06.3] add complete and reopen commands
+  - Files changed: 2 files (commands.rs, main.rs - both in scope)
+- **Findings:**
+  - None
+- **Summary:** Complete and reopen commands work correctly. Status changes properly persisted and output confirms changes. All build gates pass. Clean implementation within scope.

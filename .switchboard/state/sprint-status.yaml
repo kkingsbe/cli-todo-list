@@ -2,9 +2,9 @@
 # Source: .switchboard/input/PRD.md → .switchboard/planning/epics/
 
 project: "TaskForge - Rust CLI Task Manager"
-current_sprint: 6
+current_sprint: 7
 created: "2026-02-28T16:15:00Z"
-last_updated: "2026-02-28T21:05:00Z"
+last_updated: "2026-03-01T02:41:00Z"
 solutioning_complete: true
 
 epics:
@@ -139,17 +139,17 @@ epics:
         depends_on: ["03.3"]
         status: "in-progress"
         assigned_to: "dev-2"
-        sprint: 4
-        blocker_reason: "Changes requested - compilation error and scope violations"
+        sprint: 7
+        blocker_reason: null
       - id: "03.5"
         title: "Update Task Command"
         points: 5
         type: "feature"
         risk: "medium"
         depends_on: ["03.4"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "complete"
+        assigned_to: "dev-2"
+        sprint: 7
 
   - id: "epic-04"
     title: "Tagging System"
@@ -164,8 +164,8 @@ epics:
         risk: "low"
         depends_on: ["03.2"]
         status: "in-progress"
-        assigned_to: "dev-2"
-        sprint: 4
+        assigned_to: "dev-1"
+        sprint: 7
       - id: "04.2"
         title: "List Tags Command"
         points: 2
@@ -259,15 +259,15 @@ epics:
         risk: "low"
         depends_on: ["05.1"]
         status: "in-progress"
-        assigned_to: "dev-2"
-        sprint: 5
-        blocker_reason: "Changes requested - scope violations, format logic in wrong file"
+        assigned_to: "dev-1"
+        sprint: 7
+        blocker_reason: null
       - id: "06.3"
         title: "Complete and Toggle Status"
         points: 2
         type: "feature"
         risk: "low"
         depends_on: ["05.1"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "complete"
+        assigned_to: "dev-2"
+        sprint: 7

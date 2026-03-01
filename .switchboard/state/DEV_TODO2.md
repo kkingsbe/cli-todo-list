@@ -1,14 +1,40 @@
 # DEV_TODO2 — Development Agent 2
 
-<!-- Sprint 6: No stories assigned yet. Waiting for blockers to resolve. -->
+> Sprint: 7
+> Focus Area: Task Details Command
+> Last Updated: 2026-03-01T02:44:00Z
+> Total Points: 2 pts
 
-## Current Sprint Work
+## Orientation
 
-- [ ] **(REWORK) story-06.2**: Output Format Support
-  - 📄 Story: `.switchboard/state/stories/archive/sprint-6/story-06-2-output-format.md`
-  - 🔍 Review: See `.switchboard/state/review/REVIEW_QUEUE.md` — CHANGES_REQUESTED
+Before starting any stories, read these files:
+
+- `.switchboard/planning/project-context.md`
+- `.switchboard/planning/architecture.md`
+- `src/cli.rs` — Current CLI structure (Show command)
+- `src/commands.rs` — get_task function
+- `src/main.rs` — Command wiring
+
+## Stories
+
+- [x] **{03.4}**: Get Task Details Command (2 pts) ✅ queued for review
+  - 📄 Story: `.switchboard/state/stories/story-03-4-get-task-details-command.md`
+  - 📚 Skills: `./skills/rust-best-practices/SKILL.md`
   - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Address ALL "Must Fix" items:
-    1. Add --format argument to List command in src/cli.rs
-    2. Implement format handling in commands.rs::run_list() - table/plain/json output
-  - 📝 Commit: `fix(dev2): [06.2] address review feedback`
+  - ✅ Post-check: Build + tests pass, `cargo run -- get <task-id>` shows full details
+  - 🔒 Risk: Low
+  - 📝 Commit: `feat(dev2): [03.4] Get Task Details Command`
+
+## AGENT QA
+
+Run full build and test suite:
+```bash
+cargo build --release
+cargo test
+cargo clippy -- -D warnings
+cargo fmt --check
+```
+
+If all green, create `.switchboard/state/.dev_done_2` with date. If ALL `.dev_done_*` files exist for all agents with work, also create `.switchboard/state/.sprint_complete`.
+
+> ⚠️ Rebalanced by Sprint Planner on 2026-03-01
