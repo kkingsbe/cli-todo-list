@@ -232,11 +232,11 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["05.2"]
-        status: "in-progress"
+        status: "complete"
         assigned_to: "dev-2"
         sprint: 8
         blocker_reason: null
-        review_status: "changes_requested"
+        review_status: "approved"
       - id: "05.4"
         title: "Sorting"
         points: 2
