@@ -172,7 +172,7 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["04.1"]
-        status: "complete"
+        status: "in-review"
         assigned_to: "dev-1"
         sprint: 8
       - id: "04.3"
