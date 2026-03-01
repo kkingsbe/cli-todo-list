@@ -3,7 +3,7 @@
 //! This module defines the Repository trait for data persistence.
 
 use crate::filter::{TagFilter, TaskFilter, TaskSort};
-use crate::models::{Priority, Status, Tag, Task};
+use crate::models::{Priority, Status, Tag, TagWithCount, Task};
 use chrono::{DateTime, Utc};
 use rusqlite::Connection;
 use std::path::Path;
@@ -479,23 +479,31 @@ impl Repository for SqliteRepository {
         Err(RepositoryError::Database("Not implemented".to_string()))
     }
 
-    fn list_tags(&self, _filter: &TagFilter) -> Result<Vec<Tag>, RepositoryError> {
+    fn list_tags(&self, _filter: &TagFilter) -> Result<Vec<TagWithCount>, RepositoryError> {
         let conn = self
             .conn
             .lock()
             .map_err(|e| RepositoryError::Database(e.to_string()))?;
         let mut stmt = conn
-            .prepare("SELECT id, name, created_at FROM tags")
+            .prepare(
+                "SELECT t.id, t.name, t.created_at, COUNT(tt.task_id) as usage_count 
+             FROM tags t 
+             LEFT JOIN task_tags tt ON t.id = tt.tag_id 
+             GROUP BY t.id",
+            )
             .map_err(|e| RepositoryError::Database(e.to_string()))?;
 
         let tags = stmt
             .query_map([], |row| {
-                Ok(Tag {
-                    id: row.get(0)?,
-                    name: row.get(1)?,
-                    color: None,
-                    created_at: string_to_datetime(&row.get::<_, String>(2)?)
-                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                Ok(TagWithCount {
+                    tag: Tag {
+                        id: row.get(0)?,
+                        name: row.get(1)?,
+                        color: None,
+                        created_at: string_to_datetime(&row.get::<_, String>(2)?)
+                            .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    },
+                    usage_count: row.get(3)?,
                 })
             })
             .map_err(|e| RepositoryError::Database(e.to_string()))?
@@ -652,7 +660,7 @@ pub trait Repository: Send + Sync {
     fn delete_tag(&self, id: &str) -> Result<(), RepositoryError>;
 
     /// Lists tags with optional filter.
-    fn list_tags(&self, filter: &TagFilter) -> Result<Vec<Tag>, RepositoryError>;
+    fn list_tags(&self, filter: &TagFilter) -> Result<Vec<TagWithCount>, RepositoryError>;
 
     // Tag-Task relationship operations
 
