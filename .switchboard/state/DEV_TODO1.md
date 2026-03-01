@@ -24,7 +24,7 @@ Before starting any stories, read these files:
   - 🔒 Risk: Low
   - 📝 Commit: `feat(dev1): [04.2] Add list tags command`
 
-- [ ] **{04.4}**: Manage Tags on Existing Tasks (3 pts)
+- [x] **{04.4}**: Manage Tags on Existing Tasks (3 pts)
   - 📄 Story: `.switchboard/state/stories/story-04-4-manage-tags-on-existing-tasks.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
   - ⚡ Pre-check: Build + tests pass
