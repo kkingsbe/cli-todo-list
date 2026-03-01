@@ -69,26 +69,29 @@
 - **Commits:** 4310cdc..0a99cc6
 - **Story file:** `.switchboard/state/stories/archive/sprint-9/story-06-1-delete-task-command.md`
 - **Files changed:** src/cli.rs, src/commands.rs, src/main.rs
-- **Status:** 🔄 RE-QUEUED_FOR_REVIEW
+- **Status:** ❌ CHANGES_REQUESTED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-03-01
 - **Acceptance Criteria:**
-  - [x] Criterion 1 — verified by: Implementation prompts for confirmation when --force is not provided
-  - [x] Criterion 2 — verified by: Implementation accepts --force flag to skip confirmation
-  - [x] Criterion 3 — verified by: Repository.delete_task removes task from database
-  - [x] Criterion 4 — verified by: Implementation returns AppError::NotFound for non-existent IDs
-- **Notes:** Implemented delete command with confirmation prompt, --force flag, and proper error handling. All 187 tests pass.
+  - [x] `task delete <id>` prompts for confirmation — MET
+  - [x] `task delete <id> --force` deletes without confirmation — MET
+  - [x] Deleted task no longer appears in list — MET
+  - [x] Returns error for non-existent task ID — MET
+- **Must Fix:**
+  1. Unused imports in src/main.rs:11
+     - Current: `use tracing::{error, info, warn};`
+     - Expected: `use tracing::info;` (remove unused `error` and `warn`)
+     - Why: Clippy fails with `-D warnings` flag, introduced by story-06.1
+- **Should Fix:** None
+- **Requeue Instructions:** 
+  - Fix the unused imports in src/main.rs:11
+  - Re-run cargo clippy -- -D warnings to verify
+  - Re-queue for review
 
-**Must Fix Issues (FIXED):**
-
-1. ~~Convention violation: Uses `println!`/`eprintln!` instead of `tracing!`~~ - **FIXED**: Replaced with `tracing::info!`, `tracing::warn!`, and `tracing::error!` in src/main.rs
-2. ~~Missing tests: No unit/integration tests for delete_task_with_dyn function~~ - **FIXED**: Added 2 tests in src/commands.rs: `test_delete_task_with_dyn_deletes_existing_task` and `test_delete_task_with_dyn_returns_not_found_for_non_existent`
-
-**Should Fix Issues:**
-
-- CLI test at cli.rs:233 doesn't test the --force flag
 
 ### story-06.1: Delete Task Command
 
-- **Status:** ❌ CHANGES_REQUESTED
+- **Status:** 🔄 IN_PROGRESS (RE-QUEUED)
 - **Reviewed by:** code-reviewer
 - **Review date:** 2026-03-01T10:50:03Z
 - **Acceptance Criteria:**
@@ -97,10 +100,9 @@
   - [x] Criterion 3 — MET: Deleted task no longer appears in list
   - [x] Criterion 4 — MET: Returns error for non-existent task ID
 - **Must Fix:**
-  1. Formatting issue in `src/commands.rs:995`
-     - Current: Line too long for assert macro (fails `cargo fmt --check`)
-     - Expected: Run `cargo fmt` to fix formatting
-     - Why: Build & test gate requires `cargo fmt --check` to pass
+  1. ~~Formatting issue in `src/commands.rs:995`~~ - ✅ FIXED via `cargo fmt` (commit ead2785)
 - **Should Fix:**
   1. Clippy warning in `src/main.rs:11` — unused imports (pre-existing, not from this story)
 - **Requeue Instructions:** Run `cargo fmt` to fix the formatting issue, then re-queue for review
+- **Rework completed:** 2026-03-01T11:55:00Z
+- **Rework completed:** 2026-03-01T11:55:00Z

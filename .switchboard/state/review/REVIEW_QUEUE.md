@@ -666,3 +666,38 @@
   - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
   - cargo fmt --check: ✅ PASS
 - **Summary:** Sorting functionality fully implemented and working. All sort fields (priority, created_at, due_date, title) work correctly with both ascending and descending order. Build and tests pass. Story approved.
+
+---
+
+### story-05.3: Filter by Due Date
+
+- **Status:** ❌ CHANGES_REQUESTED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-03-01T13:50:00Z
+- **Implemented by:** dev-2
+- **Commits:** ad1d54c, 7d8260f, 8888fb3
+- **Story file:** `.switchboard/state/stories/archive/sprint-8/story-05-3-filter-by-due-date.md`
+- **Acceptance Criteria:**
+  - [x] `task list --due-before <date>` shows tasks due before date — **MET**: CLI flag in cli.rs:76, repository filtering at repository.rs:256-258
+  - [x] `task list --due-after <date>` shows tasks due after date — **MET**: CLI flag in cli.rs:80, repository filtering at repository.rs:262-264
+  - [x] `task list --due <date>` shows tasks due on specific date — **MET**: CLI flag in cli.rs:84, tests pass
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS
+  - cargo test: ✅ PASS (191 tests: 96+95)
+  - cargo clippy -- -D warnings: ❌ FAIL - unused imports
+- **Must Fix:**
+  1. Remove unused imports in src/main.rs line 11
+     - Current: `use tracing::{error, info, warn};`
+     - Expected: `use tracing::info;` (only info is used)
+     - Why: clippy fails with `-D warnings` (project-context.md line 10)
+  2. Replace eprintln! with tracing::warn! or tracing::error! in due date handling (lines 187, 204, 217)
+     - Current: `eprintln!("Warning: Invalid due_before date...")`
+     - Expected: Use tracing::warn! macro
+     - Why: Project convention mandates tracing for logging (project-context.md line 30)
+- **Should Fix:**
+  1. Consider adding integration tests for end-to-end due date filtering
+- **Requeue Instructions:**
+  1. Fix unused imports in main.rs line 11
+  2. Replace eprintln! with tracing in due date filter parsing (lines 186-218)
+  3. Ensure cargo clippy -- -D warnings passes
+  4. Requeue to dev-2 for review

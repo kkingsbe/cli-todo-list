@@ -232,10 +232,11 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["05.2"]
-        status: "complete"
+        status: "in-progress"
         assigned_to: "dev-2"
         sprint: 8
         blocker_reason: null
+        review_status: "changes_requested"
       - id: "05.4"
         title: "Sorting"
         points: 2
@@ -260,7 +261,7 @@ epics:
         type: "feature"
         risk: "medium"
         depends_on: ["05.1"]
-        status: "in-progress"
+        status: "complete"
         assigned_to: "dev-2"
         sprint:  9
       - id: "06.2"

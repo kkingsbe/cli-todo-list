@@ -1,6 +1,6 @@
 {
   "pid": 52408,
-  "last_heartbeat": "2026-03-01T11:52:10.859885600+00:00",
+  "last_heartbeat": "2026-03-01T13:56:12.070626+00:00",
   "state": "running",
   "agents": [
     {
@@ -16,7 +16,7 @@
     {
       "name": "cli-dev-2",
       "schedule": "15,45 * * * *",
-      "current_run": "starting"
+      "current_run": null
     },
     {
       "name": "cli-code-reviewer",
