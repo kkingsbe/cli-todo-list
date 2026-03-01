@@ -254,25 +254,30 @@ impl Repository for SqliteRepository {
             .conn
             .lock()
             .map_err(|e| RepositoryError::Database(e.to_string()))?;
-        
-        let rows_affected = conn.execute(
-            "UPDATE tasks SET title = ?1, description = ?2, priority = ?3, status = ?4, 
+
+        let rows_affected = conn
+            .execute(
+                "UPDATE tasks SET title = ?1, description = ?2, priority = ?3, status = ?4, 
              updated_at = ?5, due_date = ?6 WHERE id = ?7",
-            (
-                &task.title,
-                &task.description,
-                priority_to_i64(&task.priority),
-                status_to_string(&task.status),
-                datetime_to_string(&task.updated_at),
-                task.due_date.as_ref().map(datetime_to_string),
-                &task.id,
-            ),
-        ).map_err(|e| RepositoryError::Database(e.to_string()))?;
-        
+                (
+                    &task.title,
+                    &task.description,
+                    priority_to_i64(&task.priority),
+                    status_to_string(&task.status),
+                    datetime_to_string(&task.updated_at),
+                    task.due_date.as_ref().map(datetime_to_string),
+                    &task.id,
+                ),
+            )
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+
         if rows_affected == 0 {
-            return Err(RepositoryError::NotFound(format!("Task with id {} not found", task.id)));
+            return Err(RepositoryError::NotFound(format!(
+                "Task with id {} not found",
+                task.id
+            )));
         }
-        
+
         Ok(())
     }
 

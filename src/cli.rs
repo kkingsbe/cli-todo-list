@@ -66,6 +66,10 @@ pub enum Commands {
         /// Sort order (asc/desc).
         #[arg(short, long, default_value = "asc")]
         order: String,
+
+        /// Output format (table, plain, json).
+        #[arg(long, value_enum, default_value = "table")]
+        format: OutputFormat,
     },
 
     /// Show a task.

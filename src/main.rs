@@ -20,14 +20,15 @@ mod repository;
 mod tag;
 mod task;
 
-use crate::cli::{Cli, Commands};
-use crate::commands::create_task_with_dyn;
-use crate::commands::update_task_with_dyn;
+use crate::cli::{Cli, Commands, OutputFormat};
 use crate::commands::complete_task_with_dyn;
+use crate::commands::create_task_with_dyn;
 use crate::commands::reopen_task_with_dyn;
+use crate::commands::update_task_with_dyn;
 use crate::config::load_config;
 use crate::error::AppError;
-use crate::models::{Priority, Tag};
+use crate::filter::{TaskFilter, TaskSort, SortOrder, TaskSortField};
+use crate::models::{Priority, Status, Tag};
 use crate::repository::{Repository, RepositoryError, SqliteRepository};
 
 fn main() -> Result<()> {
@@ -140,12 +141,20 @@ fn main() -> Result<()> {
                     println!("Task Details:");
                     println!("  ID:          {}", task.id);
                     println!("  Title:       {}", task.title);
-                    println!("  Description: {}", task.description.as_deref().unwrap_or("N/A"));
+                    println!(
+                        "  Description: {}",
+                        task.description.as_deref().unwrap_or("N/A")
+                    );
                     println!("  Priority:    {:?}", task.priority);
                     println!("  Status:      {:?}", task.status);
                     println!("  Created:     {}", task.created_at);
                     println!("  Updated:     {}", task.updated_at);
-                    println!("  Due Date:    {}", task.due_date.map(|d| d.to_string()).unwrap_or_else(|| "N/A".to_string()));
+                    println!(
+                        "  Due Date:    {}",
+                        task.due_date
+                            .map(|d| d.to_string())
+                            .unwrap_or_else(|| "N/A".to_string())
+                    );
                 }
                 Err(e) => match e {
                     AppError::NotFound(_) => {
@@ -159,10 +168,10 @@ fn main() -> Result<()> {
                 },
             }
         }
-        Commands::Edit { 
-            id, 
-            title, 
-            description, 
+        Commands::Edit {
+            id,
+            title,
+            description,
             priority,
             status,
             due,
@@ -179,10 +188,18 @@ fn main() -> Result<()> {
                 Ok(task) => {
                     println!("Updated task: {}", task.id);
                     println!("  Title:       {}", task.title);
-                    println!("  Description: {}", task.description.as_deref().unwrap_or("N/A"));
+                    println!(
+                        "  Description: {}",
+                        task.description.as_deref().unwrap_or("N/A")
+                    );
                     println!("  Priority:    {:?}", task.priority);
                     println!("  Status:      {:?}", task.status);
-                    println!("  Due Date:    {}", task.due_date.map(|d| d.to_string()).unwrap_or_else(|| "N/A".to_string()));
+                    println!(
+                        "  Due Date:    {}",
+                        task.due_date
+                            .map(|d| d.to_string())
+                            .unwrap_or_else(|| "N/A".to_string())
+                    );
                 }
                 Err(e) => match e {
                     AppError::NotFound(_) => {
@@ -200,44 +217,40 @@ fn main() -> Result<()> {
             // TODO: Implement delete command
             tracing::info!("Delete command not yet implemented");
         }
-        Commands::Complete { id } => {
-            match complete_task_with_dyn(repository.as_ref(), id) {
-                Ok(task) => {
-                    println!("Completed task: {}", task.id);
-                    println!("  Title:  {}", task.title);
-                    println!("  Status: {:?}", task.status);
-                }
-                Err(e) => match e {
-                    AppError::NotFound(_) => {
-                        eprintln!("Task not found");
-                        std::process::exit(1);
-                    }
-                    _ => {
-                        eprintln!("Error: {}", e);
-                        std::process::exit(1);
-                    }
-                },
+        Commands::Complete { id } => match complete_task_with_dyn(repository.as_ref(), id) {
+            Ok(task) => {
+                println!("Completed task: {}", task.id);
+                println!("  Title:  {}", task.title);
+                println!("  Status: {:?}", task.status);
             }
-        }
-        Commands::Reopen { id } => {
-            match reopen_task_with_dyn(repository.as_ref(), id) {
-                Ok(task) => {
-                    println!("Reopened task: {}", task.id);
-                    println!("  Title:  {}", task.title);
-                    println!("  Status: {:?}", task.status);
+            Err(e) => match e {
+                AppError::NotFound(_) => {
+                    eprintln!("Task not found");
+                    std::process::exit(1);
                 }
-                Err(e) => match e {
-                    AppError::NotFound(_) => {
-                        eprintln!("Task not found");
-                        std::process::exit(1);
-                    }
-                    _ => {
-                        eprintln!("Error: {}", e);
-                        std::process::exit(1);
-                    }
-                },
+                _ => {
+                    eprintln!("Error: {}", e);
+                    std::process::exit(1);
+                }
+            },
+        },
+        Commands::Reopen { id } => match reopen_task_with_dyn(repository.as_ref(), id) {
+            Ok(task) => {
+                println!("Reopened task: {}", task.id);
+                println!("  Title:  {}", task.title);
+                println!("  Status: {:?}", task.status);
             }
-        }
+            Err(e) => match e {
+                AppError::NotFound(_) => {
+                    eprintln!("Task not found");
+                    std::process::exit(1);
+                }
+                _ => {
+                    eprintln!("Error: {}", e);
+                    std::process::exit(1);
+                }
+            },
+        },
         Commands::Tag { .. } => {
             // TODO: Implement tag command
             tracing::info!("Tag command not yet implemented");

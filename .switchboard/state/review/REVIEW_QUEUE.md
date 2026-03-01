@@ -434,3 +434,19 @@
 - **Findings:**
   - None
 - **Summary:** Complete and reopen commands work correctly. Status changes properly persisted and output confirms changes. All build gates pass. Clean implementation within scope.
+
+---
+
+### story-04.1: Create Tag with Task
+
+- **Implemented by:** dev-1
+- **Sprint:** 7
+- **Commits:** 626a49b
+- **Story file:** `.switchboard/state/stories/story-04-1-create-tag-with-task.md`
+- **Files changed:** src/cli.rs, src/main.rs
+- **Status:** PENDING_REVIEW
+- **Acceptance Criteria:**
+  - [x] `task add "Task" --tag work --tag urgent` creates task with tags — verified by: manual test and unit tests pass
+  - [x] Tags are created automatically if they don't exist — verified by: manual test with new tag name
+  - [x] Multiple tags work correctly — verified by: manual test with 3 tags
+- **Notes:** Feature was implemented in previous commit. CLI accepts --tag flag, tags are auto-created, and multiple tags can be associated with a task. Unit tests verify the behavior.
