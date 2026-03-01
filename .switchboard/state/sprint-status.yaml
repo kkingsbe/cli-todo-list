@@ -137,7 +137,7 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["03.3"]
-        status: "in-progress"
+        status: "complete"
         assigned_to: "dev-2"
         sprint: 7
         blocker_reason: null
@@ -172,9 +172,10 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["04.1"]
-        status: "in-review"
+        status: "complete"
         assigned_to: "dev-1"
         sprint: 8
+        blocker_reason: null
       - id: "04.3"
         title: "Delete Tag Command"
         points: 2
@@ -193,6 +194,7 @@ epics:
         status: "in-progress"
         assigned_to: "dev-1"
         sprint: 8
+        blocker_reason: null
 
   - id: "epic-05"
     title: "Filtering & Sorting"
@@ -209,6 +211,7 @@ epics:
         status: "complete"
         assigned_to: "dev-2"
         sprint: 8
+        blocker_reason: null
       - id: "05.2"
         title: "Filter by Priority and Tags"
         points: 3
@@ -224,9 +227,10 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["05.2"]
-        status: "in-progress"
+        status: "in-review"
         assigned_to: "dev-2"
         sprint: 8
+        blocker_reason: null
       - id: "05.4"
         title: "Sorting"
         points: 2
