@@ -790,4 +790,88 @@ mod tests {
         assert_eq!(personal_tasks.len(), 1);
         assert_eq!(personal_tasks[0].id, task2.id);
     }
+
+    #[test]
+    fn test_remove_tag_case_insensitivity() {
+        // Test that removing a tag works case-insensitively
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = Arc::new(SqliteRepository::new(&db_path).unwrap());
+        repo.initialize().unwrap();
+
+        // Create a task
+        let task = Task::with_details(
+            "Test task for case insensitive tag removal".to_string(),
+            Some("Description".to_string()),
+            Priority::P1,
+        );
+        repo.create_task(&task).unwrap();
+
+        // Create a tag with mixed case - but it will be normalized to lowercase
+        let tag = Tag::new("WorkHighPriority".to_string());
+        repo.create_tag(&tag).unwrap();
+
+        // Verify tag name is normalized to lowercase
+        assert_eq!(tag.name, "workhighpriority");
+
+        // Add tag to task
+        repo.add_tag_to_task(&task.id, &tag.id).unwrap();
+
+        // Verify tag is on task
+        let task_tags_before = repo.get_task_tags(&task.id).unwrap();
+        assert_eq!(task_tags_before.len(), 1);
+        assert_eq!(task_tags_before[0].name, "workhighpriority");
+
+        // Now remove the tag using lowercase (different case than original)
+        let result = remove_tag_from_task(
+            repo.clone(),
+            task.id.clone(),
+            "workhighpriority".to_string(),
+        );
+        assert!(
+            result.is_ok(),
+            "Should be able to remove tag with lowercase name"
+        );
+
+        // Verify tag is removed
+        let task_tags_after = repo.get_task_tags(&task.id).unwrap();
+        assert_eq!(task_tags_after.len(), 0);
+    }
+
+    #[test]
+    fn test_remove_tag_with_different_case() {
+        // Test removing a tag using uppercase when it was created with mixed case
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = Arc::new(SqliteRepository::new(&db_path).unwrap());
+        repo.initialize().unwrap();
+
+        // Create a task
+        let task = Task::with_details(
+            "Test task for uppercase removal".to_string(),
+            Some("Description".to_string()),
+            Priority::P2,
+        );
+        repo.create_task(&task).unwrap();
+
+        // Create a tag with mixed case
+        let tag = Tag::new("Urgent".to_string());
+        repo.create_tag(&tag).unwrap();
+
+        // Add tag to task
+        repo.add_tag_to_task(&task.id, &tag.id).unwrap();
+
+        // Try to remove using uppercase
+        let result = remove_tag_from_task(repo.clone(), task.id.clone(), "URGENT".to_string());
+        assert!(
+            result.is_ok(),
+            "Should be able to remove tag with uppercase name"
+        );
+
+        // Verify tag is removed
+        let task_tags_after = repo.get_task_tags(&task.id).unwrap();
+        assert_eq!(task_tags_after.len(), 0);
+    }
 }
