@@ -115,6 +115,14 @@ pub enum Commands {
         /// New due date (YYYY-MM-DD).
         #[arg(long)]
         due: Option<String>,
+
+        /// Tag to add to the task.
+        #[arg(long = "add-tag", value_name = "NAME")]
+        add_tag: Option<String>,
+
+        /// Tag to remove from the task.
+        #[arg(long = "remove-tag", value_name = "NAME")]
+        remove_tag: Option<String>,
     },
 
     /// Delete a task.

@@ -346,6 +346,7 @@ fn main() -> Result<()> {
             priority,
             status,
             due,
+            ..
         } => {
             match update_task_with_dyn(
                 repository.as_ref(),
