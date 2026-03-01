@@ -569,3 +569,18 @@
   - cargo build --release: ✅ PASS
   - cargo test: ✅ PASS (177 tests pass, up from 157 baseline)
 - **Notes:** Implemented 4 subtasks - repository update, commands fix, CLI command, and tests. All tests pass.
+
+---
+
+### story-05.1: Filter by Status
+
+- **Implemented by:** dev-2
+- **Sprint:** 8
+- **Commits:** fb17435f..121fbd21
+- **Story file:** `.switchboard/state/stories/story-05-1-filter-by-status.md`
+- **Files changed:** src/commands.rs
+- **Status:** PENDING_REVIEW
+- **Acceptance Criteria:**
+  - [x] `task list --status incomplete` shows only incomplete tasks — verified by: repository already has WHERE clause for status
+  - [x] `task list --status completed` shows only completed tasks — verified by: repository already has WHERE clause for status
+- **Notes:** Implementation wires the list_tasks function to call the repository's list_tasks method. The repository already had status filtering implemented via WHERE clause in SQL. Only needed to connect the command to the repository.
