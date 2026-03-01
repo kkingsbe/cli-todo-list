@@ -23,3 +23,39 @@
   3. Revert all changes to `src/main.rs` that implement Commands::Complete and Commands::Reopen
 - **Requeue Instructions:** Revert the out-of-scope changes. The core "get" alias functionality already works correctly.
 - **Summary:** The "get" alias works perfectly and both acceptance criteria are verified. However, scope was exceeded by implementing complete/reopen commands which belong to a different story.
+
+## Sprint 8
+
+### story-05.3: Filter by Due Date
+
+- **Implemented by:** dev-2
+- **Sprint:** 8
+- **Story file:** `.switchboard/state/stories/story-05-3-filter-by-due-date.md`
+- **Files in Scope:**
+  - src/filter.rs — modify (due date fields already exist)
+  - src/commands.rs — modify (implement due date filtering)
+  - src/cli.rs — modify (add due date arguments)
+  - src/repository.rs — modify (add due date WHERE clause)
+- **Files NOT in Scope:**
+  - src/task.rs
+  - src/tag.rs
+  - src/models.rs
+- **Acceptance Criteria:**
+  1. `task list --due-before 2026-03-01` shows tasks due before date
+     - Test: Run `cargo run -- list --due-before 2026-03-01` and verify all tasks have due_date < specified date
+  2. `task list --due-after 2026-03-01` shows tasks due after date
+     - Test: Run `cargo run -- list --due-after 2026-03-01` and verify all tasks have due_date > specified date
+  3. `task list --due 2026-03-15` shows tasks due on specific date
+     - Test: Run `cargo run -- list --due 2026-03-15` and verify all tasks have due_date = specified date
+- **Technical Context:**
+  - Module: src/filter.rs — TaskFilter struct already has due_before and due_after fields (lines 36, 38)
+  - Module: src/commands.rs — list_tasks function uses TaskFilter
+  - Module: src/cli.rs — CLI command definitions
+  - Module: src/repository.rs — Database operations with filter support
+  - Data model: Task entity with due_date: Option<DateTime<Utc>> field
+  - Date format: YYYY-MM-DD
+- **Implementation Details:**
+  - Add WHERE clause for due dates in list_tasks query
+  - Filter tasks by due_date column using <, >, = operators
+  - Handle NULL due_date (tasks without due date)
+- **Status:** ⏳ PENDING_REVIEW

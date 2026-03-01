@@ -16,12 +16,10 @@ Before starting any stories, read these files:
 
 ## Stories
 
-- [ ] **{03.4}** (REWORK): Get Task Details Command
+- [x] **{03.4}** (REWORK): Get Task Details Command ✅ APPROVED
   - 📄 Story: `.switchboard/state/stories/archive/sprint-7/story-03-4-get-task-details-command.md`
-  - 🔍 Review: See REVIEW_QUEUE.md — CHANGES_REQUESTED
-  - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Address ALL "Must Fix" items (revert out-of-scope changes to commands.rs and main.rs)
-  - 📝 Commit: `fix(dev2): [03.4] address review feedback`
+  - 🔒 Already approved in previous sprints
+  - ✅ Completed
 
 - [x] **{05.1}**: Filter by Status (2 pts) ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/story-05-1-filter-by-status.md`
@@ -31,7 +29,7 @@ Before starting any stories, read these files:
   - 🔒 Risk: Low
   - 📝 Commit: `feat(dev2): [05.1] Add filter by status`
 
-- [ ] **{05.3}**: Filter by Due Date (3 pts)
+- [x] **{05.3}**: Filter by Due Date (3 pts) ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/story-05-3-filter-by-due-date.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
   - ⚡ Pre-check: Build + tests pass
