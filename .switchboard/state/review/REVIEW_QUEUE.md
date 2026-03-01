@@ -671,11 +671,12 @@
 
 ### story-05.3: Filter by Due Date
 
-- **Status:** ❌ CHANGES_REQUESTED
+- **Status:** ✅ PENDING_REVIEW
 - **Reviewed by:** code-reviewer
 - **Review date:** 2026-03-01T13:50:00Z
 - **Implemented by:** dev-2
-- **Commits:** ad1d54c, 7d8260f, 8888fb3
+- **Commits:** ad1d54c, 7d8260f, 8888fb3, e2da908
+- **Note:** Fix applied (commit e2da908): Removed unused imports, replaced eprintln with tracing::warn
 - **Story file:** `.switchboard/state/stories/archive/sprint-8/story-05-3-filter-by-due-date.md`
 - **Acceptance Criteria:**
   - [x] `task list --due-before <date>` shows tasks due before date — **MET**: CLI flag in cli.rs:76, repository filtering at repository.rs:256-258

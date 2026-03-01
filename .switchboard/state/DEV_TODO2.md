@@ -11,12 +11,12 @@
 
 ## Rework Queue
 
-- [x] **story-05.3** (REWORK): Filter by Due Date ✅ queued for review
+- [x] **story-05.3** (REVIEW): Filter by Due Date ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/archive/sprint-8/story-05-3-filter-by-due-date.md`
-  - 🔍 Review: See `.switchboard/state/review/REVIEW_QUEUE.md` — CHANGES_REQUESTED
+  - 🔍 Review: See `.switchboard/state/review/REVIEW_QUEUE.md` — PENDING_REVIEW
   - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Address ALL "Must Fix" items
-  - 📝 Commit: `fix(dev2): [05.3] address review feedback`
+  - ✅ Post-check: clippy warnings fixed
+  - 📝 Commit: `fix(dev2): [story-05.3] fix clippy warnings - unused imports and eprintln`
 
 ## Note
 
