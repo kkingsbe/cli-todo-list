@@ -66,10 +66,10 @@
 
 - **Implemented by:** dev-2
 - **Sprint:** 9
-- **Commits:** 4310cdc..f7c5ae7
-- **Story file:** `.switchboard/state/stories/story-06-1-delete-task-command.md`
+- **Commits:** 4310cdc..0a99cc6
+- **Story file:** `.switchboard/state/stories/archive/sprint-9/story-06-1-delete-task-command.md`
 - **Files changed:** src/cli.rs, src/commands.rs, src/main.rs
-- **Status:** ❌ CHANGES_REQUESTED
+- **Status:** 🔄 RE-QUEUED_FOR_REVIEW
 - **Acceptance Criteria:**
   - [x] Criterion 1 — verified by: Implementation prompts for confirmation when --force is not provided
   - [x] Criterion 2 — verified by: Implementation accepts --force flag to skip confirmation
@@ -77,12 +77,10 @@
   - [x] Criterion 4 — verified by: Implementation returns AppError::NotFound for non-existent IDs
 - **Notes:** Implemented delete command with confirmation prompt, --force flag, and proper error handling. All 187 tests pass.
 
-**Must Fix Issues (MUST FIX - blocks approval):**
+**Must Fix Issues (FIXED):**
 
-1. **Convention violation:** Uses `println!`/`eprintln!` instead of `tracing!` - violates project convention from project-context.md which states "Use `tracing` for logging — never `println!` or `eprintln!`"
-   - File: src/main.rs:450 - "Deleted task: {id}" uses println!
-   - File: src/main.rs:454 - "Task not found" uses eprintln!
-2. **Missing tests:** No unit/integration tests for delete_task_with_dyn function - violates convention from project-context.md: "Tests colocated in #[cfg(test)] modules within the same file as the code they test"
+1. ~~Convention violation: Uses `println!`/`eprintln!` instead of `tracing!`~~ - **FIXED**: Replaced with `tracing::info!`, `tracing::warn!`, and `tracing::error!` in src/main.rs
+2. ~~Missing tests: No unit/integration tests for delete_task_with_dyn function~~ - **FIXED**: Added 2 tests in src/commands.rs: `test_delete_task_with_dyn_deletes_existing_task` and `test_delete_task_with_dyn_returns_not_found_for_non_existent`
 
 **Should Fix Issues:**
 

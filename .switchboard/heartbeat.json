@@ -1,6 +1,6 @@
 {
   "pid": 52408,
-  "last_heartbeat": "2026-03-01T10:21:10.008930100+00:00",
+  "last_heartbeat": "2026-03-01T10:23:10.027087200+00:00",
   "state": "running",
   "agents": [
     {
@@ -21,7 +21,7 @@
     {
       "name": "cli-code-reviewer",
       "schedule": "20,50 * * * *",
-      "current_run": "starting"
+      "current_run": null
     },
     {
       "name": "cli-scrum-master",

@@ -19,9 +19,9 @@ No stories available for this sprint. The project is awaiting final review appro
 
 ---
 
-- [ ] **(story-06.1)** (REWORK): Delete Task Command
+- [x] **(story-06.1)** (REWORK): Delete Task Command ✅ COMPLETED
   - 📄 Story: .switchboard/state/stories/archive/sprint-9/story-06-1-delete-task-command.md
-  - 🔍 Review: See REVIEW_QUEUE.md — CHANGES_REQUESTED
+  - 🔍 Review: See REVIEW_QUEUE.md — RE-QUEUED_FOR_REVIEW
   - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Address ALL "Must Fix" items
+  - ✅ Post-check: Addressed ALL "Must Fix" items
   - 📝 Commit: `fix(dev2): [06.1] address review feedback`
