@@ -191,7 +191,7 @@ epics:
         type: "feature"
         risk: "medium"
         depends_on: ["04.1"]
-        status: "in-review"
+        status: "in-progress"
         assigned_to: "dev-1"
         sprint: 8
         blocker_reason: "CHANGES_REQUESTED: Replace eprintln!/println! with tracing"
@@ -253,7 +253,7 @@ epics:
         type: "feature"
         risk: "medium"
         depends_on: ["05.1"]
-        status: "in-progress"
+        status: "in-review"
         assigned_to: "dev-2"
         sprint:  9
       - id: "06.2"

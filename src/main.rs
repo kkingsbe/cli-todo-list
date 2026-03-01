@@ -381,9 +381,9 @@ fn main() -> Result<()> {
                             Ok(tag) => {
                                 // Tag exists, link to task
                                 if let Err(e) = repository.add_tag_to_task(&id, &tag.id) {
-                                    eprintln!("Error adding tag: {}", e);
+                                    tracing::error!("Error adding tag: {}", e);
                                 } else {
-                                    println!("  Added tag: {}", tag_name);
+                                    tracing::info!("  Added tag: {}", tag_name);
                                 }
                             }
                             Err(RepositoryError::NotFound(_)) => {
@@ -397,23 +397,23 @@ fn main() -> Result<()> {
                                                 if let Err(e) =
                                                     repository.add_tag_to_task(&id, &tag.id)
                                                 {
-                                                    eprintln!("Error adding tag: {}", e);
+                                                    tracing::error!("Error adding tag: {}", e);
                                                 } else {
-                                                    println!("  Added tag: {}", tag_name);
+                                                    tracing::info!("  Added tag: {}", tag_name);
                                                 }
                                             }
                                             Err(e) => {
-                                                eprintln!("Error looking up created tag: {}", e);
+                                                tracing::error!("Error looking up created tag: {}", e);
                                             }
                                         }
                                     }
                                     Err(e) => {
-                                        eprintln!("Error creating tag: {}", e);
+                                        tracing::error!("Error creating tag: {}", e);
                                     }
                                 }
                             }
                             Err(e) => {
-                                eprintln!("Error looking up tag: {}", e);
+                                tracing::error!("Error looking up tag: {}", e);
                             }
                         }
                     }
@@ -424,13 +424,13 @@ fn main() -> Result<()> {
                             Ok(tag) => {
                                 // Remove tag from task
                                 if let Err(e) = repository.remove_tag_from_task(&id, &tag.id) {
-                                    eprintln!("Error removing tag: {}", e);
+                                    tracing::error!("Error removing tag: {}", e);
                                 } else {
-                                    println!("  Removed tag: {}", tag_name);
+                                    tracing::info!("  Removed tag: {}", tag_name);
                                 }
                             }
                             Err(e) => {
-                                eprintln!("Error finding tag: {}", e);
+                                tracing::error!("Error finding tag: {}", e);
                             }
                         }
                     }
