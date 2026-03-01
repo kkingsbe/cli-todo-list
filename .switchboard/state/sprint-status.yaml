@@ -137,9 +137,9 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["03.3"]
-        status: "changes-requested"
-        assigned_to: "dev-2"
-        sprint: 7
+        status: "in-progress"
+        assigned_to: "dev-1"
+        sprint: 10
         blocker_reason: null
       - id: "03.5"
         title: "Update Task Command"

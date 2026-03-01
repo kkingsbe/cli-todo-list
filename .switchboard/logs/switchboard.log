@@ -351,3 +351,6 @@ Possible causes:
 [2m2026-03-01T23:05:00.378139Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Agent 'cli-sprint-planner' triggered by cron schedule
 [2m2026-03-01T23:05:00.378797Z[0m [33m WARN[0m [2mswitchboard::scheduler[0m[2m:[0m Metrics file not found (first run or missing file): Metrics file not found: .switchboard/logs\metrics.json
 [2m2026-03-01T23:05:00.378807Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Starting agent: cli-sprint-planner
+[2m2026-03-01T23:15:00.193338Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Agent 'cli-dev-2' triggered by cron schedule
+[2m2026-03-01T23:15:00.193759Z[0m [33m WARN[0m [2mswitchboard::scheduler[0m[2m:[0m Metrics file not found (first run or missing file): Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-03-01T23:15:00.193770Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Starting agent: cli-dev-2
