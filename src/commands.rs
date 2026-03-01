@@ -461,13 +461,59 @@ pub fn add_tag_to_task<R: Repository>(
 
 /// Command handler for removing a tag from a task.
 pub fn remove_tag_from_task<R: Repository>(
-    _repository: Arc<R>,
+    repository: Arc<R>,
     task_id: String,
-    tag_id: String,
+    tag_name: String,
 ) -> Result<(), AppError> {
-    let _ = (task_id, tag_id);
-    // Repository operations will be implemented in later stories
-    Ok(())
+    // First, verify the task exists
+    let _task = repository.get_task(&task_id).map_err(|e| match e {
+        RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+    })?;
+
+    // Get the tag by name (case-insensitive lookup)
+    let tag_name_lower = tag_name.to_lowercase();
+    let tag = repository
+        .get_tag_by_name(&tag_name_lower)
+        .map_err(|e| match e {
+            RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+            RepositoryError::Database(msg) => {
+                AppError::System(crate::error::SystemError::Database(msg))
+            }
+            RepositoryError::Constraint(msg) => AppError::UserError(msg),
+        })?;
+
+    // Get all tags on the task to verify the tag is actually on the task
+    let task_tags = repository.get_task_tags(&task_id).map_err(|e| match e {
+        RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+    })?;
+
+    // Verify the tag is actually on the task
+    let tag_exists_on_task = task_tags.iter().any(|t| t.id == tag.id);
+    if !tag_exists_on_task {
+        return Err(AppError::UserError(format!(
+            "Tag '{}' is not attached to task '{}'",
+            tag_name, task_id
+        )));
+    }
+
+    // Remove the tag from the task
+    repository
+        .remove_tag_from_task(&task_id, &tag.id)
+        .map_err(|e| match e {
+            RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+            RepositoryError::Database(msg) => {
+                AppError::System(crate::error::SystemError::Database(msg))
+            }
+            RepositoryError::Constraint(msg) => AppError::UserError(msg),
+        })
 }
 
 #[cfg(test)]
