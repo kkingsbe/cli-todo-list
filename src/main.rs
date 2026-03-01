@@ -8,7 +8,7 @@ use clap::Parser;
 use std::env;
 use std::str::FromStr;
 use std::sync::Arc;
-use tracing::{info, warn, error};
+use tracing::{error, info, warn};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 mod cli;

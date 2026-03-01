@@ -995,7 +995,11 @@ mod tests {
         // Delete the task using delete_task_with_dyn with force=true
         let result = delete_task_with_dyn(repo.as_ref(), task_id.clone(), true);
 
-        assert!(result.is_ok(), "Expected delete to succeed, got {:?}", result);
+        assert!(
+            result.is_ok(),
+            "Expected delete to succeed, got {:?}",
+            result
+        );
 
         // Verify the task is deleted
         let get_result = repo.get_task(&task_id);
