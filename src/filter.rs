@@ -71,6 +71,24 @@ impl TaskFilter {
         self.tags = Some(tags);
         self
     }
+
+    /// Sets the due_before filter (tasks due before this date).
+    pub fn with_due_before(mut self, due_before: chrono::DateTime<chrono::Utc>) -> Self {
+        self.due_before = Some(due_before);
+        self
+    }
+
+    /// Sets the due_after filter (tasks due after this date).
+    pub fn with_due_after(mut self, due_after: chrono::DateTime<chrono::Utc>) -> Self {
+        self.due_after = Some(due_after);
+        self
+    }
+
+    /// Sets the due filter (tasks due on this exact date).
+    pub fn with_due(mut self, due: chrono::DateTime<chrono::Utc>) -> Self {
+        self.due = Some(due);
+        self
+    }
 }
 
 /// Sort options for tasks.
@@ -125,6 +143,9 @@ mod tests {
         assert!(filter.priority.is_none());
         assert!(filter.tags.is_none());
         assert!(filter.search.is_none());
+        assert!(filter.due_before.is_none());
+        assert!(filter.due_after.is_none());
+        assert!(filter.due.is_none());
     }
 
     #[test]
@@ -137,6 +158,27 @@ mod tests {
     fn task_filter_with_priority() {
         let filter = TaskFilter::new().with_priority(Priority::P1);
         assert_eq!(filter.priority, Some(Priority::P1));
+    }
+
+    #[test]
+    fn task_filter_with_due_before() {
+        let due_date = chrono::Utc::now();
+        let filter = TaskFilter::new().with_due_before(due_date);
+        assert_eq!(filter.due_before, Some(due_date));
+    }
+
+    #[test]
+    fn task_filter_with_due_after() {
+        let due_date = chrono::Utc::now();
+        let filter = TaskFilter::new().with_due_after(due_date);
+        assert_eq!(filter.due_after, Some(due_date));
+    }
+
+    #[test]
+    fn task_filter_with_due() {
+        let due_date = chrono::Utc::now();
+        let filter = TaskFilter::new().with_due(due_date);
+        assert_eq!(filter.due, Some(due_date));
     }
 
     #[test]

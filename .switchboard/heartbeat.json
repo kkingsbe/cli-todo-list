@@ -1,6 +1,6 @@
 {
   "pid": 52408,
-  "last_heartbeat": "2026-03-01T06:07:07.634131400+00:00",
+  "last_heartbeat": "2026-03-01T06:12:07.677133600+00:00",
   "state": "running",
   "agents": [
     {
@@ -26,7 +26,7 @@
     {
       "name": "cli-scrum-master",
       "schedule": "0 * * * *",
-      "current_run": "starting"
+      "current_run": null
     },
     {
       "name": "sb-knowledge-curator",
