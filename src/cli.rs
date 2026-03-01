@@ -65,6 +65,7 @@ pub enum Commands {
     },
 
     /// Show a task.
+    #[command(alias = "get")]
     Show {
         /// Task ID.
         id: String,
