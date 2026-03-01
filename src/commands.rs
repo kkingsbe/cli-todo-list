@@ -297,6 +297,48 @@ pub fn delete_task<R: Repository>(
     Ok(())
 }
 
+/// Command handler for deleting a task with a trait object.
+/// This version accepts &dyn Repository for dynamic dispatch.
+pub fn delete_task_with_dyn(
+    repository: &dyn Repository,
+    id: String,
+    force: bool,
+) -> Result<(), AppError> {
+    // Verify the task exists
+    repository.get_task(&id).map_err(|e| match e {
+        RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+    })?;
+
+    // Prompt for confirmation if not forced
+    if !force {
+        print!("Delete task {}? [y/N]: ", id);
+        std::io::stdout().flush().map_err(|e| AppError::UserError(e.to_string()))?;
+        let mut confirmation = String::new();
+        std::io::stdin()
+            .read_line(&mut confirmation)
+            .map_err(|e| AppError::UserError(e.to_string()))?;
+
+        if !confirmation.trim().eq_ignore_ascii_case("y") {
+            return Ok(());
+        }
+    }
+
+    // Delete the task
+    repository.delete_task(&id).map_err(|e| match e {
+        RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+    })?;
+
+    Ok(())
+}
+
 /// Command handler for completing a task.
 pub fn complete_task<R: Repository>(repository: Arc<R>, id: String) -> Result<Task, AppError> {
     // Fetch the existing task

@@ -24,6 +24,7 @@ mod task;
 use crate::cli::{Cli, Commands, OutputFormat};
 use crate::commands::complete_task_with_dyn;
 use crate::commands::create_task_with_dyn;
+use crate::commands::delete_task_with_dyn;
 use crate::commands::reopen_task_with_dyn;
 use crate::commands::update_task_with_dyn;
 use crate::config::load_config;
@@ -446,9 +447,20 @@ fn main() -> Result<()> {
                 },
             }
         }
-        Commands::Delete { .. } => {
-            // TODO: Implement delete command
-            tracing::info!("Delete command not yet implemented");
+        Commands::Delete { id, force } => match delete_task_with_dyn(repository.as_ref(), id.clone(), force) {
+            Ok(()) => {
+                println!("Deleted task: {}", id);
+            }
+            Err(e) => match e {
+                AppError::NotFound(_) => {
+                    eprintln!("Task not found");
+                    std::process::exit(1);
+                }
+                _ => {
+                    eprintln!("Error: {}", e);
+                    std::process::exit(1);
+                }
+            },
         }
         Commands::Complete { id } => match complete_task_with_dyn(repository.as_ref(), id) {
             Ok(task) => {
