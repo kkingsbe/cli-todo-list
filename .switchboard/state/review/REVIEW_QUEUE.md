@@ -688,3 +688,37 @@
   - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
   - cargo fmt --check: ✅ PASS
 - **Summary:** Due date filtering fully implemented and working. All three filter options (--due-before, --due-after, --due) work correctly with proper date parsing and SQL queries. Previous review issues (unused imports, eprintln) were fixed in commit e2da908. Build, tests, and clippy all pass.
+
+---
+
+## Sprint 10
+
+### story-03.4: Get Task Details Command (Scope Fix)
+
+- **Implemented by:** dev-1
+- **Sprint:** 10
+- **Story file:** `.switchboard/state/stories/story-03-4-get-task-details-fix.md`
+- **Files in Scope:**
+  - src/commands.rs — remove out-of-scope functions (complete_task, reopen_task)
+  - src/main.rs — remove imports and handlers (Commands::Complete, Commands::Reopen)
+  - src/cli.rs — remove command variants (Commands::Complete, Commands::Reopen)
+- **Files NOT in Scope:**
+  - src/repository.rs, src/models.rs, src/task.rs, src/tag.rs, src/filter.rs, src/config.rs, src/error.rs
+- **Status:** ✅ APPROVED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-03-01T23:26:00Z
+- **Acceptance Criteria:**
+  - [x] `task get <uuid>` shows full task details — **MET**: Verified with valid UUID shows ID, title, description, priority, status, dates
+  - [x] Shows 404 error for unknown task ID — **MET**: Shows "Task not found" for invalid UUID
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (191 tests pass: 96+95)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+  - cargo fmt --check: ✅ PASS (after running cargo fmt)
+- **Diff Analysis:**
+  - Scope violations removed: Complete/Reopen commands and functions no longer present in cli.rs, commands.rs, main.rs
+  - The Show command with "get" alias remains functional
+  - Files in scope modified correctly per story specification
+- **Findings:**
+  - Pre-existing formatting issues in cli.rs and commands.rs fixed via cargo fmt
+- **Summary:** All scope violations have been reverted. The get/show command works correctly with full task details displayed for valid UUIDs, and "Task not found" error shown for invalid UUIDs. All build gates pass. Story approved.

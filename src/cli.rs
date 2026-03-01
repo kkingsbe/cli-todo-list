@@ -134,7 +134,6 @@ pub enum Commands {
         force: bool,
     },
 
-
     /// Tag management.
     Tag {
         #[command(subcommand)]

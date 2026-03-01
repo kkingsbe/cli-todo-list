@@ -137,10 +137,11 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["03.3"]
-        status: "in-progress"
+        status: "complete"
         assigned_to: "dev-1"
         sprint: 10
         blocker_reason: null
+        review_status: "approved"
       - id: "03.5"
         title: "Update Task Command"
         points: 5

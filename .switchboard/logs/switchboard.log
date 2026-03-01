@@ -354,3 +354,27 @@ Possible causes:
 [2m2026-03-01T23:15:00.193338Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Agent 'cli-dev-2' triggered by cron schedule
 [2m2026-03-01T23:15:00.193759Z[0m [33m WARN[0m [2mswitchboard::scheduler[0m[2m:[0m Metrics file not found (first run or missing file): Metrics file not found: .switchboard/logs\metrics.json
 [2m2026-03-01T23:15:00.193770Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Starting agent: cli-dev-2
+[2m2026-03-01T23:20:00.191461Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Agent 'cli-code-reviewer' triggered by cron schedule
+[2m2026-03-01T23:20:00.191983Z[0m [33m WARN[0m [2mswitchboard::scheduler[0m[2m:[0m Metrics file not found (first run or missing file): Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-03-01T23:20:00.191994Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Starting agent: cli-code-reviewer
+[2m2026-03-01T23:21:40.572913Z[0m [31mERROR[0m [2mswitchboard::docker::run::run[0m[2m:[0m Failed to load metrics: FileNotFound(".switchboard/logs\\metrics.json")
+[2m2026-03-01T23:21:40.572964Z[0m [31mERROR[0m [2mswitchboard::scheduler[0m[2m:[0m Failed to run agent: Metrics storage error: Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-03-01T23:21:40.572985Z[0m [31mERROR[0m [2mswitchboard::scheduler[0m[2m:[0m Error executing agent 'cli-sprint-planner': Container execution failed for agent cli-sprint-planner: Metrics storage error: Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-03-01T23:30:00.374036Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Agent 'cli-dev-1' triggered by cron schedule
+[2m2026-03-01T23:30:00.374732Z[0m [33m WARN[0m [2mswitchboard::scheduler[0m[2m:[0m Metrics file not found (first run or missing file): Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-03-01T23:30:00.374743Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Starting agent: cli-dev-1
+[2m2026-03-01T23:30:48.965756Z[0m [31mERROR[0m [2mswitchboard::docker::run::run[0m[2m:[0m Failed to load metrics: FileNotFound(".switchboard/logs\\metrics.json")
+[2m2026-03-01T23:30:48.965775Z[0m [31mERROR[0m [2mswitchboard::scheduler[0m[2m:[0m Failed to run agent: Metrics storage error: Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-03-01T23:30:48.965831Z[0m [31mERROR[0m [2mswitchboard::scheduler[0m[2m:[0m Error executing agent 'cli-code-reviewer': Container execution failed for agent cli-code-reviewer: Metrics storage error: Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-03-01T23:32:00.045478Z[0m [31mERROR[0m [2mswitchboard::docker::run::run[0m[2m:[0m Failed to load metrics: FileNotFound(".switchboard/logs\\metrics.json")
+[2m2026-03-01T23:32:00.045502Z[0m [31mERROR[0m [2mswitchboard::scheduler[0m[2m:[0m Failed to run agent: Metrics storage error: Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-03-01T23:32:00.045583Z[0m [31mERROR[0m [2mswitchboard::scheduler[0m[2m:[0m Error executing agent 'cli-dev-2': Container execution failed for agent cli-dev-2: Metrics storage error: Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-03-01T23:35:00.343728Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Agent 'cli-sprint-planner' triggered by cron schedule
+[2m2026-03-01T23:35:00.344256Z[0m [33m WARN[0m [2mswitchboard::scheduler[0m[2m:[0m Metrics file not found (first run or missing file): Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-03-01T23:35:00.344262Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Starting agent: cli-sprint-planner
+[2m2026-03-01T23:37:02.447233Z[0m [31mERROR[0m [2mswitchboard::docker::run::run[0m[2m:[0m Failed to load metrics: FileNotFound(".switchboard/logs\\metrics.json")
+[2m2026-03-01T23:37:02.447258Z[0m [31mERROR[0m [2mswitchboard::scheduler[0m[2m:[0m Failed to run agent: Metrics storage error: Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-03-01T23:37:02.447269Z[0m [31mERROR[0m [2mswitchboard::scheduler[0m[2m:[0m Error executing agent 'cli-sprint-planner': Container execution failed for agent cli-sprint-planner: Metrics storage error: Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-03-01T23:45:00.170301Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Agent 'cli-dev-2' triggered by cron schedule
+[2m2026-03-01T23:45:00.170945Z[0m [33m WARN[0m [2mswitchboard::scheduler[0m[2m:[0m Metrics file not found (first run or missing file): Metrics file not found: .switchboard/logs\metrics.json
+[2m2026-03-01T23:45:00.170956Z[0m [32m INFO[0m [2mswitchboard::scheduler[0m[2m:[0m Starting agent: cli-dev-2

@@ -1,22 +1,22 @@
 {
   "pid": 47556,
-  "last_heartbeat": "2026-03-01T23:18:42.725332+00:00",
+  "last_heartbeat": "2026-03-01T23:44:42.994858400+00:00",
   "state": "running",
   "agents": [
     {
       "name": "cli-sprint-planner",
       "schedule": "5,35 * * * *",
-      "current_run": "starting"
+      "current_run": null
     },
     {
       "name": "cli-dev-1",
       "schedule": "*/30 * * * *",
-      "current_run": null
+      "current_run": "starting"
     },
     {
       "name": "cli-dev-2",
       "schedule": "15,45 * * * *",
-      "current_run": "starting"
+      "current_run": null
     },
     {
       "name": "cli-code-reviewer",

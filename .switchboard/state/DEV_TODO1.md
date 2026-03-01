@@ -14,7 +14,7 @@ Before starting any stories, read these files:
 
 ## Stories
 
-- [ ] **03.4**: Get Task Details Command - Scope Fix (2 pts)
+- [x] **03.4**: Get Task Details Command - Scope Fix (2 pts) ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/story-03-4-get-task-details-fix.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`
   - ⚡ Pre-check: Build + tests pass

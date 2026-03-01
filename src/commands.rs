@@ -343,7 +343,6 @@ pub fn delete_task_with_dyn(
     Ok(())
 }
 
-
 /// Command handler for creating a new tag.
 pub fn create_tag<R: Repository>(
     _repository: Arc<R>,
