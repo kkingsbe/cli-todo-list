@@ -43,6 +43,14 @@ pub enum ValidationError {
     #[error("Priority must be between 1 and 4")]
     InvalidPriority,
 
+    /// Status is invalid.
+    #[error("{0}")]
+    InvalidStatus(String),
+
+    /// Date format is invalid.
+    #[error("{0}")]
+    InvalidDate(String),
+
     /// Empty required field.
     #[error("Required field '{0}' cannot be empty")]
     EmptyField(String),

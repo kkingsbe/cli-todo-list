@@ -22,6 +22,7 @@ mod task;
 
 use crate::cli::{Cli, Commands};
 use crate::commands::create_task_with_dyn;
+use crate::commands::update_task_with_dyn;
 use crate::config::load_config;
 use crate::error::AppError;
 use crate::models::Priority;
@@ -129,9 +130,42 @@ fn main() -> Result<()> {
                 },
             }
         }
-        Commands::Edit { .. } => {
-            // TODO: Implement edit command
-            tracing::info!("Edit command not yet implemented");
+        Commands::Edit { 
+            id, 
+            title, 
+            description, 
+            priority,
+            status,
+            due,
+        } => {
+            match update_task_with_dyn(
+                repository.as_ref(),
+                id,
+                title,
+                description,
+                priority,
+                status,
+                due,
+            ) {
+                Ok(task) => {
+                    println!("Updated task: {}", task.id);
+                    println!("  Title:       {}", task.title);
+                    println!("  Description: {}", task.description.as_deref().unwrap_or("N/A"));
+                    println!("  Priority:    {:?}", task.priority);
+                    println!("  Status:      {:?}", task.status);
+                    println!("  Due Date:    {}", task.due_date.map(|d| d.to_string()).unwrap_or_else(|| "N/A".to_string()));
+                }
+                Err(e) => match e {
+                    AppError::NotFound(_) => {
+                        eprintln!("Task not found");
+                        std::process::exit(1);
+                    }
+                    _ => {
+                        eprintln!("Error: {}", e);
+                        std::process::exit(1);
+                    }
+                },
+            }
         }
         Commands::Delete { .. } => {
             // TODO: Implement delete command

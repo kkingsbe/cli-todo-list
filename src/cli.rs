@@ -86,6 +86,14 @@ pub enum Commands {
         /// New priority (1-4).
         #[arg(short, long)]
         priority: Option<u8>,
+
+        /// New status (completed/incomplete).
+        #[arg(long)]
+        status: Option<String>,
+
+        /// New due date (YYYY-MM-DD).
+        #[arg(long)]
+        due: Option<String>,
     },
 
     /// Delete a task.

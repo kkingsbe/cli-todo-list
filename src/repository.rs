@@ -249,8 +249,31 @@ impl Repository for SqliteRepository {
         Ok(tasks)
     }
 
-    fn update_task(&self, _task: &Task) -> Result<(), RepositoryError> {
-        Err(RepositoryError::Database("Not implemented".to_string()))
+    fn update_task(&self, task: &Task) -> Result<(), RepositoryError> {
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+        
+        let rows_affected = conn.execute(
+            "UPDATE tasks SET title = ?1, description = ?2, priority = ?3, status = ?4, 
+             updated_at = ?5, due_date = ?6 WHERE id = ?7",
+            (
+                &task.title,
+                &task.description,
+                priority_to_i64(&task.priority),
+                status_to_string(&task.status),
+                datetime_to_string(&task.updated_at),
+                task.due_date.as_ref().map(datetime_to_string),
+                &task.id,
+            ),
+        ).map_err(|e| RepositoryError::Database(e.to_string()))?;
+        
+        if rows_affected == 0 {
+            return Err(RepositoryError::NotFound(format!("Task with id {} not found", task.id)));
+        }
+        
+        Ok(())
     }
 
     fn delete_task(&self, id: &str) -> Result<(), RepositoryError> {

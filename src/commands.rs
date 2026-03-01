@@ -2,6 +2,8 @@
 //!
 //! This module defines command handlers for CLI operations.
 
+use chrono::{DateTime, NaiveDate, Utc};
+use std::str::FromStr;
 use crate::error::AppError;
 use crate::filter::{TagFilter, TaskFilter, TaskSort};
 use crate::models::{Priority, Tag, Task};
@@ -89,21 +91,160 @@ pub fn get_task_with_dyn(
     })
 }
 
-/// Command handler for updating a task.
-pub fn update_task<R: Repository>(
-    _repository: Arc<R>,
-    mut task: Task,
+/// Command handler for updating a task with a trait object.
+/// This version accepts &dyn Repository for dynamic dispatch.
+pub fn update_task_with_dyn(
+    repository: &dyn Repository,
+    id: String,
     title: Option<String>,
     description: Option<String>,
-    priority: Option<Priority>,
+    priority: Option<u8>,
+    status: Option<String>,
+    due_date: Option<String>,
 ) -> Result<Task, AppError> {
+    // Fetch the existing task
+    let existing_task = repository.get_task(&id).map_err(|e| match e {
+        RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+        RepositoryError::Database(msg) => AppError::System(crate::error::SystemError::Database(msg)),
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+    })?;
+
+    let mut task = existing_task;
+
+    // Update title if provided
     if let Some(t) = title {
         task.update_title(t);
     }
+    
+    // Update priority if provided
     if let Some(p) = priority {
-        task.update_priority(p);
+        let priority_enum = Priority::from_str(&format!("P{}", p))
+            .map_err(|_| AppError::Validation(crate::error::ValidationError::InvalidPriority))?;
+        task.update_priority(priority_enum);
     }
+    
+    // Update description if provided
     task.description = description.or(task.description);
+    
+    // Update status if provided
+    if let Some(s) = status {
+        match s.to_lowercase().as_str() {
+            "completed" | "complete" => {
+                task.complete();
+            }
+            "incomplete" | "pending" => {
+                task.reopen();
+            }
+            _ => {
+                return Err(AppError::Validation(
+                    crate::error::ValidationError::InvalidStatus(
+                        format!("Invalid status: {}. Use 'completed' or 'incomplete'.", s)
+                    )
+                ));
+            }
+        }
+    }
+    
+    // Update due date if provided
+    if let Some(due) = due_date {
+        let naive_date = NaiveDate::parse_from_str(&due, "%Y-%m-%d")
+            .map_err(|e| AppError::Validation(
+                crate::error::ValidationError::InvalidDate(
+                    format!("Invalid date format: {}. Use YYYY-MM-DD.", e)
+                )
+            ))?;
+        let datetime: DateTime<Utc> = naive_date.and_hms_opt(23, 59, 59)
+            .unwrap()
+            .and_utc();
+        task.due_date = Some(datetime);
+        task.updated_at = Utc::now();
+    }
+
+    // Persist the updated task
+    repository.update_task(&task).map_err(|e| match e {
+        RepositoryError::Database(msg) => AppError::System(crate::error::SystemError::Database(msg)),
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+        RepositoryError::NotFound(msg) => AppError::UserError(msg),
+    })?;
+
+    Ok(task)
+}
+
+/// Command handler for updating a task.
+pub fn update_task<R: Repository>(
+    repository: Arc<R>,
+    id: String,
+    title: Option<String>,
+    description: Option<String>,
+    priority: Option<u8>,
+    status: Option<String>,
+    due_date: Option<String>,
+) -> Result<Task, AppError> {
+    // Fetch the existing task
+    let existing_task = repository.get_task(&id).map_err(|e| match e {
+        RepositoryError::NotFound(msg) => AppError::UserError(msg),
+        RepositoryError::Database(msg) => AppError::System(crate::error::SystemError::Database(msg)),
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+    })?;
+
+    let mut task = existing_task;
+
+    // Update title if provided
+    if let Some(t) = title {
+        task.update_title(t);
+    }
+    
+    // Update priority if provided
+    if let Some(p) = priority {
+        let priority_enum = Priority::from_str(&format!("P{}", p))
+            .map_err(|_| AppError::Validation(crate::error::ValidationError::InvalidPriority))?;
+        task.update_priority(priority_enum);
+    }
+    
+    // Update description if provided
+    task.description = description.or(task.description);
+    
+    // Update status if provided
+    if let Some(s) = status {
+        match s.to_lowercase().as_str() {
+            "completed" | "complete" => {
+                task.complete();
+            }
+            "incomplete" | "pending" => {
+                task.reopen();
+            }
+            _ => {
+                return Err(AppError::Validation(
+                    crate::error::ValidationError::InvalidStatus(
+                        format!("Invalid status: {}. Use 'completed' or 'incomplete'.", s)
+                    )
+                ));
+            }
+        }
+    }
+    
+    // Update due date if provided
+    if let Some(due) = due_date {
+        let naive_date = NaiveDate::parse_from_str(&due, "%Y-%m-%d")
+            .map_err(|e| AppError::Validation(
+                crate::error::ValidationError::InvalidDate(
+                    format!("Invalid date format: {}. Use YYYY-MM-DD.", e)
+                )
+            ))?;
+        let datetime: DateTime<Utc> = naive_date.and_hms_opt(23, 59, 59)
+            .unwrap()
+            .and_utc();
+        task.due_date = Some(datetime);
+        task.updated_at = Utc::now();
+    }
+
+    // Persist the updated task
+    repository.update_task(&task).map_err(|e| match e {
+        RepositoryError::Database(msg) => AppError::System(crate::error::SystemError::Database(msg)),
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+        RepositoryError::NotFound(msg) => AppError::UserError(msg),
+    })?;
+
     Ok(task)
 }
 
