@@ -182,7 +182,10 @@ fn main() -> Result<()> {
                     let datetime = date.and_hms_opt(23, 59, 59).unwrap().and_utc();
                     filter.due_before = Some(datetime);
                 } else {
-                    eprintln!("Warning: Invalid due_before date '{}', ignoring (expected YYYY-MM-DD)", due_before_str);
+                    eprintln!(
+                        "Warning: Invalid due_before date '{}', ignoring (expected YYYY-MM-DD)",
+                        due_before_str
+                    );
                 }
             }
 
@@ -190,10 +193,16 @@ fn main() -> Result<()> {
             if let Some(ref due_after_str) = due_after {
                 if let Ok(date) = chrono::NaiveDate::parse_from_str(due_after_str, "%Y-%m-%d") {
                     // Add 1 day so --due-after 2026-03-01 means after end of that day
-                    let datetime = (date + chrono::Duration::days(1)).and_hms_opt(0, 0, 0).unwrap().and_utc();
+                    let datetime = (date + chrono::Duration::days(1))
+                        .and_hms_opt(0, 0, 0)
+                        .unwrap()
+                        .and_utc();
                     filter.due_after = Some(datetime);
                 } else {
-                    eprintln!("Warning: Invalid due_after date '{}', ignoring (expected YYYY-MM-DD)", due_after_str);
+                    eprintln!(
+                        "Warning: Invalid due_after date '{}', ignoring (expected YYYY-MM-DD)",
+                        due_after_str
+                    );
                 }
             }
 
@@ -203,7 +212,10 @@ fn main() -> Result<()> {
                     let datetime = date.and_hms_opt(0, 0, 0).unwrap().and_utc();
                     filter.due = Some(datetime);
                 } else {
-                    eprintln!("Warning: Invalid due date '{}', ignoring (expected YYYY-MM-DD)", due_str);
+                    eprintln!(
+                        "Warning: Invalid due date '{}', ignoring (expected YYYY-MM-DD)",
+                        due_str
+                    );
                 }
             }
 
@@ -427,8 +439,7 @@ fn main() -> Result<()> {
                         for tag_with_count in &tags {
                             println!(
                                 "{:<20} | {:<15}",
-                                tag_with_count.tag.name,
-                                tag_with_count.usage_count
+                                tag_with_count.tag.name, tag_with_count.usage_count
                             );
                         }
                     }

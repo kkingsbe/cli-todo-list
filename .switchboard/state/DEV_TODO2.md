@@ -23,7 +23,7 @@ Before starting any stories, read these files:
   - ✅ Post-check: Address ALL "Must Fix" items (revert out-of-scope changes to commands.rs and main.rs)
   - 📝 Commit: `fix(dev2): [03.4] address review feedback`
 
-- [ ] **{05.1}**: Filter by Status (2 pts)
+- [x] **{05.1}**: Filter by Status (2 pts) ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/story-05-1-filter-by-status.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
   - ⚡ Pre-check: Build + tests pass

@@ -255,7 +255,9 @@ impl Repository for SqliteRepository {
             )
         };
 
-        let mut stmt = conn.prepare(&query).map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let mut stmt = conn
+            .prepare(&query)
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
 
         // Convert params to slice of trait objects
         let params_refs: Vec<&dyn rusqlite::ToSql> = params.iter().map(|p| p.as_ref()).collect();
@@ -976,7 +978,12 @@ mod tests {
         let mut task2 = Task::new("Task 2".to_string());
         task2.due_date = Some(target_date.and_hms_opt(14, 0, 0).unwrap().and_utc());
         let mut task3 = Task::new("Task 3".to_string());
-        task3.due_date = Some((target_date + chrono::Duration::days(1)).and_hms_opt(10, 0, 0).unwrap().and_utc());
+        task3.due_date = Some(
+            (target_date + chrono::Duration::days(1))
+                .and_hms_opt(10, 0, 0)
+                .unwrap()
+                .and_utc(),
+        );
         let task4 = Task::new("Task 4".to_string()); // no due date
 
         repo.create_task(&task1).unwrap();

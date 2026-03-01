@@ -60,15 +60,13 @@ pub fn list_tasks<R: Repository>(
     filter: TaskFilter,
     sort: TaskSort,
 ) -> Result<Vec<Task>, AppError> {
-    repository
-        .list_tasks(&filter, &sort)
-        .map_err(|e| match e {
-            RepositoryError::NotFound(msg) => AppError::NotFound(msg),
-            RepositoryError::Database(msg) => {
-                AppError::System(crate::error::SystemError::Database(msg))
-            }
-            RepositoryError::Constraint(msg) => AppError::UserError(msg),
-        })
+    repository.list_tasks(&filter, &sort).map_err(|e| match e {
+        RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+    })
 }
 
 /// Command handler for getting a task by ID.
@@ -388,13 +386,15 @@ pub fn list_tags<R: Repository>(
     repository: Arc<R>,
     _filter: TagFilter,
 ) -> Result<Vec<TagWithCount>, AppError> {
-    repository.list_tags(&TagFilter::default()).map_err(|e| match e {
-        RepositoryError::NotFound(msg) => AppError::NotFound(msg),
-        RepositoryError::Database(msg) => {
-            AppError::System(crate::error::SystemError::Database(msg))
-        }
-        RepositoryError::Constraint(msg) => AppError::UserError(msg),
-    })
+    repository
+        .list_tags(&TagFilter::default())
+        .map_err(|e| match e {
+            RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+            RepositoryError::Database(msg) => {
+                AppError::System(crate::error::SystemError::Database(msg))
+            }
+            RepositoryError::Constraint(msg) => AppError::UserError(msg),
+        })
 }
 
 /// Command handler for deleting a tag.
