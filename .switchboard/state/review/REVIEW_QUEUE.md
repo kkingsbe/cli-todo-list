@@ -437,16 +437,51 @@
 
 ---
 
-### story-04.1: Create Tag with Task
+### story-03.4: Get Task Details Command
+
+- **Implemented by:** dev-2
+- **Sprint:** 7
+- **Commits:** c9f4ee3
+- **Story file:** `.switchboard/state/stories/story-03-4-get-task-details-command.md`
+- **Files changed:** src/cli.rs
+- **Status:** ✅ APPROVED
+- **Review date:** 2026-03-01T03:31:00Z
+- **Acceptance Criteria:**
+  - [x] `task get <uuid>` shows full task details — **MET**: Verified with `cargo run -- get <uuid>` shows title, description, priority, status, dates
+  - [x] Shows 404 error for unknown task ID — **MET**: Verified with `cargo run -- get 00000000-0000-0000-0000-000000000000` returns "Task not found"
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (73 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+  - cargo fmt --check: ✅ PASS
+- **Diff Analysis:**
+  - Commit: c9f4ee3 - feat(dev2): [03.4] add 'get' alias for show command
+  - Files changed: src/cli.rs (+1 line: #[command(alias = "get")])
+- **Findings:**
+  - None
+- **Summary:** The "get" alias for the Show command works correctly. Both `task get <uuid>` and `task show <uuid>` display full task details. Unknown task IDs properly show "Task not found" error. Clean, minimal implementation within scope.
+
+---
 
 - **Implemented by:** dev-1
 - **Sprint:** 7
-- **Commits:** 626a49b
+- **Commits:** 626a49b, e699fb7
 - **Story file:** `.switchboard/state/stories/story-04-1-create-tag-with-task.md`
-- **Files changed:** src/cli.rs, src/main.rs
-- **Status:** PENDING_REVIEW
+- **Files changed:** src/cli.rs, src/commands.rs, src/main.rs
+- **Status:** ✅ APPROVED
+- **Review date:** 2026-03-01T03:31:00Z
 - **Acceptance Criteria:**
-  - [x] `task add "Task" --tag work --tag urgent` creates task with tags — verified by: manual test and unit tests pass
-  - [x] Tags are created automatically if they don't exist — verified by: manual test with new tag name
-  - [x] Multiple tags work correctly — verified by: manual test with 3 tags
-- **Notes:** Feature was implemented in previous commit. CLI accepts --tag flag, tags are auto-created, and multiple tags can be associated with a task. Unit tests verify the behavior.
+  - [x] `task add "Task" --tag work --tag urgent` creates task with tags — **MET**: Verified with `cargo run -- add "Test task with tags" --tag work --tag urgent` creates task successfully
+  - [x] Tags are created automatically if they don't exist — **MET**: Code calls repository.create_tag() for non-existent tags
+  - [x] Multiple tags work correctly — **MET**: Verified with --tag work --tag urgent (2 tags)
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (73 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+  - cargo fmt --check: ✅ PASS
+- **Diff Analysis:**
+  - Commits: 626a49b (feat), e699fb7 (chore/format fix)
+  - Files changed: src/cli.rs (+tag option), src/commands.rs (+tests), src/main.rs (+tag handling)
+- **Findings:**
+  - None
+- **Summary:** All acceptance criteria met. The --tag option works correctly to add tags when creating tasks. Tags are auto-created if they don't exist. Multiple tags can be associated with a task. All tests pass.

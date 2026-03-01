@@ -329,7 +329,8 @@ mod tests {
         let json_output = serde_json::to_string(&task).expect("Failed to serialize task to JSON");
 
         // Verify it's valid JSON by parsing it back
-        let parsed: Task = serde_json::from_str(&json_output).expect("Failed to parse JSON back to Task");
+        let parsed: Task =
+            serde_json::from_str(&json_output).expect("Failed to parse JSON back to Task");
 
         // Verify the parsed task matches the original
         assert_eq!(parsed.id, task.id);
@@ -373,7 +374,8 @@ mod tests {
         assert!(json_output.ends_with(']'));
 
         // Verify it's valid JSON by parsing it back
-        let parsed: Vec<Task> = serde_json::from_str(&json_output).expect("Failed to parse JSON back to Tasks");
+        let parsed: Vec<Task> =
+            serde_json::from_str(&json_output).expect("Failed to parse JSON back to Tasks");
 
         // Verify we got both tasks back
         assert_eq!(parsed.len(), 2);
@@ -382,7 +384,8 @@ mod tests {
     #[test]
     fn test_json_format_empty_array() {
         let empty_tasks: Vec<Task> = vec![];
-        let json_output = serde_json::to_string(&empty_tasks).expect("Failed to serialize empty tasks to JSON");
+        let json_output =
+            serde_json::to_string(&empty_tasks).expect("Failed to serialize empty tasks to JSON");
 
         assert_eq!(json_output, "[]");
     }

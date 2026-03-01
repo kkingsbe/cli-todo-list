@@ -28,7 +28,7 @@ use crate::commands::reopen_task_with_dyn;
 use crate::commands::update_task_with_dyn;
 use crate::config::load_config;
 use crate::error::AppError;
-use crate::filter::{TaskFilter, TaskSort, SortOrder, TaskSortField};
+use crate::filter::{SortOrder, TaskFilter, TaskSort, TaskSortField};
 use crate::models::{Priority, Status, Tag};
 use crate::repository::{Repository, RepositoryError, SqliteRepository};
 
@@ -198,17 +198,24 @@ fn main() -> Result<()> {
                                 println!("No tasks found.");
                             } else {
                                 // Print table header
-                                println!("{:<36} | {:<30} | {:<8} | {:<12}",
-                                    "ID", "Title", "Priority", "Status");
-                                println!("{:-<36}-+-{:-<30}-+-{:-<8}-+-{:-<12}",
-                                    "", "", "", "");
+                                println!(
+                                    "{:<36} | {:<30} | {:<8} | {:<12}",
+                                    "ID", "Title", "Priority", "Status"
+                                );
+                                println!("{:-<36}-+-{:-<30}-+-{:-<8}-+-{:-<12}", "", "", "", "");
                                 // Print each task
                                 for task in &tasks {
-                                    println!("{:<36} | {:<30} | {:<8} | {:<12}",
+                                    println!(
+                                        "{:<36} | {:<30} | {:<8} | {:<12}",
                                         task.id,
-                                        if task.title.len() > 30 { &task.title[..27] } else { &task.title },
+                                        if task.title.len() > 30 {
+                                            &task.title[..27]
+                                        } else {
+                                            &task.title
+                                        },
                                         format!("{:?}", task.priority),
-                                        format!("{:?}", task.status));
+                                        format!("{:?}", task.status)
+                                    );
                                 }
                             }
                         }
@@ -218,11 +225,10 @@ fn main() -> Result<()> {
                                 println!("No tasks found.");
                             } else {
                                 for task in &tasks {
-                                    println!("ID: {}, Title: {}, Priority: {:?}, Status: {:?}",
-                                        task.id,
-                                        task.title,
-                                        task.priority,
-                                        task.status);
+                                    println!(
+                                        "ID: {}, Title: {}, Priority: {:?}, Status: {:?}",
+                                        task.id, task.title, task.priority, task.status
+                                    );
                                     if let Some(ref desc) = task.description {
                                         println!("  Description: {}", desc);
                                     }
@@ -238,8 +244,10 @@ fn main() -> Result<()> {
                             if tasks.is_empty() {
                                 println!("[]");
                             } else {
-                                let json_output = serde_json::to_string_pretty(&tasks)
-                                    .map_err(|e| anyhow::anyhow!("Failed to serialize tasks to JSON: {}", e))?;
+                                let json_output =
+                                    serde_json::to_string_pretty(&tasks).map_err(|e| {
+                                        anyhow::anyhow!("Failed to serialize tasks to JSON: {}", e)
+                                    })?;
                                 println!("{}", json_output);
                             }
                         }

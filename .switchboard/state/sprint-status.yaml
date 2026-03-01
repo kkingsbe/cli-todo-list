@@ -137,7 +137,7 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["03.3"]
-        status: "in-progress"
+        status: "complete"
         assigned_to: "dev-2"
         sprint: 7
         blocker_reason: null
@@ -163,8 +163,8 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["03.2"]
-        status: "in-progress"
-        assigned_to: "dev-2"
+        status: "complete"
+        assigned_to: "dev-1"
         sprint: 7
       - id: "04.2"
         title: "List Tags Command"
