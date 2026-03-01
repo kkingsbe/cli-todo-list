@@ -665,3 +665,22 @@
   - cargo build --release: ✅ PASS (exit code 0)
   - cargo test: ✅ PASS (187 tests pass)
   - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+
+---
+
+### story-05-4: Sorting
+
+- **Implemented by:** dev-1
+- **Sprint:** 9
+- **Commits:** 37e8f3b
+- **Story file:** `.switchboard/state/stories/story-05-4-sorting.md`
+- **Files changed:** src/repository.rs
+- **Status:** PENDING_REVIEW
+- **Acceptance Criteria:**
+  - [ ] `task list --sort priority` sorts by priority (1 first) — **Test:** Create tasks with P1, P2, P3, P4 priorities, run list with --sort priority, verify P1 appears first
+  - [ ] `task list --sort priority --desc` sorts descending — **Test:** Same tasks with --desc flag, verify P4 appears first
+  - [ ] Can sort by created_at, due_date, title — **Test:** Each sort field orders correctly
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (187 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
