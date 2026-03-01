@@ -174,6 +174,9 @@ pub enum TagCommands {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::models::Task;
+    use crate::task::{Priority, Status};
+    use chrono::Utc;
 
     #[test]
     fn cli_parse_add_command() {
@@ -224,5 +227,163 @@ mod tests {
             },
             _ => panic!("Expected Tag command"),
         }
+    }
+
+    // ========== Output Format Tests ==========
+
+    #[test]
+    fn cli_parse_list_format_table() {
+        let cli = Cli::parse_from(&["taskforge", "list", "--format", "table"]);
+        match cli.command {
+            Commands::List { format, .. } => {
+                assert_eq!(format, OutputFormat::Table);
+            }
+            _ => panic!("Expected List command"),
+        }
+    }
+
+    #[test]
+    fn cli_parse_list_format_plain() {
+        let cli = Cli::parse_from(&["taskforge", "list", "--format", "plain"]);
+        match cli.command {
+            Commands::List { format, .. } => {
+                assert_eq!(format, OutputFormat::Plain);
+            }
+            _ => panic!("Expected List command"),
+        }
+    }
+
+    #[test]
+    fn cli_parse_list_format_json() {
+        let cli = Cli::parse_from(&["taskforge", "list", "--format", "json"]);
+        match cli.command {
+            Commands::List { format, .. } => {
+                assert_eq!(format, OutputFormat::Json);
+            }
+            _ => panic!("Expected List command"),
+        }
+    }
+
+    #[test]
+    fn cli_list_default_format_is_table() {
+        let cli = Cli::parse_from(&["taskforge", "list"]);
+        match cli.command {
+            Commands::List { format, .. } => {
+                assert_eq!(format, OutputFormat::Table);
+            }
+            _ => panic!("Expected List command"),
+        }
+    }
+
+    #[test]
+    fn output_format_default_is_table() {
+        assert_eq!(OutputFormat::default(), OutputFormat::Table);
+    }
+
+    #[test]
+    fn output_format_display_table() {
+        assert_eq!(format!("{:?}", OutputFormat::Table), "Table");
+    }
+
+    #[test]
+    fn output_format_display_plain() {
+        assert_eq!(format!("{:?}", OutputFormat::Plain), "Plain");
+    }
+
+    #[test]
+    fn output_format_display_json() {
+        assert_eq!(format!("{:?}", OutputFormat::Json), "Json");
+    }
+
+    #[test]
+    fn output_format_clone() {
+        let format = OutputFormat::Json;
+        let cloned = format.clone();
+        assert_eq!(format, cloned);
+    }
+
+    #[test]
+    fn output_format_partial_eq() {
+        assert_eq!(OutputFormat::Table, OutputFormat::Table);
+        assert_eq!(OutputFormat::Plain, OutputFormat::Plain);
+        assert_eq!(OutputFormat::Json, OutputFormat::Json);
+        assert_ne!(OutputFormat::Table, OutputFormat::Plain);
+        assert_ne!(OutputFormat::Plain, OutputFormat::Json);
+    }
+
+    #[test]
+    fn test_json_format_produces_valid_json() {
+        // Create a test task
+        let task = Task {
+            id: "test-id-123".to_string(),
+            title: "Test Task".to_string(),
+            description: Some("Test description".to_string()),
+            priority: Priority::P1,
+            status: Status::Incomplete,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+            due_date: None,
+        };
+
+        // Serialize to JSON
+        let json_output = serde_json::to_string(&task).expect("Failed to serialize task to JSON");
+
+        // Verify it's valid JSON by parsing it back
+        let parsed: Task = serde_json::from_str(&json_output).expect("Failed to parse JSON back to Task");
+
+        // Verify the parsed task matches the original
+        assert_eq!(parsed.id, task.id);
+        assert_eq!(parsed.title, task.title);
+        assert_eq!(parsed.description, task.description);
+        assert_eq!(parsed.priority, task.priority);
+        assert_eq!(parsed.status, task.status);
+    }
+
+    #[test]
+    fn test_json_format_produces_valid_json_for_multiple_tasks() {
+        // Create multiple test tasks
+        let tasks = vec![
+            Task {
+                id: "task-1".to_string(),
+                title: "First Task".to_string(),
+                description: Some("Description 1".to_string()),
+                priority: Priority::P1,
+                status: Status::Incomplete,
+                created_at: Utc::now(),
+                updated_at: Utc::now(),
+                due_date: None,
+            },
+            Task {
+                id: "task-2".to_string(),
+                title: "Second Task".to_string(),
+                description: None,
+                priority: Priority::P2,
+                status: Status::Completed,
+                created_at: Utc::now(),
+                updated_at: Utc::now(),
+                due_date: None,
+            },
+        ];
+
+        // Serialize to JSON (array)
+        let json_output = serde_json::to_string(&tasks).expect("Failed to serialize tasks to JSON");
+
+        // Verify the JSON array starts with [ and ends with ]
+        assert!(json_output.starts_with('['));
+        assert!(json_output.ends_with(']'));
+
+        // Verify it's valid JSON by parsing it back
+        let parsed: Vec<Task> = serde_json::from_str(&json_output).expect("Failed to parse JSON back to Tasks");
+
+        // Verify we got both tasks back
+        assert_eq!(parsed.len(), 2);
+    }
+
+    #[test]
+    fn test_json_format_empty_array() {
+        let empty_tasks: Vec<Task> = vec![];
+        let json_output = serde_json::to_string(&empty_tasks).expect("Failed to serialize empty tasks to JSON");
+
+        assert_eq!(json_output, "[]");
     }
 }

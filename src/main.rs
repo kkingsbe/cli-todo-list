@@ -6,6 +6,7 @@
 use anyhow::Result;
 use clap::Parser;
 use std::env;
+use std::str::FromStr;
 use std::sync::Arc;
 use tracing::info;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
@@ -131,9 +132,124 @@ fn main() -> Result<()> {
                 }
             }
         }
-        Commands::List { .. } => {
-            // TODO: Implement list command
-            tracing::info!("List command not yet implemented");
+        Commands::List {
+            status,
+            priority,
+            search,
+            sort_by,
+            order,
+            format,
+        } => {
+            // Build filter from command arguments
+            let mut filter = TaskFilter::new();
+
+            // Parse status filter
+            if let Some(ref status_str) = status {
+                match status_str.to_lowercase().as_str() {
+                    "completed" | "complete" => {
+                        filter = filter.with_status(Status::Completed);
+                    }
+                    "incomplete" | "pending" => {
+                        filter = filter.with_status(Status::Incomplete);
+                    }
+                    _ => {
+                        eprintln!("Warning: Invalid status '{}', ignoring", status_str);
+                    }
+                }
+            }
+
+            // Parse priority filter
+            if let Some(p) = priority {
+                if let Ok(priority_enum) = crate::models::Priority::from_str(&format!("P{}", p)) {
+                    filter = filter.with_priority(priority_enum);
+                } else {
+                    eprintln!("Warning: Invalid priority {}, ignoring", p);
+                }
+            }
+
+            // Add search filter
+            if let Some(ref search_term) = search {
+                filter = filter.with_search(search_term.clone());
+            }
+
+            // Build sort from command arguments
+            let sort_field = match sort_by.to_lowercase().as_str() {
+                "priority" => TaskSortField::Priority,
+                "due" | "duedate" => TaskSortField::DueDate,
+                "title" => TaskSortField::Title,
+                "updated" | "updatedat" => TaskSortField::UpdatedAt,
+                _ => TaskSortField::CreatedAt, // default to created
+            };
+
+            let sort_order = match order.to_lowercase().as_str() {
+                "asc" | "ascending" => SortOrder::Ascending,
+                _ => SortOrder::Descending, // default to descending
+            };
+
+            let sort = TaskSort::new(sort_field, sort_order);
+
+            // Fetch tasks from repository
+            match repository.list_tasks(&filter, &sort) {
+                Ok(tasks) => {
+                    match format {
+                        OutputFormat::Table => {
+                            // Table format output
+                            if tasks.is_empty() {
+                                println!("No tasks found.");
+                            } else {
+                                // Print table header
+                                println!("{:<36} | {:<30} | {:<8} | {:<12}",
+                                    "ID", "Title", "Priority", "Status");
+                                println!("{:-<36}-+-{:-<30}-+-{:-<8}-+-{:-<12}",
+                                    "", "", "", "");
+                                // Print each task
+                                for task in &tasks {
+                                    println!("{:<36} | {:<30} | {:<8} | {:<12}",
+                                        task.id,
+                                        if task.title.len() > 30 { &task.title[..27] } else { &task.title },
+                                        format!("{:?}", task.priority),
+                                        format!("{:?}", task.status));
+                                }
+                            }
+                        }
+                        OutputFormat::Plain => {
+                            // Plain text format
+                            if tasks.is_empty() {
+                                println!("No tasks found.");
+                            } else {
+                                for task in &tasks {
+                                    println!("ID: {}, Title: {}, Priority: {:?}, Status: {:?}",
+                                        task.id,
+                                        task.title,
+                                        task.priority,
+                                        task.status);
+                                    if let Some(ref desc) = task.description {
+                                        println!("  Description: {}", desc);
+                                    }
+                                    if let Some(due) = task.due_date {
+                                        println!("  Due Date: {}", due.format("%Y-%m-%d"));
+                                    }
+                                    println!();
+                                }
+                            }
+                        }
+                        OutputFormat::Json => {
+                            // JSON format output
+                            if tasks.is_empty() {
+                                println!("[]");
+                            } else {
+                                let json_output = serde_json::to_string_pretty(&tasks)
+                                    .map_err(|e| anyhow::anyhow!("Failed to serialize tasks to JSON: {}", e))?;
+                                println!("{}", json_output);
+                            }
+                        }
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Error listing tasks: {}", e);
+                    std::process::exit(1);
+                }
+            }
         }
         Commands::Show { id } => {
             match commands::get_task_with_dyn(repository.as_ref(), id.clone()) {
