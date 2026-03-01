@@ -4,7 +4,7 @@
 
 use crate::error::AppError;
 use crate::filter::{TagFilter, TaskFilter, TaskSort};
-use crate::models::{Priority, Tag, Task};
+use crate::models::{Priority, Tag, TagWithCount, Task};
 use crate::repository::{Repository, RepositoryError};
 use chrono::{DateTime, NaiveDate, Utc};
 use std::str::FromStr;
@@ -379,12 +379,16 @@ pub fn create_tag<R: Repository>(
 
 /// Command handler for listing tags.
 pub fn list_tags<R: Repository>(
-    _repository: Arc<R>,
-    filter: TagFilter,
-) -> Result<Vec<Tag>, AppError> {
-    let _ = filter;
-    // Repository operations will be implemented in later stories
-    Ok(Vec::new())
+    repository: Arc<R>,
+    _filter: TagFilter,
+) -> Result<Vec<TagWithCount>, AppError> {
+    repository.list_tags(&TagFilter::default()).map_err(|e| match e {
+        RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+    })
 }
 
 /// Command handler for deleting a tag.
