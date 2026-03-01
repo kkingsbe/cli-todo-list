@@ -644,3 +644,24 @@
 ---
 
 ### story-04-4: Manage Tags on Existing Tasks (ARCHIVED - See above for current review)
+
+---
+
+## Sprint 9
+
+### story-04-3: Delete Tag Command
+
+- **Implemented by:** dev-1
+- **Sprint:** 9
+- **Commits:** 31dfa0a
+- **Story file:** `.switchboard/state/stories/story-04-3-delete-tag-command.md`
+- **Files changed:** src/repository.rs, src/commands.rs, src/main.rs
+- **Status:** PENDING_REVIEW
+- **Acceptance Criteria:**
+  - [ ] `task tag delete <name>` removes the tag — **Test:** Run `cargo run -- tag delete work`, then verify tag is gone with `cargo run -- tags`
+  - [ ] Tag is removed from all associated tasks — **Test:** Create task with tag "work", delete "work" tag, verify task no longer has that tag
+  - [ ] Error if tag doesn't exist — **Test:** Run `task tag delete nonexistent` - should show error message
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (187 tests pass)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
