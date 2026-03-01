@@ -8,7 +8,7 @@ use clap::Parser;
 use std::env;
 use std::str::FromStr;
 use std::sync::Arc;
-use tracing::{error, info, warn};
+use tracing::{info, warn};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 mod cli;
@@ -184,8 +184,8 @@ fn main() -> Result<()> {
                     let datetime = date.and_hms_opt(23, 59, 59).unwrap().and_utc();
                     filter.due_before = Some(datetime);
                 } else {
-                    eprintln!(
-                        "Warning: Invalid due_before date '{}', ignoring (expected YYYY-MM-DD)",
+                    warn!(
+                        "Invalid due_before date '{}', ignoring (expected YYYY-MM-DD)",
                         due_before_str
                     );
                 }
@@ -201,8 +201,8 @@ fn main() -> Result<()> {
                         .and_utc();
                     filter.due_after = Some(datetime);
                 } else {
-                    eprintln!(
-                        "Warning: Invalid due_after date '{}', ignoring (expected YYYY-MM-DD)",
+                    warn!(
+                        "Invalid due_after date '{}', ignoring (expected YYYY-MM-DD)",
                         due_after_str
                     );
                 }
@@ -214,8 +214,8 @@ fn main() -> Result<()> {
                     let datetime = date.and_hms_opt(0, 0, 0).unwrap().and_utc();
                     filter.due = Some(datetime);
                 } else {
-                    eprintln!(
-                        "Warning: Invalid due date '{}', ignoring (expected YYYY-MM-DD)",
+                    warn!(
+                        "Invalid due date '{}', ignoring (expected YYYY-MM-DD)",
                         due_str
                     );
                 }
