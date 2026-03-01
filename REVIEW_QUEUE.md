@@ -60,7 +60,7 @@
   - Handle NULL due_date (tasks without due date)
 - **Status:** ✅ APPROVED
 - **Fix applied:** Commit 7ab5f1d — fixes have been applied
-- **Review status:** 🔄 PENDING_REVIEW
+- **Review status:** ✅ APPROVED
 
 ## Sprint 9
 
@@ -71,7 +71,7 @@
 - **Commits:** 4310cdc..0a99cc6
 - **Story file:** `.switchboard/state/stories/archive/sprint-9/story-06-1-delete-task-command.md`
 - **Files changed:** src/cli.rs, src/commands.rs, src/main.rs
-- **Status:** ❌ CHANGES_REQUESTED
+- **Status:** ✅ APPROVED
 - **Reviewed by:** code-reviewer
 - **Review date:** 2026-03-01
 - **Acceptance Criteria:**
@@ -93,7 +93,7 @@
 
 ### story-06.1: Delete Task Command
 
-- **Status:** 🔄 IN_PROGRESS (RE-QUEUED)
+- **Status:** ✅ APPROVED
 - **Reviewed by:** code-reviewer
 - **Review date:** 2026-03-01T10:50:03Z
 - **Acceptance Criteria:**

@@ -44,7 +44,9 @@ CHECK 1: Does .switchboard/state/.solutioning_done exist?
   → YES: Continue.
 
 CHECK 2: Does .switchboard/state/.project_complete exist?
-  → YES: STOP. All work is done.
+  → YES: Check sprint-status.yaml for any `not-started` stories.
+         If `not-started` stories exist: Delete .project_complete. Continue.
+         If none: STOP. All work is done.
   → NO:  Continue.
 
 CHECK 3: Does .switchboard/state/.stories_ready exist?
@@ -57,6 +59,106 @@ CHECK 4: Does your .switchboard/state/DEV_TODO{N}.md exist and have content?
 ```
 
 **These checks are absolute. Do NOT proceed past a failing gate.**
+
+---
+
+## Skill Orientation (MANDATORY — run after gate checks, before any implementation)
+
+```
+1. List all files in ./skills/
+2. Read EVERY skill file completely — not just the ones listed in your story.
+   Stories reference specific skills, but you need the full picture to write
+   idiomatic code that fits the broader project conventions.
+3. Internalize:
+   - Code structure patterns (module organization, file naming)
+   - Error handling patterns (which error types, how to propagate)
+   - Testing patterns (where tests go, what framework, assertion style)
+   - Naming conventions (function names, type names, variable names)
+   - Anti-patterns to avoid (things the skills explicitly forbid)
+4. When delegating subtasks to subagents, INCLUDE relevant skill excerpts
+   in the subtask context. Subagents do not read skill files — they only
+   see what you paste into the subtask delegation.
+```
+
+**Skills define what "idiomatic" means for this project. Code that works
+but violates skill conventions will be rejected in review. Read them ALL.**
+
+---
+
+## Knowledge Protocol
+
+### On Session Start (Read)
+
+```
+1. Read .switchboard/knowledge/curated/dev-{N}.md (if exists)
+   - Contains YOUR accumulated knowledge: gotchas, patterns, workarounds
+   - This is your memory from previous runs — treat it as authoritative
+2. Read .switchboard/knowledge/curated/SHARED.md (if exists)
+   - Cross-cutting knowledge all agents should know
+```
+
+### On Session End (Write)
+
+```
+1. Append to .switchboard/knowledge/journals/dev-{N}.md:
+
+   ### {timestamp} — Sprint {N}, Stories: [{story IDs worked on}]
+
+   {Write 3-10 bullet points capturing:
+   - Implementation patterns that worked well (or didn't)
+   - Files/modules that were confusing or poorly documented
+   - Build or test gotchas encountered (flaky tests, slow builds, ordering issues)
+   - Workarounds applied (and why they were necessary)
+   - Subtask delegation strategies that succeeded or failed
+   - Reverts: what caused them, what you learned
+   - Anything that would save you time on the NEXT story in this area}
+
+2. Commit: `chore(dev-{N}): journal entry`
+```
+
+**Write journal entries BEFORE creating .dev_done_{N}. Knowledge capture
+happens while context is fresh, not after you've signaled completion.**
+
+---
+
+## Discord Comms Protocol
+
+Send Discord notifications for **high-signal events only**. Write a markdown file
+to `comms/outbox/` — a background poller sends it to Discord automatically.
+
+**Filename format:** `dev-{N}-{event}-{YYYY-MM-DD-HHMM}.md`
+
+### When to Notify
+
+| Event | Trigger | Message Content |
+|-------|---------|-----------------|
+| **Story completed** | Story passes all acceptance criteria + queued for review | Story ID, title, files changed, tests added |
+| **Revert** | Safety Protocol triggered a revert | Story ID, what failed, subtask that broke |
+| **Blocked** | Written to BLOCKERS.md | Story ID, what's blocking, what you tried |
+| **Sprint work done** | `.dev_done_{N}` created | Stories completed count, revert count |
+
+### When NOT to Notify
+
+- Individual subtask completions (too granular)
+- Build/test runs that pass (routine)
+- Story file reads or orientation
+
+### Example
+
+```markdown
+# Story 3.2 Complete — Metrics Storage Backend
+
+✅ **Dev-1** completed story 3.2 (3 points)
+
+**Changes:** 4 files, 2 new, 2 modified
+- `src/metrics/storage.rs` (new)
+- `src/metrics/mod.rs` (modified)
+- `tests/metrics/storage_test.rs` (new)
+- `src/lib.rs` (modified — added module)
+
+**Tests:** 8 new unit tests, all passing
+**Queued for review** in REVIEW_QUEUE.md
+```
 
 ---
 
@@ -136,8 +238,18 @@ Implementation Plan as your guide.
 - Project: [from story file header]
 - Agent: Development Agent {N}
 - Story: {story-id} — {title}
-- Relevant skill: [skill file and section, if applicable]
 - Files to create/modify: [exact paths]
+
+### Skill Requirements
+[PASTE relevant excerpts from skill files that govern this subtask.
+The subagent cannot read skill files — it only knows what you include here.
+Include at minimum:
+- The naming/structure conventions for the type of code being written
+- The error handling pattern to follow
+- The testing pattern to follow
+Example: "From ./skills/rust-patterns.md §Error Handling: Use thiserror for
+library errors, anyhow for application errors. All public functions return
+Result<T, E> where E implements std::error::Error."]
 
 ### Current State
 [From the story file's "Existing Code Context" section. For new files:
@@ -153,6 +265,7 @@ Implementation Plan as your guide.
 - [ ] Change is made as described
 - [ ] Build passes ({build command from project-context.md})
 - [ ] Tests pass ({test command from project-context.md})
+- [ ] Code follows skill conventions (see Skill Requirements above)
 - [ ] [Story-specific criteria this subtask addresses]
 
 ### Do NOT
@@ -160,6 +273,7 @@ Implementation Plan as your guide.
 - Modify tests unless this subtask specifically adds new tests
 - Change any files listed in the story's "Files NOT in Scope" section
 - Skip writing tests for new behavior
+- Violate any convention listed in Skill Requirements above
 ```
 
 ### After Each Subtask

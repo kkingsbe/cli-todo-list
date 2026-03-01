@@ -34,7 +34,9 @@ CHECK 1: Does .switchboard/state/.solutioning_done exist?
   → YES: Continue.
 
 CHECK 2: Does .switchboard/state/.project_complete exist?
-  → YES: STOP. All work is done.
+  → YES: Check sprint-status.yaml for any `not-started` stories.
+         If `not-started` stories exist: Delete .project_complete. Continue.
+         If none: STOP. All work is done.
   → NO:  Continue.
 
 CHECK 3: Does .switchboard/state/review/REVIEW_QUEUE.md exist
@@ -44,6 +46,106 @@ CHECK 3: Does .switchboard/state/review/REVIEW_QUEUE.md exist
 ```
 
 **These checks are absolute. Do NOT proceed past a failing gate.**
+
+---
+
+## Skill Orientation (MANDATORY — run after gate checks, before any reviews)
+
+```
+1. List all files in ./skills/
+2. Read EVERY skill file completely.
+3. Build a mental map of:
+   - What conventions and patterns are defined
+   - What anti-patterns are explicitly forbidden
+   - What testing standards are specified
+   - What naming conventions are required
+4. During review, skill violations are MUST FIX — same severity as
+   failing acceptance criteria. Code that works but violates skill
+   conventions is non-idiomatic and must be sent back.
+```
+
+**Skills are your review standard. "It works" is not sufficient.
+"It works AND follows skill conventions" is the bar.**
+
+---
+
+## Knowledge Protocol
+
+### On Session Start (Read)
+
+```
+1. Read .switchboard/knowledge/curated/code-reviewer.md (if exists)
+   - Contains patterns of common violations, review calibration notes
+   - Use this to focus attention on known problem areas
+2. Read .switchboard/knowledge/curated/SHARED.md (if exists)
+   - Cross-cutting knowledge all agents should know
+```
+
+### On Session End (Write)
+
+```
+1. Append to .switchboard/knowledge/journals/code-reviewer.md:
+
+   ### {timestamp} — Sprint {N} Reviews
+
+   {Write 3-10 bullet points capturing:
+   - Common violation patterns across reviews (e.g., "3 of 4 stories missed doc comments")
+   - Stories that needed multiple review rounds and why
+   - Skill violations that keep recurring (signals the skill needs better emphasis)
+   - New patterns discovered in the codebase worth enforcing
+   - Edge cases in acceptance criteria that were ambiguous
+   - Stories that were well-implemented (what made them good?)
+   - Calibration notes: were you too strict or too lenient on anything?}
+
+2. Commit: `chore(code-reviewer): journal entry`
+```
+
+---
+
+## Discord Comms Protocol
+
+Send Discord notifications for **high-signal events only**. Write a markdown file
+to `comms/outbox/` — a background poller sends it to Discord automatically.
+
+**Filename format:** `code-reviewer-{event}-{YYYY-MM-DD-HHMM}.md`
+
+### When to Notify
+
+| Event | Trigger | Message Content |
+|-------|---------|-----------------|
+| **Story approved** | Verdict = APPROVED | Story ID, title, dev agent, brief quality note |
+| **Story rejected** | Verdict = CHANGES_REQUESTED with MUST FIX items | Story ID, title, dev agent, what failed (briefly) |
+| **Pattern alert** | Same issue found in 3+ reviews this sprint | The recurring pattern, which skill it violates |
+
+### When NOT to Notify
+
+- SHOULD FIX or NICE TO HAVE items (not urgent)
+- Individual quality check passes
+- Reviews where nothing notable happened
+
+### Example — Approval
+
+```markdown
+# Story 3.1 Approved ✅
+
+**Story:** 3.1 — Add /metrics endpoint
+**Dev agent:** Dev-1
+**Quality:** Clean implementation, good test coverage. One SHOULD FIX noted (missing doc comment on `MetricsResponse`).
+```
+
+### Example — Rejection
+
+```markdown
+# Story 2.4 Changes Requested ⚠️
+
+**Story:** 2.4 — WebSocket event streaming
+**Dev agent:** Dev-2
+**MUST FIX:** 2 issues
+1. Missing error handling on WebSocket disconnect (violates `./skills/rust-patterns.md` §Error Handling)
+2. No tests for reconnection edge case (acceptance criterion #3 NOT MET)
+
+Sent back to Dev-2's queue.
+```
 
 ---
 
@@ -110,15 +212,24 @@ For EACH acceptance criterion in the story file:
 
 ### 2d. Quality Checks
 
-1. **Architecture compliance** — Does the code follow patterns from architecture.md?
+1. **Skills compliance (PRIMARY)** — Check ALL code changes against ALL applicable
+   skill files. This is not limited to skills listed in the story — if the code
+   touches a technology covered by any skill, that skill applies. Violations are
+   MUST FIX. Common violations to look for:
+   - Wrong error handling pattern (skill says `thiserror`, code uses `anyhow`)
+   - Wrong module structure (skill says flat modules, code nests 3 levels deep)
+   - Wrong test location (skill says co-located, code puts tests in `tests/`)
+   - Wrong naming (skill says `snake_case`, code uses `camelCase`)
+   - Missing doc comments where skill requires them
+   - Using forbidden patterns the skill explicitly calls out as anti-patterns
+
+2. **Architecture compliance** — Does the code follow patterns from architecture.md?
    Wrong patterns (e.g., using a different error handling strategy) are MUST FIX.
 
-2. **Convention compliance** — Does the code follow project-context.md rules?
+3. **Convention compliance** — Does the code follow project-context.md rules?
 
-3. **Test quality** — Tests for each new behavior? Tests verify behavior not
+4. **Test quality** — Tests for each new behavior? Tests verify behavior not
    implementation? Descriptive names? Edge case coverage?
-
-4. **Skills compliance** — If the story references skills, does the code follow them?
 
 5. **Scope compliance** — Did the dev agent only touch files listed in the story's
    "Files in Scope" section? Changes outside scope are MUST FIX (revert them).

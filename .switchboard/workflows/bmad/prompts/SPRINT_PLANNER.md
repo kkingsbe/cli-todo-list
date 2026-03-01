@@ -38,11 +38,116 @@ CHECK 1: Does .switchboard/state/.solutioning_done exist?
   → YES: Continue.
 
 CHECK 2: Does .switchboard/state/.project_complete exist?
-  → YES: STOP. All work is done.
+  → YES: Check sprint-status.yaml for any `not-started` stories.
+         If `not-started` stories exist (incremental solutioning added new work):
+           Delete .project_complete. Continue to Session Protocol.
+         If NO `not-started` stories:
+           STOP. All work is done.
   → NO:  Continue to Session Protocol.
 ```
 
 **These checks are absolute. Do NOT proceed past a failing gate.**
+
+---
+
+## Skill Orientation (MANDATORY — run after gate checks, before any planning)
+
+```
+1. List all files in ./skills/
+2. Read EVERY skill file completely.
+3. Build a mental map of:
+   - What technologies/frameworks have skill coverage
+   - What conventions and patterns are defined
+   - What anti-patterns are called out
+   - What testing standards are specified
+4. When creating story files, you MUST include the relevant skill files
+   in each story's "Skills to Read" section. A story that touches a
+   technology covered by a skill MUST reference that skill.
+   Dev agents ONLY read skills they are explicitly pointed to.
+   If you forget to list a skill, the dev agent won't follow it.
+```
+
+**Missing skill references are the #1 cause of non-idiomatic code.
+Be thorough. When in doubt, include the skill.**
+
+---
+
+## Knowledge Protocol
+
+### On Session Start (Read)
+
+```
+1. Read .switchboard/knowledge/curated/sprint-planner.md (if exists)
+   - Contains lessons about story sizing, distribution patterns, and past mistakes
+   - Apply to sprint selection and story file creation
+2. Read .switchboard/knowledge/curated/SHARED.md (if exists)
+   - Cross-cutting knowledge all agents should know
+3. Skim .switchboard/knowledge/curated/code-reviewer.md (if exists)
+   - Review rejection patterns tell you what stories need more explicit guidance
+   - If reviewer keeps rejecting for the same issue, add prevention to story files
+```
+
+### On Session End (Write)
+
+```
+1. Append to .switchboard/knowledge/journals/sprint-planner.md:
+
+   ### {timestamp} — Sprint {N} Planning
+
+   {Write 3-10 bullet points capturing:
+   - Story distribution decisions (why agent X got story Y)
+   - Dependency chains that were tricky to resolve
+   - Stories that had to be deferred and why
+   - Rebalancing actions taken (if any)
+   - Sprint capacity vs actual available stories
+   - Patterns in which types of stories cluster well together
+   - Any gaps found in architecture or epic definitions}
+
+2. Commit: `chore(sprint-planner): journal entry`
+```
+
+---
+
+## Discord Comms Protocol
+
+Send Discord notifications for **high-signal events only**. Write a markdown file
+to `comms/outbox/` — a background poller sends it to Discord automatically.
+
+**Filename format:** `sprint-planner-{event}-{YYYY-MM-DD-HHMM}.md`
+
+### When to Notify
+
+| Event | Trigger | Message Content |
+|-------|---------|-----------------|
+| **Sprint planned** | DEV_TODOs written | Sprint number, story count per agent, total points, focus areas |
+| **Rebalancing** | Work moved between agents | What moved, from which agent to which |
+| **Project nearing completion** | <5 stories remain across all epics | How many left, estimated sprints remaining |
+
+### When NOT to Notify
+
+- Sprint cleanup between sprints (routine)
+- No-op runs (nothing to plan)
+- Individual story assignments
+
+### Example
+
+```markdown
+# Sprint 3 Planned
+
+📋 **6 stories** distributed across 2 agents (19 points)
+
+**Dev-1:** 3 stories (10 pts)
+- Story 3.1: Add /metrics endpoint
+- Story 3.2: Metrics storage backend  
+- Story 3.3: Metrics query API
+
+**Dev-2:** 3 stories (9 pts)
+- Story 2.4: WebSocket event streaming
+- Story 2.5: Client reconnection handling
+- Story 4.1: Dashboard skeleton
+
+⏳ 7 stories remaining after this sprint.
+```
 
 ---
 
@@ -83,7 +188,7 @@ Run through these checks in order. Execute the FIRST match:
 **Action:** Clean up completed sprint (Step 1), then plan next sprint (Step 2 → Step 5).
 
 ### 3. All Stories Done — Project Complete
-**Condition:** `sprint-status.yaml` shows ALL stories `complete`
+**Condition:** `sprint-status.yaml` shows ALL stories as `complete` or `already-implemented`
 **Action:** Create `.switchboard/state/.project_complete`. STOP.
 
 ### 4. Ready for New Sprint
@@ -124,8 +229,12 @@ Read these files to understand the project:
 5. `.switchboard/state/SPRINT_REPORT.md` — prior sprint metrics (if exists)
 
 From sprint-status.yaml, identify:
-- Stories with `status: not-started` that have all dependencies `complete`
+- Stories with `status: not-started` that have all dependencies `complete` or
+  `already-implemented`
 - Prior sprint velocity (if available from SPRINT_REPORT.md)
+
+**Note:** `already-implemented` stories count as `complete` for dependency resolution.
+They are never selected for sprints — they represent existing functionality.
 
 ✅ Update `planner_session.md`
 
@@ -141,14 +250,17 @@ From sprint-status.yaml, identify:
 
 ### Selection Rules
 
-1. **Epic order:** Complete current epic before starting next (unless dependency-free
+1. **Skip already-implemented:** Never select stories with `status: already-implemented`.
+   These represent existing functionality and need no dev work.
+2. **Epic order:** Complete current epic before starting next (unless dependency-free
    stories in later epics exist and current epic is blocked)
-2. **Dependency order:** Never select a story whose dependencies aren't `complete`
-3. **Point budget:** Don't exceed sprint point capacity
-4. **No file conflicts:** Check story technical notes — avoid two stories modifying
+3. **Dependency order:** Never select a story whose dependencies aren't `complete`
+   or `already-implemented`
+4. **Point budget:** Don't exceed sprint point capacity
+5. **No file conflicts:** Check story technical notes — avoid two stories modifying
    the same files
-5. **Risk budget:** Maximum ONE medium-risk story per sprint
-6. **Foundational first:** Infrastructure/scaffolding stories before feature stories
+6. **Risk budget:** Maximum ONE medium-risk story per sprint
+7. **Foundational first:** Infrastructure/scaffolding stories before feature stories
 
 ### If All Remaining Stories Are Blocked
 

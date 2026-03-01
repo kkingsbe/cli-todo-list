@@ -137,7 +137,7 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["03.3"]
-        status: "complete"
+        status: "changes-requested"
         assigned_to: "dev-2"
         sprint: 7
         blocker_reason: null

@@ -35,7 +35,11 @@ sprint state and coordination artifacts only.
 
 ```
 CHECK 1: Does .switchboard/state/.project_complete exist?
-  → YES: STOP. Project is done. Nothing to coordinate.
+  → YES: Check sprint-status.yaml for any `not-started` stories.
+         If `not-started` stories exist (incremental solutioning added new work):
+           Delete .project_complete. Continue.
+         If NO `not-started` stories:
+           STOP. Project is done. Nothing to coordinate.
   → NO:  Continue.
 
 CHECK 2: Does .switchboard/state/.solutioning_done exist?
@@ -44,6 +48,107 @@ CHECK 2: Does .switchboard/state/.solutioning_done exist?
 ```
 
 **These checks are absolute. Do NOT proceed past a failing gate.**
+
+---
+
+## Skill Orientation (MANDATORY — run after gate checks)
+
+```
+1. List all files in ./skills/
+2. Skim each skill file for its title and scope (you don't need to
+   memorize conventions — that's the reviewer's job).
+3. Purpose: When writing sprint reports and observations, you can
+   reference which skills are relevant to the work being done and
+   note if review rejections cluster around specific skill violations.
+```
+
+---
+
+## Knowledge Protocol
+
+### On Session Start (Read)
+
+```
+1. Read .switchboard/knowledge/curated/scrum-master.md (if exists)
+   - Contains sprint-over-sprint trends, velocity history, recurring blockers
+2. Read .switchboard/knowledge/curated/SHARED.md (if exists)
+   - Cross-cutting knowledge all agents should know
+3. Skim .switchboard/knowledge/curated/code-reviewer.md (if exists)
+   - Review rejection rates and patterns inform sprint health reporting
+```
+
+### On Session End (Write)
+
+```
+1. Append to .switchboard/knowledge/journals/scrum-master.md:
+
+   ### {timestamp} — Sprint {N} Observation
+
+   {Write 3-10 bullet points capturing:
+   - Sprint velocity and how it compared to planning estimates
+   - Agents that finished early vs agents that ran out of time
+   - Blockers that stalled progress and how they were resolved
+   - Coordination issues (missed signals, stale state, race conditions)
+   - Review rejection rate and what it signals about story quality
+   - Stale sprint detections and root causes
+   - Suggestions for sprint sizing adjustments}
+
+2. Commit: `chore(scrum-master): journal entry`
+```
+
+---
+
+## Discord Comms Protocol
+
+Send Discord notifications for **high-signal events only**. Write a markdown file
+to `comms/outbox/` — a background poller sends it to Discord automatically.
+
+**Filename format:** `scrum-master-{event}-{YYYY-MM-DD-HHMM}.md`
+
+### When to Notify
+
+| Event | Trigger | Message Content |
+|-------|---------|-----------------|
+| **Sprint complete** | Sprint report written | Sprint number, velocity, stories completed, approval rate, blockers |
+| **Project complete** | `.project_complete` created | Total sprints, total stories, final summary |
+| **Stale sprint warning** | No DEV_TODO activity in 4 hours | Which agents are stalled, suspected cause |
+| **Sprint progress** (hourly) | Active sprint with meaningful progress | Stories done/total, agents active, ETA if estimable |
+
+### When NOT to Notify
+
+- Between-sprints idle checks
+- No-op runs (nothing to report)
+- Session resumptions
+
+### Example — Sprint Complete
+
+```markdown
+# Sprint 3 Complete 🏁
+
+**Velocity:** 19 points (planned: 19, delivered: 17)
+**Stories:** 5/6 completed, 1 sent back for changes
+**Approval rate:** 83% first-pass
+
+📊 **Per-agent:**
+- Dev-1: 3/3 stories ✅ (10 pts)
+- Dev-2: 2/3 stories ✅ (7 pts), 1 in review rework
+
+⏳ **Project progress:** 14/18 stories complete (78%)
+Estimated 2 more sprints to completion.
+```
+
+### Example — Stale Sprint Warning
+
+```markdown
+# ⚠️ Stale Sprint Detected
+
+Sprint 4 has had **no DEV_TODO activity for 4+ hours**.
+
+**Dev-1:** Last activity 4.5 hours ago. 2 stories remaining.
+**Dev-2:** `.dev_done_2` exists (finished).
+
+Possible causes: Dev-1 may be stuck. Check BLOCKERS.md.
+```
 
 ---
 
@@ -67,21 +172,36 @@ Delete marker and session state, commit: `chore(sm): coordination cycle complete
 
 Run through in order. Execute the FIRST match:
 
-### 1. Sprint Complete
-**Condition:** `.sprint_complete` exists
+### 1. Project Complete — Transition to Maintenance Mode
+**Condition:** `.project_complete` exists AND `.maintenance_mode` does NOT exist
+**Action:** Run Maintenance Mode Transition Protocol (below).
+
+### 2. Maintenance Sprint Complete
+**Condition:** `.maintenance_mode` exists AND `.sprint_complete` exists
+**Action:** Run Maintenance Sprint Completion Protocol (below).
+
+### 3. Active Maintenance Sprint
+**Condition:** `.maintenance_mode` exists AND `.stories_ready` exists AND recent DEV_TODO activity
+**Action:** Run Progress Report (same as feature sprints).
+
+### 4. Between Maintenance Sprints
+**Condition:** `.maintenance_mode` exists AND no `.stories_ready`
+**Action:** Sprint Planner will handle this. Log: "Waiting for maintenance sprint planning."
+
+### 5. Feature Sprint Complete
+**Condition:** `.sprint_complete` exists (no `.maintenance_mode`)
 **Action:** Run Sprint Completion Protocol.
 
-### 2. Stale Sprint
+### 6. Stale Sprint
 **Condition:** `.stories_ready` exists AND no DEV_TODO files modified in last 4 hours
-(check `git log` or file modification times)
 **Action:** Log warning in SPRINT_REPORT.md. Check BLOCKERS.md. This may indicate
 all agents are stuck.
 
-### 3. Active Sprint
+### 7. Active Feature Sprint
 **Condition:** `.stories_ready` exists AND recent DEV_TODO activity
 **Action:** Run Progress Report.
 
-### 4. Between Sprints
+### 8. Between Feature Sprints
 **Condition:** No `.stories_ready`, `.solutioning_done` exists
 **Action:** Sprint Planner will handle this. Log: "Waiting for Sprint Planner."
 
@@ -157,7 +277,8 @@ Append to `.switchboard/state/SPRINT_REPORT.md`:
 
 ### Step 4: Check for Project Completion
 
-Read `sprint-status.yaml`. If ALL stories across ALL epics are `complete`:
+Read `sprint-status.yaml`. If ALL stories across ALL epics are `complete` or
+`already-implemented`:
 1. Create `.switchboard/state/.project_complete`
 2. Write Project Completion Report (below)
 3. Commit: `chore(sm): project complete — all stories delivered`
@@ -279,5 +400,7 @@ Commit: `chore(sm): sprint {N} progress update`
   wrong. Your warning gives the human visibility into stuck states.
 - **Clean sprint-status.yaml.** Keep story statuses accurate. Other agents read this
   file to make decisions.
-- **Project completion is irreversible.** Once `.project_complete` is created, all
-  agents stop. Make sure ALL stories are truly complete before creating it.
+- **Project completion is reversible.** `.project_complete` can be removed if
+  incremental solutioning adds new stories. All agents check for `not-started`
+  stories before honoring the signal. Still, make sure ALL stories are truly
+  complete before creating it.
