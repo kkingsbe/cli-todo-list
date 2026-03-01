@@ -23,6 +23,8 @@ mod task;
 use crate::cli::{Cli, Commands};
 use crate::commands::create_task_with_dyn;
 use crate::commands::update_task_with_dyn;
+use crate::commands::complete_task_with_dyn;
+use crate::commands::reopen_task_with_dyn;
 use crate::config::load_config;
 use crate::error::AppError;
 use crate::models::Priority;
@@ -171,13 +173,43 @@ fn main() -> Result<()> {
             // TODO: Implement delete command
             tracing::info!("Delete command not yet implemented");
         }
-        Commands::Complete { .. } => {
-            // TODO: Implement complete command
-            tracing::info!("Complete command not yet implemented");
+        Commands::Complete { id } => {
+            match complete_task_with_dyn(repository.as_ref(), id) {
+                Ok(task) => {
+                    println!("Completed task: {}", task.id);
+                    println!("  Title:  {}", task.title);
+                    println!("  Status: {:?}", task.status);
+                }
+                Err(e) => match e {
+                    AppError::NotFound(_) => {
+                        eprintln!("Task not found");
+                        std::process::exit(1);
+                    }
+                    _ => {
+                        eprintln!("Error: {}", e);
+                        std::process::exit(1);
+                    }
+                },
+            }
         }
-        Commands::Reopen { .. } => {
-            // TODO: Implement reopen command
-            tracing::info!("Reopen command not yet implemented");
+        Commands::Reopen { id } => {
+            match reopen_task_with_dyn(repository.as_ref(), id) {
+                Ok(task) => {
+                    println!("Reopened task: {}", task.id);
+                    println!("  Title:  {}", task.title);
+                    println!("  Status: {:?}", task.status);
+                }
+                Err(e) => match e {
+                    AppError::NotFound(_) => {
+                        eprintln!("Task not found");
+                        std::process::exit(1);
+                    }
+                    _ => {
+                        eprintln!("Error: {}", e);
+                        std::process::exit(1);
+                    }
+                },
+            }
         }
         Commands::Tag { .. } => {
             // TODO: Implement tag command
