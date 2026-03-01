@@ -477,8 +477,24 @@ impl Repository for SqliteRepository {
         Err(RepositoryError::Database("Not implemented".to_string()))
     }
 
-    fn delete_tag(&self, _id: &str) -> Result<(), RepositoryError> {
-        Err(RepositoryError::Database("Not implemented".to_string()))
+    fn delete_tag(&self, name: &str) -> Result<(), RepositoryError> {
+        // First, look up the tag by name (case-insensitive)
+        let tag = self.get_tag_by_name(name)?;
+
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+
+        // Delete from task_tags junction table first (to remove associations)
+        conn.execute("DELETE FROM task_tags WHERE tag_id = ?1", [&tag.id])
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+
+        // Delete from tags table
+        conn.execute("DELETE FROM tags WHERE id = ?1", [&tag.id])
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+
+        Ok(())
     }
 
     fn list_tags(&self, _filter: &TagFilter) -> Result<Vec<TagWithCount>, RepositoryError> {
@@ -658,8 +674,8 @@ pub trait Repository: Send + Sync {
     /// Updates an existing tag.
     fn update_tag(&self, tag: &Tag) -> Result<(), RepositoryError>;
 
-    /// Deletes a tag by ID.
-    fn delete_tag(&self, id: &str) -> Result<(), RepositoryError>;
+    /// Deletes a tag by name (case-insensitive).
+    fn delete_tag(&self, name: &str) -> Result<(), RepositoryError>;
 
     /// Lists tags with optional filter.
     fn list_tags(&self, filter: &TagFilter) -> Result<Vec<TagWithCount>, RepositoryError>;

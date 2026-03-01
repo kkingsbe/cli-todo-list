@@ -24,6 +24,7 @@ mod task;
 use crate::cli::{Cli, Commands, OutputFormat};
 use crate::commands::complete_task_with_dyn;
 use crate::commands::create_task_with_dyn;
+use crate::commands::delete_tag_with_dyn;
 use crate::commands::delete_task_with_dyn;
 use crate::commands::reopen_task_with_dyn;
 use crate::commands::update_task_with_dyn;
@@ -403,7 +404,10 @@ fn main() -> Result<()> {
                                                 }
                                             }
                                             Err(e) => {
-                                                tracing::error!("Error looking up created tag: {}", e);
+                                                tracing::error!(
+                                                    "Error looking up created tag: {}",
+                                                    e
+                                                );
                                             }
                                         }
                                     }
@@ -447,20 +451,22 @@ fn main() -> Result<()> {
                 },
             }
         }
-        Commands::Delete { id, force } => match delete_task_with_dyn(repository.as_ref(), id.clone(), force) {
-            Ok(()) => {
-                println!("Deleted task: {}", id);
+        Commands::Delete { id, force } => {
+            match delete_task_with_dyn(repository.as_ref(), id.clone(), force) {
+                Ok(()) => {
+                    println!("Deleted task: {}", id);
+                }
+                Err(e) => match e {
+                    AppError::NotFound(_) => {
+                        eprintln!("Task not found");
+                        std::process::exit(1);
+                    }
+                    _ => {
+                        eprintln!("Error: {}", e);
+                        std::process::exit(1);
+                    }
+                },
             }
-            Err(e) => match e {
-                AppError::NotFound(_) => {
-                    eprintln!("Task not found");
-                    std::process::exit(1);
-                }
-                _ => {
-                    eprintln!("Error: {}", e);
-                    std::process::exit(1);
-                }
-            },
         }
         Commands::Complete { id } => match complete_task_with_dyn(repository.as_ref(), id) {
             Ok(task) => {
@@ -496,9 +502,24 @@ fn main() -> Result<()> {
                 }
             },
         },
-        Commands::Tag { .. } => {
-            // TODO: Implement tag command
-            tracing::info!("Tag command not yet implemented");
+        Commands::Tag { command } => {
+            match command {
+                cli::TagCommands::Delete { identifier } => {
+                    match delete_tag_with_dyn(repository.as_ref(), identifier.clone()) {
+                        Ok(()) => {
+                            tracing::info!("Deleted tag: {}", identifier);
+                        }
+                        Err(e) => {
+                            tracing::error!("Error deleting tag: {}", e);
+                            std::process::exit(1);
+                        }
+                    }
+                }
+                _ => {
+                    // TODO: Implement other tag commands
+                    tracing::info!("Tag command not yet fully implemented");
+                }
+            }
         }
         Commands::Tags => {
             match repository.list_tags(&TagFilter::default()) {

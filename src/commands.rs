@@ -274,7 +274,9 @@ pub fn delete_task<R: Repository>(
     // Prompt for confirmation if not forced
     if !force {
         print!("Delete task {}? [y/N]: ", id);
-        std::io::stdout().flush().map_err(|e| AppError::UserError(e.to_string()))?;
+        std::io::stdout()
+            .flush()
+            .map_err(|e| AppError::UserError(e.to_string()))?;
         let mut confirmation = String::new();
         std::io::stdin()
             .read_line(&mut confirmation)
@@ -316,7 +318,9 @@ pub fn delete_task_with_dyn(
     // Prompt for confirmation if not forced
     if !force {
         print!("Delete task {}? [y/N]: ", id);
-        std::io::stdout().flush().map_err(|e| AppError::UserError(e.to_string()))?;
+        std::io::stdout()
+            .flush()
+            .map_err(|e| AppError::UserError(e.to_string()))?;
         let mut confirmation = String::new();
         std::io::stdin()
             .read_line(&mut confirmation)
@@ -475,9 +479,26 @@ pub fn list_tags<R: Repository>(
 }
 
 /// Command handler for deleting a tag.
-pub fn delete_tag<R: Repository>(_repository: Arc<R>, id: String) -> Result<(), AppError> {
-    let _ = id;
-    // Repository operations will be implemented in later stories
+pub fn delete_tag<R: Repository>(repository: Arc<R>, name: String) -> Result<(), AppError> {
+    repository.delete_tag(&name).map_err(|e| match e {
+        RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+    })?;
+    Ok(())
+}
+
+/// This version accepts &dyn Repository for dynamic dispatch.
+pub fn delete_tag_with_dyn(repository: &dyn Repository, name: String) -> Result<(), AppError> {
+    repository.delete_tag(&name).map_err(|e| match e {
+        RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+        RepositoryError::Database(msg) => {
+            AppError::System(crate::error::SystemError::Database(msg))
+        }
+        RepositoryError::Constraint(msg) => AppError::UserError(msg),
+    })?;
     Ok(())
 }
 

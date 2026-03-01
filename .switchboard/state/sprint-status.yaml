@@ -183,8 +183,10 @@ epics:
         risk: "medium"
         depends_on: ["04.2"]
         status: "in-progress"
-        assigned_to: "dev-1"
+        assigned_to: "dev-2"
         sprint:  9
+        rebalanced_from: "dev-1"
+        rebalanced_date: "2026-03-01"
       - id: "04.4"
         title: "Manage Tags on Existing Tasks"
         points: 3
@@ -192,8 +194,10 @@ epics:
         risk: "medium"
         depends_on: ["04.1"]
         status: "in-progress"
-        assigned_to: "dev-1"
+        assigned_to: "dev-2"
         sprint: 8
+        rebalanced_from: "dev-1"
+        rebalanced_date: "2026-03-01"
         blocker_reason: "CHANGES_REQUESTED: Replace eprintln!/println! with tracing"
 
   - id: "epic-05"
@@ -238,8 +242,10 @@ epics:
         risk: "low"
         depends_on: ["05.1"]
         status: "in-progress"
-        assigned_to: "dev-1"
+        assigned_to: "dev-2"
         sprint:  9
+        rebalanced_from: "dev-1"
+        rebalanced_date: "2026-03-01"
 
   - id: "epic-06"
     title: "Delete Task and Output Formats"

@@ -2,8 +2,12 @@
 
 > Sprint: 9
 > Focus Area: Tag Management & Sorting
-> Last Updated: 2026-03-01T07:40:00Z
-> Total Points: 4 pts
+> Last Updated: 2026-03-01T08:08:54Z
+> Total Points: 0 pts
+
+> ⚠️ Rebalanced by Sprint Planner on 2026-03-01
+
+> Note: All remaining stories (04.4, 04.3, 05.4) have been moved to DEV_TODO2 for rebalancing.
 
 ## Orientation
 
@@ -18,28 +22,7 @@ Before starting any stories, read these files:
 
 ## Stories
 
-- [ ] **{04.4}** (REWORK): Manage Tags on Existing Tasks
-  - 📄 Story: `.switchboard/state/stories/archive/sprint-8/story-04-4-manage-tags-on-existing-tasks.md`
-  - 🔍 Review: See `.switchboard/state/review/REVIEW_QUEUE.md` — CHANGES_REQUESTED
-  - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Replace eprintln!/println! with tracing::error!/tracing::info! in src/main.rs
-  - 📝 Commit: `fix(dev1): [04.4] Replace eprintln!/println! with tracing`
-
-- [ ] **{04.3}**: Delete Tag Command (2 pts)
-  - 📄 Story: `.switchboard/state/stories/story-04-3-delete-tag-command.md`
-  - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
-  - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Build + tests pass, `cargo run -- tag delete work` removes tag
-  - 🔒 Risk: Medium
-  - 📝 Commit: `feat(dev1): [04.3] Add delete tag command`
-
-- [ ] **{05.4}**: Sorting (2 pts)
-  - 📄 Story: `.switchboard/state/stories/story-05-4-sorting.md`
-  - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
-  - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Build + tests pass, `cargo run -- list --sort priority` sorts correctly
-  - 🔒 Risk: Low
-  - 📝 Commit: `feat(dev1): [05.4] Add task sorting functionality`
+All stories have been rebalanced to Agent 2.
 
 ## AGENT QA
 

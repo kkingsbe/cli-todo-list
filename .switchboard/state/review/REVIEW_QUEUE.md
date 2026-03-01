@@ -606,9 +606,10 @@
 
 ### story-04-4: Manage Tags on Existing Tasks
 
-- **Status:** ❌ CHANGES_REQUESTED
+- **Status:** 🔄 REWORKED - Ready for Re-review
 - **Reviewed by:** code-reviewer
 - **Review date:** 2026-03-01T07:55:00Z
+- **Rework completed:** 2026-03-01T08:10:00Z by dev-1
 - **Acceptance Criteria:**
   - [x] `task update <id> --add-tag <name>` adds tags to existing tasks — **MET**: CLI arg in cli.rs:119-121, handler in main.rs:377-409
   - [x] `task update <id> --remove-tag <name>` removes tags from tasks — **MET**: CLI arg in cli.rs:123-125, handler in main.rs:420-431
