@@ -2,7 +2,7 @@
 # Source: .switchboard/input/PRD.md → .switchboard/planning/epics/
 
 project: "TaskForge - Rust CLI Task Manager"
-current_sprint: 7
+current_sprint: 8
 created: "2026-02-28T16:15:00Z"
 last_updated: "2026-03-01T02:41:00Z"
 solutioning_complete: true
@@ -172,9 +172,9 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["04.1"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-1"
+        sprint: 8
       - id: "04.3"
         title: "Delete Tag Command"
         points: 2
@@ -190,9 +190,9 @@ epics:
         type: "feature"
         risk: "medium"
         depends_on: ["04.1"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-1"
+        sprint: 8
 
   - id: "epic-05"
     title: "Filtering & Sorting"
@@ -206,9 +206,9 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["04.1"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-2"
+        sprint: 8
       - id: "05.2"
         title: "Filter by Priority and Tags"
         points: 3
@@ -224,9 +224,9 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["05.2"]
-        status: "not-started"
-        assigned_to: null
-        sprint: null
+        status: "in-progress"
+        assigned_to: "dev-2"
+        sprint: 8
       - id: "05.4"
         title: "Sorting"
         points: 2
@@ -258,7 +258,7 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["05.1"]
-        status: "in-progress"
+        status: "complete"
         assigned_to: "dev-1"
         sprint: 7
         blocker_reason: null

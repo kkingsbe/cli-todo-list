@@ -1,8 +1,8 @@
 # DEV_TODO2 — Development Agent 2
 
-> Sprint: 7
-> Focus Area: Task Details Command
-> Last Updated: 2026-03-01T02:44:00Z
+> Sprint: 8
+> Focus Area: Filtering Commands
+> Last Updated: 2026-03-01T04:37:35Z
 > Total Points: 5 pts
 
 ## Orientation
@@ -11,27 +11,26 @@ Before starting any stories, read these files:
 
 - `.switchboard/planning/project-context.md`
 - `.switchboard/planning/architecture.md`
-- `src/cli.rs` — Current CLI structure (Show command)
-- `src/commands.rs` — get_task function
-- `src/main.rs` — Command wiring
+- `src/filter.rs` — Current filter implementation
+- `src/commands.rs` — Command handlers
 
 ## Stories
 
-- [x] **{04.1}**: Create Tag with Task (3 pts) ✅ queued for review
-  - 📄 Story: `.switchboard/state/stories/story-04-1-create-tag-with-task.md`
+- [ ] **{05.1}**: Filter by Status (2 pts)
+  - 📄 Story: `.switchboard/state/stories/story-05-1-filter-by-status.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
   - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Build + tests pass, `cargo run -- add "Test" --tag work` works
+  - ✅ Post-check: Build + tests pass, `cargo run -- list --status incomplete` works
   - 🔒 Risk: Low
-  - 📝 Commit: Already implemented by dev1 in commit 626a49b
+  - 📝 Commit: `feat(dev2): [05.1] Add filter by status`
 
-- [x] **{03.4}**: Get Task Details Command (2 pts) ✅ queued for review
-  - 📄 Story: `.switchboard/state/stories/story-03-4-get-task-details-command.md`
-  - 📚 Skills: `./skills/rust-best-practices/SKILL.md`
+- [ ] **{05.3}**: Filter by Due Date (3 pts)
+  - 📄 Story: `.switchboard/state/stories/story-05-3-filter-by-due-date.md`
+  - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
   - ⚡ Pre-check: Build + tests pass
-  - ✅ Post-check: Build + tests pass, `cargo run -- get <task-id>` shows full details
+  - ✅ Post-check: Build + tests pass, `cargo run -- list --due-before 2026-03-01` works
   - 🔒 Risk: Low
-  - 📝 Commit: `feat(dev2): [03.4] Get Task Details Command`
+  - 📝 Commit: `feat(dev2): [05.3] Add filter by due date`
 
 ## AGENT QA
 
@@ -44,5 +43,3 @@ cargo fmt --check
 ```
 
 If all green, create `.switchboard/state/.dev_done_2` with date. If ALL `.dev_done_*` files exist for all agents with work, also create `.switchboard/state/.sprint_complete`.
-
-> ⚠️ Rebalanced by Sprint Planner on 2026-03-01

@@ -5,7 +5,7 @@
 > Sprint: 7
 > Type: feature
 > Risk: low
-> Created: 2026-03-01T01:35:00Z
+> Created: 2026-03-01T02:43:00Z
 
 ## User Story
 
@@ -16,43 +16,37 @@
 ## Acceptance Criteria
 
 1. `task add "Task" --tag work --tag urgent` creates task with tags
-   - **Test:** Run `cargo run -- add "Buy groceries" --tag work --tag urgent`, then `cargo run -- list` should show the task with both tags
+   - **Test:** Run `cargo build --release`, then test: `cargo run -- add "Test task" --tag work --tag urgent`, verify task appears with both tags in list
 
 2. Tags are created automatically if they don't exist
-   - **Test:** Run `cargo run -- add "New task" --tag project` - "project" tag should be created automatically
+   - **Test:** Run `cargo run -- add "Test" --tag newtag`, verify "newtag" appears in `cargo run -- tag list`
 
 3. Multiple tags work correctly
-   - **Test:** Create task with 3 tags, verify all 3 appear in list output
+   - **Test:** Verify a task can have 3+ tags
 
 ## Technical Context
 
 ### Architecture Reference
 
-From architecture.md §5 - cli.rs module:
-- **Purpose:** Define CLI commands and arguments using clap
-- **Public API:** Functions to build CLI parser, get matches
-
-From architecture.md §6 - Data Model:
-```sql
-CREATE TABLE task_tags (
-    task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
-    tag_id TEXT NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
-    PRIMARY KEY (task_id, tag_id)
-);
-```
+From [`architecture.md`](.switchboard/planning/architecture.md):
+- **Module:** cli.rs - Define CLI commands and arguments using clap
+- **Module:** commands.rs - Orchestrate business logic for each CLI command
+- **Data Model:** Task has many Tags via task_tags join table
+- **Repository:** SqliteRepository handles all database operations
 
 ### Project Conventions
 
-From project-context.md:
+From [`project-context.md`](.switchboard/planning/project-context.md):
 - **Build:** `cargo build --release`
 - **Test:** `cargo test`
 - **Lint:** `cargo clippy -- -D warnings`
+- **Format:** `cargo fmt --check`
 - **Never use unwrap()** - Return Result types properly
 - **Use tracing for logging** - Never use println!
 
 ### Existing Code Context
 
-Current Add command in cli.rs (lines 31-42):
+**Current Add command in** [`src/cli.rs`](src/cli.rs:31):
 ```rust
 Add {
     /// Task title.
@@ -68,118 +62,83 @@ Add {
 },
 ```
 
-**Missing:** The `--tag` flag is NOT present in the Add command!
-
-Current Add handler in main.rs (lines 80-101):
+**Current create_tag function in** [`src/commands.rs`](src/commands.rs:361):
 ```rust
-Commands::Add {
-    title,
-    description,
-    priority,
-} => {
-    let priority = match priority {
-        1 => Priority::P1,
-        2 => Priority::P2,
-        3 => Priority::P3,
-        4 => Priority::P4,
-        _ => Priority::P3,
+pub fn create_tag<R: Repository>(
+    _repository: Arc<R>,
+    name: String,
+    color: Option<String>,
+) -> Result<Tag, AppError> {
+    let tag = match color {
+        Some(c) => Tag::with_color(name, c),
+        None => Tag::new(name),
     };
-
-    match create_task_with_dyn(repository.as_ref(), title, description, priority) {
-        Ok(task) => {
-            println!("Created task: {}", task.id);
-        }
-        Err(e) => {
-            eprintln!("Error creating task: {}", e);
-            std::process::exit(1);
-        }
-    }
+    Ok(tag)
 }
 ```
 
-**Missing:** Tag handling is NOT implemented!
-
-Current repository.rs has these relevant methods:
-- `create_task(&self, task: &Task) -> Result<(), RepositoryError>`
-- `get_task(&self, id: &str) -> Result<Task, RepositoryError>`
-- `list_tasks(&self, filter: &TaskFilter, sort: &TaskSort) -> Result<Vec<Task>, RepositoryError>`
-
-**Missing:** Methods for creating tags and associating with tasks!
-
-Current src/ directory structure:
-```
-src/
-├── main.rs        # Entry point - needs Add --tag support
-├── cli.rs         # Add command needs --tag flag
-├── commands.rs    # Command handlers
-├── models.rs      # Task, Tag entities
-├── tag.rs         # Tag entity
-├── filter.rs      # TaskFilter (already has tags field)
-├── repository.rs  # Database operations
-├── error.rs       # Error types
-└── config.rs      # Configuration
+**Current add_tag_to_task function in** [`src/commands.rs`](src/commands.rs:391):
+```rust
+pub fn add_tag_to_task<R: Repository>(
+    _repository: Arc<R>,
+    task_id: String,
+    tag_id: String,
+) -> Result<(), AppError> {
+    let _ = (task_id, tag_id);
+    // Repository operations will be implemented in later stories
+    Ok(())
+}
 ```
 
 ## Implementation Plan
 
-1. **Add --tag argument to Add command in src/cli.rs**
-   - Add: `#[arg(long)] tag: Option<Vec<String>>` to the Add variant
-   - Location: around line 31-42
+1. **Modify** `src/cli.rs` — Add `--tag` repeatable argument to Add command:
+   ```rust
+   /// Tags to add to the task (can be specified multiple times).
+   #[arg(short, long)]
+   tags: Vec<String>,
+   ```
 
-2. **Add tag repository methods in src/repository.rs**
-   - Add: `create_tag(&self, tag: &Tag) -> Result<(), RepositoryError>`
-   - Add: `add_tag_to_task(&self, task_id: &str, tag_id: &str) -> Result<(), RepositoryError>`
-   - Add: `get_or_create_tag(&self, name: &str) -> Result<Tag, RepositoryError>` - creates if not exists
-   - Add: `list_tags(&self) -> Result<Vec<Tag>, RepositoryError>`
+2. **Modify** `src/commands.rs` — Update `add_tag_to_task` to actually persist:
+   - Get or create tag by name (case-insensitive)
+   - Insert into task_tags join table
+   - Return Result<(), AppError> properly
 
-3. **Update src/commands.rs create_task function**
-   - Add tag parameter: `tags: Option<Vec<String>>`
-   - For each tag: call repository.get_or_create_tag()
-   - After task creation: call repository.add_tag_to_task() for each tag
+3. **Modify** `src/main.rs` — Wire up the tags argument in the add command handler
 
-4. **Update src/main.rs Add handler**
-   - Extract `tag` from command arguments
-   - Pass tags to create_task command
-   - After task created, show tags in output
+4. **Write tests** in `src/commands.rs` — Test tag creation and association
 
-5. **Update src/main.rs List handler**
-   - Implement list_tasks to fetch from repository with filter
-   - Include tags in output (join task_tags to get tag names)
-
-6. **Run build + tests**
-   - `cargo build --release`
-   - `cargo test`
-   - `cargo clippy -- -D warnings`
+5. **Run build + tests** — Verify:
+   - `cargo build --release` passes
+   - `cargo test` passes
+   - `cargo clippy -- -D warnings` passes
 
 ### Skills to Read
 
-- `./skills/rust-best-practices/SKILL.md` — Error handling and Result types
-- `./skills/test-driven-development/SKILL.md` — Writing tests first
+- `./skills/rust-best-practices/SKILL.md` — Error handling patterns
+- `./skills/test-driven-development/SKILL.md` — TDD approach
 
 ### Dependencies
 
-- 03.2: Create Task Command (complete)
+Stories that must be complete. "None" if this is independent.
+- Depends on: 03.2 (Create Task Command) - complete
 
 ## Scope Boundaries
 
 ### This Story Includes
-- Adding `--tag` flag to Add command
-- Auto-creating tags when they don't exist
-- Associating multiple tags with a task on creation
-- Displaying tags in list output
+- Adding `--tag` flag to `task add` command
+- Auto-creating tags if they don't exist
+- Associating tags with tasks via join table
 
 ### This Story Does NOT Include
-- Tag management commands (list, delete) - story 04.2, 04.3
-- Adding/removing tags from existing tasks - story 04.4
-- Filtering by tags - story 05.2 (already complete)
+- Tag management commands (tag list, tag delete) - those are separate stories
+- Adding/removing tags from existing tasks - that's story 04.4
 
 ### Files in Scope
-- `src/cli.rs` — Add --tag argument to Add command
-- `src/repository.rs` — Add tag CRUD methods
-- `src/commands.rs` — Update create_task to handle tags
-- `src/main.rs` — Wire up tags in Add and List handlers
+- `src/cli.rs` — modify Add command
+- `src/commands.rs` — modify add_tag_to_task function
+- `src/main.rs` — wire up tags argument
 
 ### Files NOT in Scope
-- `src/tag.rs` — Entity already defined
-- `src/filter.rs` — Already has tags field
-- Any other CLI commands
+- `src/tag.rs` — don't modify (tags exist)
+- `src/repository.rs` — assume repository methods exist

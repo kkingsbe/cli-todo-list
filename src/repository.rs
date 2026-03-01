@@ -205,11 +205,52 @@ impl Repository for SqliteRepository {
 
     fn list_tasks(
         &self,
-        _filter: &TaskFilter,
+        filter: &TaskFilter,
         _sort: &TaskSort,
     ) -> Result<Vec<Task>, RepositoryError> {
-        // For now, just return all tasks ignoring filter and sort
-        self.list_tasks_all()
+        // If no filter, return all tasks
+        if filter.status.is_none() {
+            return self.list_tasks_all();
+        }
+
+        // Filter by status
+        let status = filter.status.as_ref().unwrap();
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT id, title, description, priority, status, created_at, updated_at, due_date FROM tasks WHERE status = ?1",
+            )
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+
+        let tasks = stmt
+            .query_map([status_to_string(status)], |row| {
+                Ok(Task {
+                    id: row.get(0)?,
+                    title: row.get(1)?,
+                    description: row.get(2)?,
+                    priority: i64_to_priority(row.get(3)?),
+                    status: string_to_status(&row.get::<_, String>(4)?),
+                    created_at: string_to_datetime(&row.get::<_, String>(5)?)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    updated_at: string_to_datetime(&row.get::<_, String>(6)?)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    due_date: row
+                        .get::<_, Option<String>>(7)?
+                        .map(|s| {
+                            string_to_datetime(&s)
+                                .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))
+                        })
+                        .transpose()?,
+                })
+            })
+            .map_err(|e| RepositoryError::Database(e.to_string()))?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| RepositoryError::Database(e.to_string()))?;
+
+        Ok(tasks)
     }
 
     fn list_tasks_all(&self) -> Result<Vec<Task>, RepositoryError> {
@@ -693,6 +734,48 @@ mod tests {
         let tasks = repo.list_tasks_all().unwrap();
 
         assert_eq!(tasks.len(), 2);
+    }
+
+    #[test]
+    fn test_list_tasks_filters_by_status() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+
+        let repo = SqliteRepository::new(&db_path).unwrap();
+        repo.initialize().unwrap();
+
+        // Create tasks with different statuses
+        let mut task1 = Task::new("Task 1".to_string());
+        task1.status = Status::Incomplete;
+        let mut task2 = Task::new("Task 2".to_string());
+        task2.status = Status::Completed;
+        let mut task3 = Task::new("Task 3".to_string());
+        task3.status = Status::Incomplete;
+
+        repo.create_task(&task1).unwrap();
+        repo.create_task(&task2).unwrap();
+        repo.create_task(&task3).unwrap();
+
+        // Test filtering by incomplete status
+        let filter_incomplete = TaskFilter::new().with_status(Status::Incomplete);
+        let sort = TaskSort::default();
+        let tasks = repo.list_tasks(&filter_incomplete, &sort).unwrap();
+
+        assert_eq!(tasks.len(), 2);
+        assert!(tasks.iter().all(|t| t.status == Status::Incomplete));
+
+        // Test filtering by completed status
+        let filter_completed = TaskFilter::new().with_status(Status::Completed);
+        let tasks = repo.list_tasks(&filter_completed, &sort).unwrap();
+
+        assert_eq!(tasks.len(), 1);
+        assert!(tasks.iter().all(|t| t.status == Status::Completed));
+
+        // Test with no filter returns all tasks
+        let filter_none = TaskFilter::new();
+        let tasks = repo.list_tasks(&filter_none, &sort).unwrap();
+
+        assert_eq!(tasks.len(), 3);
     }
 
     #[test]
