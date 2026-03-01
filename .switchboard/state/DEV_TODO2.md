@@ -11,7 +11,7 @@
 
 ## Rework Queue
 
-- [ ] **story-05.3** (REWORK): Filter by Due Date
+- [x] **story-05.3** (REWORK): Filter by Due Date ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/archive/sprint-8/story-05-3-filter-by-due-date.md`
   - 🔍 Review: See `.switchboard/state/review/REVIEW_QUEUE.md` — CHANGES_REQUESTED
   - ⚡ Pre-check: Build + tests pass

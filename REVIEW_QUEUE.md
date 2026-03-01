@@ -59,6 +59,8 @@
   - Filter tasks by due_date column using <, >, = operators
   - Handle NULL due_date (tasks without due date)
 - **Status:** ✅ APPROVED
+- **Fix applied:** Commit 7ab5f1d — fixes have been applied
+- **Review status:** 🔄 PENDING_REVIEW
 
 ## Sprint 9
 
