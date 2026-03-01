@@ -22,11 +22,9 @@ mod tag;
 mod task;
 
 use crate::cli::{Cli, Commands, OutputFormat};
-use crate::commands::complete_task_with_dyn;
 use crate::commands::create_task_with_dyn;
 use crate::commands::delete_tag_with_dyn;
 use crate::commands::delete_task_with_dyn;
-use crate::commands::reopen_task_with_dyn;
 use crate::commands::update_task_with_dyn;
 use crate::config::load_config;
 use crate::error::AppError;
@@ -468,40 +466,6 @@ fn main() -> Result<()> {
                 },
             }
         }
-        Commands::Complete { id } => match complete_task_with_dyn(repository.as_ref(), id) {
-            Ok(task) => {
-                println!("Completed task: {}", task.id);
-                println!("  Title:  {}", task.title);
-                println!("  Status: {:?}", task.status);
-            }
-            Err(e) => match e {
-                AppError::NotFound(_) => {
-                    eprintln!("Task not found");
-                    std::process::exit(1);
-                }
-                _ => {
-                    eprintln!("Error: {}", e);
-                    std::process::exit(1);
-                }
-            },
-        },
-        Commands::Reopen { id } => match reopen_task_with_dyn(repository.as_ref(), id) {
-            Ok(task) => {
-                println!("Reopened task: {}", task.id);
-                println!("  Title:  {}", task.title);
-                println!("  Status: {:?}", task.status);
-            }
-            Err(e) => match e {
-                AppError::NotFound(_) => {
-                    eprintln!("Task not found");
-                    std::process::exit(1);
-                }
-                _ => {
-                    eprintln!("Error: {}", e);
-                    std::process::exit(1);
-                }
-            },
-        },
         Commands::Tag { command } => {
             match command {
                 cli::TagCommands::Delete { identifier } => {

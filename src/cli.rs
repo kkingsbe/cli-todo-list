@@ -134,17 +134,6 @@ pub enum Commands {
         force: bool,
     },
 
-    /// Complete a task.
-    Complete {
-        /// Task ID.
-        id: String,
-    },
-
-    /// Reopen a completed task.
-    Reopen {
-        /// Task ID.
-        id: String,
-    },
 
     /// Tag management.
     Tag {
