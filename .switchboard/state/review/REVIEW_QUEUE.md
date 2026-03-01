@@ -599,3 +599,24 @@
 - **Findings:**
   - None
 - **Summary:** Implementation correctly wires the list_tasks function to call repository.list_tasks() with the filter. The repository already had status filtering implemented via WHERE clause (as noted in story). Build and all tests pass. Clean minimal implementation within scope.
+
+---
+
+## Sprint 8
+
+### story-04-4: Manage Tags on Existing Tasks
+
+- **Status:** PENDING_REVIEW
+- **Reviewed by:** 
+- **Review date:** 
+- **Acceptance Criteria:**
+  - [x] `task update <id> --add-tag <name>` adds tags to existing tasks — verified by: manual test with `cargo run -- edit <id> --add-tag work`
+  - [x] `task update <id> --remove-tag <name>` removes tags from tasks — verified by: manual test with `cargo run -- edit <id> --remove-tag work`
+  - [x] Tags are case-insensitive for lookup but preserve display case — verified by: test_remove_tag_case_insensitivity() and test_remove_tag_with_different_case()
+- **Implemented by:** dev-1
+- **Sprint:** 8
+- **Commits:** adb0dcc, 2565658
+- **Story file:** .switchboard/state/stories/story-04-4-manage-tags-on-existing-tasks.md
+- **Files changed:** src/main.rs (wire-up), src/commands.rs (tests)
+
+**Notes:** The tag management feature was already partially implemented in main.rs (commit adb0dcc). This iteration added tests for case-insensitive tag removal (commit 2565658) to verify acceptance criterion #3. All tests pass (187 total).
