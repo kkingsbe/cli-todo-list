@@ -579,8 +579,23 @@
 - **Commits:** fb17435f..121fbd21
 - **Story file:** `.switchboard/state/stories/story-05-1-filter-by-status.md`
 - **Files changed:** src/commands.rs
-- **Status:** PENDING_REVIEW
+- **Status:** ✅ APPROVED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-03-01T06:24:00Z
 - **Acceptance Criteria:**
-  - [x] `task list --status incomplete` shows only incomplete tasks — verified by: repository already has WHERE clause for status
-  - [x] `task list --status completed` shows only completed tasks — verified by: repository already has WHERE clause for status
-- **Notes:** Implementation wires the list_tasks function to call the repository's list_tasks method. The repository already had status filtering implemented via WHERE clause in SQL. Only needed to connect the command to the repository.
+  - [x] `task list --status incomplete` shows only incomplete tasks — **MET**: Repository WHERE clause for status (repository.rs:220-224), CLI --status arg (cli.rs:50-52), main.rs wiring
+  - [x] `task list --status completed` shows only completed tasks — **MET**: Same implementation chain - status filter applied via WHERE clause
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (183 tests pass: 92+91)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+  - cargo fmt --check: ✅ PASS
+- **Diff Analysis:**
+  - Commits: fb17435, 121fbd2
+  - Files changed: src/commands.rs (+14/-4 lines)
+- **Scope Verification:**
+  - In scope: src/commands.rs (wire list_tasks to repository) — ✅
+  - filter.rs, cli.rs, repository.rs already had status filtering — ✅ (per story design)
+- **Findings:**
+  - None
+- **Summary:** Implementation correctly wires the list_tasks function to call repository.list_tasks() with the filter. The repository already had status filtering implemented via WHERE clause (as noted in story). Build and all tests pass. Clean minimal implementation within scope.

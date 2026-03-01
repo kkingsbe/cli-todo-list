@@ -346,11 +346,12 @@ fn main() -> Result<()> {
             priority,
             status,
             due,
-            ..
+            add_tag,
+            remove_tag,
         } => {
             match update_task_with_dyn(
                 repository.as_ref(),
-                id,
+                id.clone(),
                 title,
                 description,
                 priority,
@@ -372,6 +373,66 @@ fn main() -> Result<()> {
                             .map(|d| d.to_string())
                             .unwrap_or_else(|| "N/A".to_string())
                     );
+
+                    // Handle tag additions
+                    if let Some(tag_name) = add_tag {
+                        match repository.get_tag_by_name(&tag_name) {
+                            Ok(tag) => {
+                                // Tag exists, link to task
+                                if let Err(e) = repository.add_tag_to_task(&id, &tag.id) {
+                                    eprintln!("Error adding tag: {}", e);
+                                } else {
+                                    println!("  Added tag: {}", tag_name);
+                                }
+                            }
+                            Err(RepositoryError::NotFound(_)) => {
+                                // Tag doesn't exist, create it
+                                let new_tag = Tag::new(tag_name.clone());
+                                match repository.create_tag(&new_tag) {
+                                    Ok(_) => {
+                                        // Now look up the tag to get its ID
+                                        match repository.get_tag_by_name(&tag_name) {
+                                            Ok(tag) => {
+                                                if let Err(e) =
+                                                    repository.add_tag_to_task(&id, &tag.id)
+                                                {
+                                                    eprintln!("Error adding tag: {}", e);
+                                                } else {
+                                                    println!("  Added tag: {}", tag_name);
+                                                }
+                                            }
+                                            Err(e) => {
+                                                eprintln!("Error looking up created tag: {}", e);
+                                            }
+                                        }
+                                    }
+                                    Err(e) => {
+                                        eprintln!("Error creating tag: {}", e);
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                eprintln!("Error looking up tag: {}", e);
+                            }
+                        }
+                    }
+
+                    // Handle tag removals
+                    if let Some(tag_name) = remove_tag {
+                        match repository.get_tag_by_name(&tag_name) {
+                            Ok(tag) => {
+                                // Remove tag from task
+                                if let Err(e) = repository.remove_tag_from_task(&id, &tag.id) {
+                                    eprintln!("Error removing tag: {}", e);
+                                } else {
+                                    println!("  Removed tag: {}", tag_name);
+                                }
+                            }
+                            Err(e) => {
+                                eprintln!("Error finding tag: {}", e);
+                            }
+                        }
+                    }
                 }
                 Err(e) => match e {
                     AppError::NotFound(_) => {

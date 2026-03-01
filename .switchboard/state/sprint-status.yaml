@@ -206,7 +206,7 @@ epics:
         type: "feature"
         risk: "low"
         depends_on: ["04.1"]
-        status: "in-progress"
+        status: "complete"
         assigned_to: "dev-2"
         sprint: 8
       - id: "05.2"
