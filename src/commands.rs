@@ -56,13 +56,19 @@ pub fn create_task_with_dyn(
 
 /// Command handler for listing tasks.
 pub fn list_tasks<R: Repository>(
-    _repository: Arc<R>,
+    repository: Arc<R>,
     filter: TaskFilter,
     sort: TaskSort,
 ) -> Result<Vec<Task>, AppError> {
-    // Repository operations will be implemented in later stories
-    let _ = (filter, sort);
-    Ok(Vec::new())
+    repository
+        .list_tasks(&filter, &sort)
+        .map_err(|e| match e {
+            RepositoryError::NotFound(msg) => AppError::NotFound(msg),
+            RepositoryError::Database(msg) => {
+                AppError::System(crate::error::SystemError::Database(msg))
+            }
+            RepositoryError::Constraint(msg) => AppError::UserError(msg),
+        })
 }
 
 /// Command handler for getting a task by ID.
