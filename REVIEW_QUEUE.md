@@ -59,3 +59,20 @@
   - Filter tasks by due_date column using <, >, = operators
   - Handle NULL due_date (tasks without due date)
 - **Status:** ⏳ PENDING_REVIEW
+
+## Sprint 9
+
+### 06.1: Delete Task Command
+
+- **Implemented by:** dev-2
+- **Sprint:** 9
+- **Commits:** 4310cdc..f7c5ae7
+- **Story file:** `.switchboard/state/stories/story-06-1-delete-task-command.md`
+- **Files changed:** src/cli.rs, src/commands.rs, src/main.rs
+- **Status:** ⏳ PENDING_REVIEW
+- **Acceptance Criteria:**
+  - [x] Criterion 1 — verified by: Implementation prompts for confirmation when --force is not provided
+  - [x] Criterion 2 — verified by: Implementation accepts --force flag to skip confirmation
+  - [x] Criterion 3 — verified by: Repository.delete_task removes task from database
+  - [x] Criterion 4 — verified by: Implementation returns AppError::NotFound for non-existent IDs
+- **Notes:** Implemented delete command with confirmation prompt, --force flag, and proper error handling. All 187 tests pass.

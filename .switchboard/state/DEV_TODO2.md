@@ -18,7 +18,7 @@ Before starting any stories, read these files:
 
 ## Stories
 
-- [ ] **{06.1}**: Delete Task Command (3 pts)
+- [x] **{06.1}**: Delete Task Command (3 pts) ✅ queued for review
   - 📄 Story: `.switchboard/state/stories/story-06-1-delete-task-command.md`
   - 📚 Skills: `./skills/rust-best-practices/SKILL.md`, `./skills/test-driven-development/SKILL.md`
   - ⚡ Pre-check: Build + tests pass
