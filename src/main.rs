@@ -8,7 +8,7 @@ use clap::Parser;
 use std::env;
 use std::str::FromStr;
 use std::sync::Arc;
-use tracing::info;
+use tracing::{error, info, warn};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 mod cli;
@@ -124,10 +124,10 @@ fn main() -> Result<()> {
                         }
                     }
 
-                    println!("Created task: {}", task.id);
+                    info!("Created task: {}", task.id);
                 }
                 Err(e) => {
-                    eprintln!("Error creating task: {}", e);
+                    error!("Error creating task: {}", e);
                     std::process::exit(1);
                 }
             }
@@ -157,7 +157,7 @@ fn main() -> Result<()> {
                         filter = filter.with_status(Status::Incomplete);
                     }
                     _ => {
-                        eprintln!("Warning: Invalid status '{}', ignoring", status_str);
+                        warn!("Warning: Invalid status '{}', ignoring", status_str);
                     }
                 }
             }
@@ -167,7 +167,7 @@ fn main() -> Result<()> {
                 if let Ok(priority_enum) = crate::models::Priority::from_str(&format!("P{}", p)) {
                     filter = filter.with_priority(priority_enum);
                 } else {
-                    eprintln!("Warning: Invalid priority {}, ignoring", p);
+                    warn!("Warning: Invalid priority {}, ignoring", p);
                 }
             }
 
@@ -242,17 +242,17 @@ fn main() -> Result<()> {
                         OutputFormat::Table => {
                             // Table format output
                             if tasks.is_empty() {
-                                println!("No tasks found.");
+                                info!("No tasks found.");
                             } else {
                                 // Print table header
-                                println!(
+                                info!(
                                     "{:<36} | {:<30} | {:<8} | {:<12}",
                                     "ID", "Title", "Priority", "Status"
                                 );
-                                println!("{:-<36}-+-{:-<30}-+-{:-<8}-+-{:-<12}", "", "", "", "");
+                                info!("{:-<36}-+-{:-<30}-+-{:-<8}-+-{:-<12}", "", "", "", "");
                                 // Print each task
                                 for task in &tasks {
-                                    println!(
+                                    info!(
                                         "{:<36} | {:<30} | {:<8} | {:<12}",
                                         task.id,
                                         if task.title.len() > 30 {
@@ -269,39 +269,39 @@ fn main() -> Result<()> {
                         OutputFormat::Plain => {
                             // Plain text format
                             if tasks.is_empty() {
-                                println!("No tasks found.");
+                                info!("No tasks found.");
                             } else {
                                 for task in &tasks {
-                                    println!(
+                                    info!(
                                         "ID: {}, Title: {}, Priority: {:?}, Status: {:?}",
                                         task.id, task.title, task.priority, task.status
                                     );
                                     if let Some(ref desc) = task.description {
-                                        println!("  Description: {}", desc);
+                                        info!("  Description: {}", desc);
                                     }
                                     if let Some(due) = task.due_date {
-                                        println!("  Due Date: {}", due.format("%Y-%m-%d"));
+                                        info!("  Due Date: {}", due.format("%Y-%m-%d"));
                                     }
-                                    println!();
+                                    info!("");
                                 }
                             }
                         }
                         OutputFormat::Json => {
                             // JSON format output
                             if tasks.is_empty() {
-                                println!("[]");
+                                info!("[]");
                             } else {
                                 let json_output =
                                     serde_json::to_string_pretty(&tasks).map_err(|e| {
                                         anyhow::anyhow!("Failed to serialize tasks to JSON: {}", e)
                                     })?;
-                                println!("{}", json_output);
+                                info!("{}", json_output);
                             }
                         }
                     }
                 }
                 Err(e) => {
-                    eprintln!("Error listing tasks: {}", e);
+                    error!("Error listing tasks: {}", e);
                     std::process::exit(1);
                 }
             }
@@ -309,18 +309,18 @@ fn main() -> Result<()> {
         Commands::Show { id } => {
             match commands::get_task_with_dyn(repository.as_ref(), id.clone()) {
                 Ok(task) => {
-                    println!("Task Details:");
-                    println!("  ID:          {}", task.id);
-                    println!("  Title:       {}", task.title);
-                    println!(
+                    info!("Task Details:");
+                    info!("  ID:          {}", task.id);
+                    info!("  Title:       {}", task.title);
+                    info!(
                         "  Description: {}",
                         task.description.as_deref().unwrap_or("N/A")
                     );
-                    println!("  Priority:    {:?}", task.priority);
-                    println!("  Status:      {:?}", task.status);
-                    println!("  Created:     {}", task.created_at);
-                    println!("  Updated:     {}", task.updated_at);
-                    println!(
+                    info!("  Priority:    {:?}", task.priority);
+                    info!("  Status:      {:?}", task.status);
+                    info!("  Created:     {}", task.created_at);
+                    info!("  Updated:     {}", task.updated_at);
+                    info!(
                         "  Due Date:    {}",
                         task.due_date
                             .map(|d| d.to_string())
@@ -329,11 +329,11 @@ fn main() -> Result<()> {
                 }
                 Err(e) => match e {
                     AppError::NotFound(_) => {
-                        eprintln!("Task not found");
+                        error!("Task not found");
                         std::process::exit(1);
                     }
                     _ => {
-                        eprintln!("Error: {}", e);
+                        error!("Error: {}", e);
                         std::process::exit(1);
                     }
                 },
@@ -359,15 +359,15 @@ fn main() -> Result<()> {
                 due,
             ) {
                 Ok(task) => {
-                    println!("Updated task: {}", task.id);
-                    println!("  Title:       {}", task.title);
-                    println!(
+                    info!("Updated task: {}", task.id);
+                    info!("  Title:       {}", task.title);
+                    info!(
                         "  Description: {}",
                         task.description.as_deref().unwrap_or("N/A")
                     );
-                    println!("  Priority:    {:?}", task.priority);
-                    println!("  Status:      {:?}", task.status);
-                    println!(
+                    info!("  Priority:    {:?}", task.priority);
+                    info!("  Status:      {:?}", task.status);
+                    info!(
                         "  Due Date:    {}",
                         task.due_date
                             .map(|d| d.to_string())
@@ -439,11 +439,11 @@ fn main() -> Result<()> {
                 }
                 Err(e) => match e {
                     AppError::NotFound(_) => {
-                        eprintln!("Task not found");
+                        error!("Task not found");
                         std::process::exit(1);
                     }
                     _ => {
-                        eprintln!("Error: {}", e);
+                        error!("Error: {}", e);
                         std::process::exit(1);
                     }
                 },
@@ -489,14 +489,14 @@ fn main() -> Result<()> {
             match repository.list_tags(&TagFilter::default()) {
                 Ok(tags) => {
                     if tags.is_empty() {
-                        println!("No tags found.");
+                        info!("No tags found.");
                     } else {
                         // Print table header
-                        println!("{:<20} | {:<15}", "Tag Name", "Usage Count");
-                        println!("{:-<20}-+-{:-<15}", "", "");
+                        info!("{:<20} | {:<15}", "Tag Name", "Usage Count");
+                        info!("{:-<20}-+-{:-<15}", "", "");
                         // Print each tag with its usage count
                         for tag_with_count in &tags {
-                            println!(
+                            info!(
                                 "{:<20} | {:<15}",
                                 tag_with_count.tag.name, tag_with_count.usage_count
                             );
@@ -504,7 +504,7 @@ fn main() -> Result<()> {
                     }
                 }
                 Err(e) => {
-                    eprintln!("Error listing tags: {}", e);
+                    error!("Error listing tags: {}", e);
                     std::process::exit(1);
                 }
             }
