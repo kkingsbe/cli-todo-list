@@ -22,4 +22,4 @@ Before starting any stories, read these files:
   - 🔒 Risk: Low
   - 📝 Commit: `fix(dev1): [03.4] revert out-of-scope complete/reopen changes`
 
-- [ ] AGENT QA: Run full build and test suite (`cargo build --release && cargo test && cargo clippy -- -D warnings && cargo fmt --check`). If green, create `.switchboard/state/.dev_done_1` with date. If ALL `.dev_done_*` files exist for all agents with work, also create `.switchboard/state/.sprint_complete`.
+- [x] AGENT QA: Run full build and test suite (`cargo build --release && cargo test && cargo clippy -- -D warnings && cargo fmt --check`). If green, create `.switchboard/state/.dev_done_1` with date. If ALL `.dev_done_*` files exist for all agents with work, also create `.switchboard/state/.sprint_complete`. ✅ COMPLETED - Build green, 191 tests passed
