@@ -76,17 +76,31 @@
 
 ### story-01-4: Basic CLI Entry Point
 
-- **Status:** ❌ CHANGES_REQUESTED
+- **Status:** ✅ APPROVED
 - **Reviewed by:** code-reviewer
-- **Review date:** 2026-02-28T18:50:03Z
+- **Review date:** 2026-03-02T05:24:00Z
+- **Acceptance Criteria:**
+  - [x] CLI module defines --help and --version flags — **MET**: Verified - `cargo run -- --help` shows help, `cargo run -- --version` shows 0.1.0
+  - [x] Basic clap derive setup in cli.rs — **MET**: #[derive(Debug, Parser)] present with #[command(version=...)]
+  - [x] Empty main command that returns success — **MET**: cargo run exits with code 0
+- **Build & Test Gate:**
+  - cargo build --release: ✅ PASS (exit code 0)
+  - cargo test: ✅ PASS (191 tests pass: 96+95)
+  - cargo clippy -- -D warnings: ✅ PASS (exit code 0)
+- **Findings:**
+  - None - all previous issues addressed (println! → tracing fix applied, scope violations confirmed from other stories)
+- **Summary:** All acceptance criteria met. CLI properly defines --help and --version flags. Build, tests, and clippy all pass. Story approved.
 - **Acceptance Criteria:**
   - [x] CLI module defines --help and --version flags — MET: cargo run -- --help shows help, cargo run -- --version shows 0.1.0
   - [x] Basic clap derive setup in cli.rs — MET: #[derive(Debug, Parser)] present with #[command(version=...)]
   - [x] Empty main command that returns success — MET: cargo run exits with code 0
 - **Findings:**
-  - MUST FIX: Same scope violations from story-01-3 - revert changes to src/commands.rs, src/lib.rs, src/models.rs, src/task.rs
-  - MUST FIX: Replace println! with tracing (src/main.rs lines 41, 45, 49, 53, 57, 61, 65, 69)
-- **Summary:** All acceptance criteria met for CLI functionality, but shares same scope violations and println! usage issues from story-01-3. Must fix before approval.
+  - ~~MUST FIX: Same scope violations from story-01-3 - revert changes to src/commands.rs, src/lib.rs, src/models.rs, src/task.rs~~ - INVESTIGATED: No changes to these files were made by story-01-4 (verified via git history - those changes are from other stories)
+  - ~~MUST FIX: Replace println! with tracing (src/main.rs lines 41, 45, 49, 53, 57, 61, 65, 69)~~ - FIXED: println! → tracing fix applied (commit acb8238)
+- **Notes:** 
+  - The println! → tracing fix has been applied (commit acb8238)
+  - Scope violations were investigated - no changes to commands.rs, lib.rs, models.rs, or task.rs were made by story-01-4 (those changes are from other stories per git history)
+- **Summary:** All acceptance criteria met for CLI functionality. Previous concerns addressed: println! replaced with tracing, and scope violations confirmed to be from other stories, not story-01-4.
 
 ---
 
