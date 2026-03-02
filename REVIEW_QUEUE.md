@@ -9,21 +9,16 @@
 - **Commits:** 80b630b..c9f4ee3
 - **Story file:** `.switchboard/state/stories/story-03-4-get-task-details-command.md`
 - **Files changed:** src/cli.rs, src/commands.rs, src/main.rs
-- **Status:** ✅ PENDING_REVIEW
-- **Review date:** 2026-03-01T23:25:25Z
-- **Acceptance Criteria:**
-  - [x] Criterion 1 — `task get <uuid>` shows full task details — MET
-  - [x] Criterion 2 — Shows 404 error for unknown task ID — MET
-- **Must Fix:**
-  1. **Scope Violation** — Changes to `src/commands.rs` and `src/main.rs` implementing complete/reopen functionality are outside the story's scope
-     - Files in Scope per story: `src/main.rs` (wire up Show), `src/cli.rs` (Show command), `src/commands.rs` (get_task already exists)
-     - Actual changes: Added `complete_task`, `reopen_task`, `complete_task_with_dyn`, `reopen_task_with_dyn` in commands.rs; Implemented `Commands::Complete` and `Commands::Reopen` in main.rs
-     - Expected: Only add `#[command(alias = "get")]` to Show command in cli.rs (the Show command was already wired in previous stories)
-  2. Revert all changes to `src/commands.rs` except what was already there for get_task
-  3. Revert all changes to `src/main.rs` that implement Commands::Complete and Commands::Reopen
-- **Fix applied:** Commit d75bd0b — Reverted out-of-scope complete/reopen code from commands.rs, cli.rs, and main.rs
-- **Requeue Instructions:** Revert the out-of-scope changes. The core "get" alias functionality already works correctly.
-- **Summary:** The "get" alias works perfectly and both acceptance criteria are verified. However, scope was exceeded by implementing complete/reopen commands which belong to a different story.
+- **Status:** ✅ APPROVED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-03-01T23:59:38Z
+- **Acceptance Criteria:** ALL MET
+- **Findings:**
+  - Build: PASS (cargo build, cargo test 96 tests, cargo clippy -D warnings, cargo fmt)
+  - Scope compliance: PASS (scope violation reverted, only Show/get command present)
+  - Rust best practices: PASS
+  - TDD: PASS
+- **Summary:** Clean implementation of task get command. Scope violation was reverted. All acceptance criteria verified.
 
 ## Sprint 8
 
@@ -119,9 +114,12 @@
 - **Commits:** 80b630b..c9f4ee3 (fix-up: d75bd0b)
 - **Story file:** `.switchboard/state/stories/story-03-4-get-task-details-fix.md`
 - **Files changed:** src/commands.rs, src/main.rs, src/cli.rs
-- **Status:** PENDING_REVIEW
-- **Acceptance Criteria:**
-  - [x] `task get <uuid>` shows full task details (title, description, priority, status, dates) — verified by: cargo run -- get <uuid>
-  - [x] Shows 404 error for unknown task ID — verified by: cargo run -- get <invalid-uuid>
-  - [x] Complete/reopen commands removed from scope — verified by: cargo run -- complete/reopen returns "unrecognized subcommand"
-- **Notes:** Removed out-of-scope complete/reopen commands that were added in error. The 'get' command was already working correctly.
+- **Status:** ✅ APPROVED
+- **Reviewed by:** code-reviewer
+- **Review date:** 2026-03-01T23:59:38Z
+- **Acceptance Criteria:** ALL MET
+- **Findings:**
+  - Build: PASS (same verification)
+  - Scope compliance: PASS (complete/reopen commands removed)
+  - Rust best practices: PASS
+- **Summary:** Scope fix applied. Clean implementation.
